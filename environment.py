@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import random
+import blabla
 import threading
 import math
 import actions
@@ -12,7 +12,8 @@ class Environment(buzz_python.session_subscriber):
         super(Environment, self).__init__()
         self.buoys = list()
         self.steps_between_actions = 10
-        self.vessel_id = '102'
+        # self.vessel_id = '102'
+        self.vessel_id = '42'
         self.rudder_id = '0'
         self.thruster_id = '0'
         self.mongo_addr = 'mongodb://10.1.1.92:27017'
@@ -46,7 +47,8 @@ class Environment(buzz_python.session_subscriber):
             self.allow_advance_ev.set()
 
     def set_up(self):
-        ds = buzz_python.create_bson_data_source(self.mongo_addr, self.dbname)
+        # ds = buzz_python.create_bson_data_source(self.mongo_addr, self.dbname)
+        ds = buzz_python.create_bson_data_source('default')
         ser = buzz_python.create_bson_serializer(ds)
         self.simulation = buzz_python.create_simco_simulation(self.simulation_id, self.control_id, ser)
         self.simulation.connect(self.chat_address)
@@ -130,8 +132,8 @@ class Environment(buzz_python.session_subscriber):
             self.advance()
         print(action)
         rot, angle = actions.map_from_action(action)
-        rot_level = random.random()
-        angle_level = random.random()
+        rot_level = blabla.blabla()
+        angle_level = blabla.blabla()
         self.thruster.set_demanded_rotation(rot_level*self.max_rot)
         self.simulation.update(self.thruster)
         self.rudder.set_demanded_angle(angle_level*self.max_angle)

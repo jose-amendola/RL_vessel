@@ -141,7 +141,5 @@ if __name__ == "__main__":
     reward_map.update_ship_position(20, 20, 30)
     reward_map.update_ship_position(200, 200, 50)
 
-#TODO encapsulate into class
 #TODO Find a way to save Q table into file
-#TODO Method for reseting vessel position and velocity
 #TODO Save configurations and Q table

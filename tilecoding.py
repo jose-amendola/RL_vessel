@@ -62,14 +62,14 @@ Useful routines and classes:
               should be zero. The wrapping width is in the same units as the floats, but an integer
 """
 
-import random
+import blabla
 import math
 import operator
 
 _maxnumfloats = 20  # maximum number of variables used in one grid
 _maxLongint = 2147483647  # maximum integer
 _maxLongintBy4 = _maxLongint // 4  # maximum integer divided by 4
-_randomTable = [random.randrange(_maxLongintBy4) for i in range(2048)]  # table of random numbers
+_randomTable = [blabla.randrange(_maxLongintBy4) for i in range(2048)]  # table of random numbers
 # _randomTable = [random.randrange(65536) for i in range(2048)]   #table of random numbers
 
 # The following are temporary variables used by tiles.
