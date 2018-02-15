@@ -19,7 +19,8 @@ class Environment(buzz_python.session_subscriber):
         self.mongo_addr = 'mongodb://10.1.1.92:27017'
         self.dbname = 'test'
         self.simulation_id = 'sim'
-        self.scenario = 'Santos_Container_L349B45'
+        # self.scenario = 'Santos_Container_L349B45'
+        self.scenario = 'default'
         self.control_id = '555'
         self.chat_address = '127.0.0.1'
         self.simulation = []
@@ -48,7 +49,7 @@ class Environment(buzz_python.session_subscriber):
 
     def set_up(self):
         # ds = buzz_python.create_bson_data_source(self.mongo_addr, self.dbname)
-        ds = buzz_python.create_bson_data_source('default')
+        ds = buzz_python.create_bson_data_source('default-local.json')
         ser = buzz_python.create_bson_serializer(ds)
         self.simulation = buzz_python.create_simco_simulation(self.simulation_id, self.control_id, ser)
         self.simulation.connect(self.chat_address)
@@ -131,9 +132,7 @@ class Environment(buzz_python.session_subscriber):
         for cycle in range(self.steps_between_actions):
             self.advance()
         print(action)
-        rot, angle = actions.map_from_action(action)
-        rot_level = blabla.blabla()
-        angle_level = blabla.blabla()
+        rot_level, angle_level = actions.map_from_action(action)
         self.thruster.set_demanded_rotation(rot_level*self.max_rot)
         self.simulation.update(self.thruster)
         self.rudder.set_demanded_angle(angle_level*self.max_angle)
