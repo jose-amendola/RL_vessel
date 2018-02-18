@@ -3,64 +3,52 @@ from itertools import product
 from shapely.geometry import Polygon, LineString
 from shapely import affinity
 from viewer import Viewer
+from math import sin, cos, radians
 
 
 class RewardMapper(object):
-    def __init__(self, plot_flag_=True):
-        self.plot_flag = plot_flag_
-        self.ship = None
-        self.set_ship_geometry(((0,0),(0,15),(2,20),(4,15),(4, 0)))
-        self.goal_rec = None
-        self.set_goal((150, 900))
+    def __init__(self, plot_flag=True):
         self.boundary = None
-        self.boundary_b = None
-        self.set_boundary_points([(-300,-200),(2,0), (20,200), (30,500), (30,700), (120,1000)],
-                                 [(-100,-200),(100,0), (90,200), (140,500), (140,700), (200,1000)])
-        self.viewer = Viewer()
+        self.goal_rec = None
+        self.ship_polygon = None
+        self.ship = None
+        self.plot_flag = plot_flag
+        self.view = Viewer()
+        self.set_ship_geometry(((0,0),(10,10),(0,20)))
+        self.set_boundary_points(((-300,-400),(-300,-200),(-100,0), (20,200), (30,500), (30,700), (120,1000), \
+                                   (200, 1000), (140,700), (140,500), (90,200), (100,0), (-100,-200), (-100,-400)))
+        self.set_goal((150, 900))
 
-    def set_boundary_points(self, list_a, list_b):
-        self.boundary = LineString(list_a)
-        self.boundary_b = LineString(list_b)
+    def set_boundary_points(self, points):
+        self.boundary = Polygon(points)
         if self.plot_flag:
-            self.viewer.plot_boundary()
-            # decoupled = list(zip(*list_a))
-            # decoupled_b = list(zip(*list_b))
-            # pylab.plot(decoupled[0], decoupled[1], color='#666666', aa=True, lw=1.0)
-            # pylab.plot(decoupled_b[0], decoupled_b[1], color='#666666', aa=True, lw=1.0)
-            # pylab.draw()
+            self.view.plot_boundary(points)
 
     def set_ship_geometry(self, points):
-        self.ship = Polygon(points)
+        self.ship_polygon = Polygon(points)
 
     def set_goal(self, points):
         self.goal_rec = Polygon(((points[0] - 20, points[1] - 20), (points[0] - 20, points[1] + 20), (points[0] + 20, points[1] + 20),
                             (points[0] + 20, points[1] - 20)))
         if self.plot_flag:
-            self.viewer.plot_goal()
-            # a = np.asarray(self.goal_rec.exterior)
-            # pylab.fill(a[:, 0], a[:, 1], 'r')
-            # pylab.draw()
+            self.view.plot_goal(points)
 
     def update_ship_position(self, x, y, heading):
-        self.ship = affinity.translate(self.ship, x, y)
+        self.ship = affinity.translate(self.ship_polygon, x, y)
         self.ship = affinity.rotate(self.ship, heading, 'center')
         if self.plot_flag:
-            self.viewer.update_position(x, y, heading)
-            # a = np.asarray(self.ship.exterior)
-            # pylab.fill(a[:, 0], a[:, 1], 'c')
-            # pylab.draw()
-            # pylab.show()
+            self.view.plot_position(x, y, heading)
 
-    def get_distance_from_boundaries(self):
+    def get_shortest_distance_from_boundary(self):
         a = self.ship.distance(self.boundary)
-        b = self.ship.distance(self.boundary_b)
-        return a, b
+        return a
 
     def collided(self):
-        return self.ship.crosses(self.boundary) or self.ship.crosses(self.boundary_b)
+        collided = (not self.boundary.contains(self.ship))
+        return collided
 
     def reached_goal(self):
-        return self.ship.crosses(self.goal_rec)
+        return self.goal_rec.contains(self.goal_rec)
 
     def get_reward(self):
         reward = -0.1
@@ -73,7 +61,14 @@ class RewardMapper(object):
 if __name__ == "__main__":
     reward_map = RewardMapper(True)
     reward_map.update_ship_position(20, 20, 30)
-    reward_map.update_ship_position(200, 200, 50)
+    print(reward_map.collided())
+    # reward_map.update_ship_position(200, 200, 50)
+    # reward_map.set_goal((100, 1000))
+    for i in range(500):
+        reward_map.update_ship_position(i, i, i)
+        ret = reward_map.collided()
+        if ret:
+            print(ret)
 
 #TODO Find a way to save Q table into file
 #TODO Save configurations and Q table

@@ -33,7 +33,9 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper()
+        self.reward_mapper = reward.RewardMapper(True)
+        self.init_pos = (-200, -300, 5)
+        self.init_vel = (6, 0 ,0)
 
     def on_state_changed(self, state):
         if state == buzz_python.STANDBY:
@@ -65,7 +67,9 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.set_current_time_increment(0.1)
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
-        self.reset_state(0, 5, 0, 5, 10, 0)
+        self.reset_state(self.init_pos[0], self.init_vel[0], self.init_pos[1], self.init_vel[1], self.init_pos[2],
+                                                                                                self.init_vel[2])
+        self.reward_mapper.update_ship_position(-200,-200,10)
         self.simulation.advance_time()
         self.advance()
         self.advance()
@@ -113,10 +117,10 @@ class Environment(buzz_python.session_subscriber):
         ang_vel_vec = self.vessel.get_angular_velocity()
         x = lin_pos_vec[0]
         y = lin_pos_vec[1]
-        theta = ang_pos_vec[0]
+        theta = ang_pos_vec[2]
         xp = lin_vel_vec[0]
         yp = lin_vel_vec[1]
-        thetap = ang_vel_vec[0]
+        thetap = ang_vel_vec[2]
         return x, y, theta, xp, yp, thetap
 
     def advance(self):
@@ -138,17 +142,21 @@ class Environment(buzz_python.session_subscriber):
         self.rudder.set_demanded_angle(angle_level*self.max_angle)
         self.simulation.update(self.rudder)
         statePrime = self.get_state() #Get next State
-        #TODO: Implement the real reward
+
         self.reward_mapper.update_ship_position(statePrime[0],statePrime[1],statePrime[2])
         reward = self.reward_mapper.get_reward()
-
+        print(self.reward_mapper.collided())
+        if self.reward_mapper.collided():
+            print("Collided!!!")
+            self.reset_state(self.init_pos[0], self.init_vel[0], self.init_pos[1], self.init_vel[1], self.init_pos[2], self.init_vel[2])
+            statePrime = self.get_state()  # Get next State
         return statePrime, action, reward
 
     def reset_state(self, x, vel_x, y, vel_y, theta, vel_theta):
         self.vessel.set_linear_position([x, y, 0.00])
         self.vessel.set_linear_velocity([vel_x, vel_y, 0.00])
-        self.vessel.set_angular_position([theta, 0.00, 0.00])
-        self.vessel.set_angular_velocity([vel_theta, 0.00, 0.00])
+        self.vessel.set_angular_position([0.00, 0.00, theta])
+        self.vessel.set_angular_velocity([0.00, 0.00, vel_theta])
         self.simulation.sync(self.vessel)
 
     def __del__(self):
@@ -160,5 +168,6 @@ class Environment(buzz_python.session_subscriber):
 if __name__ == "__main__":
     test = Environment()
     test.set_up()
-    ret = test.step(5)
-    print(ret)
+    for i in range(100):
+        ret = test.step(i)
+        print(ret)

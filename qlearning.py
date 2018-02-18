@@ -1,4 +1,4 @@
-import blabla
+import random
 import math
 import tilecoding
 
@@ -73,10 +73,10 @@ class QLearning:
         """Returns the result of the exploration strategy"""
 
         allActions = self.getPossibleActions()
-        prob = blabla.blabla()
+        prob = random.random()
         #epsilon-greeedy strategy
         if prob <= self.epsilon:
-            return blabla.choice(allActions)
+            return random.choice(allActions)
         return self.max_Q_action(state)
            
 
@@ -122,7 +122,7 @@ class QLearning:
                 maxActions.append(act)
 
         #Chooses one of the best actions
-        action = blabla.choice(maxActions)
+        action = random.choice(maxActions)
 
         return maxValue, action
 
