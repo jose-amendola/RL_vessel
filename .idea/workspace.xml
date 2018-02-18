@@ -3,11 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="294f6bc1-6e88-4b05-9ab4-ef1dddfc8a65" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/environment.py" afterPath="$PROJECT_DIR$/environment.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/qlearning.py" afterPath="$PROJECT_DIR$/qlearning.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/reward.py" afterPath="$PROJECT_DIR$/reward.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tilecoding.py" afterPath="$PROJECT_DIR$/tilecoding.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/viewer.py" afterPath="$PROJECT_DIR$/viewer.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -387,7 +382,14 @@
       <option name="project" value="LOCAL" />
       <updated>1518692712728</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="simple_trial_and_error">
+      <created>1518990517581</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1518990517581</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TodoView">
@@ -450,7 +452,8 @@
     <MESSAGE value="bla" />
     <MESSAGE value="sample" />
     <MESSAGE value="turtle" />
-    <option name="LAST_COMMIT_MESSAGE" value="turtle" />
+    <MESSAGE value="simple_trial_and_error" />
+    <option name="LAST_COMMIT_MESSAGE" value="simple_trial_and_error" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
