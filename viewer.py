@@ -14,6 +14,7 @@ class Viewer(object):
         converted_angle = 180 - theta
         turtle.fillcolor('gray')
         turtle.setpos(x, y)
+        turtle.stamp()
         turtle.setheading(converted_angle)
 
     def plot_goal(self,point):

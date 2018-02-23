@@ -48,7 +48,8 @@ class RewardMapper(object):
         return collided
 
     def reached_goal(self):
-        return self.goal_rec.contains(self.goal_rec)
+        ret = self.goal_rec.contains(self.ship)
+        return ret
 
     def get_reward(self):
         reward = -0.1
