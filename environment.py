@@ -13,7 +13,7 @@ class Environment(buzz_python.session_subscriber):
         self.buoys = list()
         self.steps_between_actions = 10
         # self.vessel_id = '102'
-        self.vessel_id = '42'
+        self.vessel_id = '36'
         self.rudder_id = '0'
         self.thruster_id = '0'
         self.mongo_addr = 'mongodb://10.1.1.92:27017'
@@ -51,7 +51,7 @@ class Environment(buzz_python.session_subscriber):
 
     def set_up(self):
         # ds = buzz_python.create_bson_data_source(self.mongo_addr, self.dbname)
-        ds = buzz_python.create_bson_data_source('default-local.json')
+        ds = buzz_python.create_bson_data_source('suape-local.json')
         ser = buzz_python.create_bson_serializer(ds)
         self.simulation = buzz_python.create_simco_simulation(self.simulation_id, self.control_id, ser)
         self.simulation.connect(self.chat_address)
