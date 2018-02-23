@@ -89,6 +89,7 @@ class QLearning:
     def observe_reward(self,state,action,statePrime,reward):
         """Performs the standard Q-Learning Update (only updated if the agent is exploring)"""
         if self.exploring:
+            #TODO Include case for final states
             qValue= self.readQTable(state,action)
             V = self.get_max_Q_value(statePrime)        
             newQ = qValue + self.alpha * (reward + self.gamma * V - qValue)

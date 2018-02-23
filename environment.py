@@ -6,21 +6,21 @@ import actions
 import reward
 import buzz_python
 
-
+# __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn):
 class Environment(buzz_python.session_subscriber):
-    def __init__(self):
+    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn):
         super(Environment, self).__init__()
-        self.buoys = list()
-        self.steps_between_actions = 10
+        self.buoys = _buoys_list
+        self.steps_between_actions = _step
         # self.vessel_id = '102'
-        self.vessel_id = '36'
-        self.rudder_id = '0'
-        self.thruster_id = '0'
-        self.mongo_addr = 'mongodb://10.1.1.92:27017'
-        self.dbname = 'test'
+        self.vessel_id = _vessel_id
+        self.rudder_id = _rudder_id
+        self.thruster_id = _thr_id
+        # self.mongo_addr = 'mongodb://10.1.1.92:27017'
+        # self.dbname = 'test'
         self.simulation_id = 'sim'
         # self.scenario = 'Santos_Container_L349B45'
-        self.scenario = 'default'
+        self.scenario = _scn
         self.control_id = '555'
         self.chat_address = '127.0.0.1'
         self.simulation = []
@@ -35,7 +35,7 @@ class Environment(buzz_python.session_subscriber):
         self.max_rot = 0
         self.reward_mapper = reward.RewardMapper(True)
         self.init_pos = (-200, -300, 5)
-        self.init_vel = (6, 0 ,0)
+        self.init_vel = (6, 0, 0)
 
     def on_state_changed(self, state):
         if state == buzz_python.STANDBY:
