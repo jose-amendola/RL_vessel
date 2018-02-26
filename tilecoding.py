@@ -3,8 +3,8 @@ def tiling(state):
 
 
     # Default parameters for tiles
-    memct = 48  # memory for hashtable (Tile "size")
-    numtilings = 5  # Number of tiles
+    memct = 24  # memory for hashtable (Tile "size")
+    numtilings = 8  # Number of tiles
 
     return tiles(numtilings, memct, state)
 

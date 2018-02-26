@@ -15,9 +15,12 @@ class RewardMapper(object):
         self.plot_flag = plot_flag
         self.view = Viewer()
         self.set_ship_geometry(((0,0),(10,10),(0,20)))
-        self.set_boundary_points(((-300,-400),(-300,-200),(-100,0), (20,200), (30,500), (30,700), (120,1000), \
-                                   (200, 1000), (140,700), (140,500), (90,200), (100,0), (-100,-200), (-100,-400)))
-        self.set_goal((150, 900))
+        # self.set_boundary_points(((-300,-400),(-300,-200),(-100,0), (20,200), (30,500), (30,700), (120,1000), \
+        #                            (200, 1000), (140,700), (140,500), (90,200), (100,0), (-100,-200), (-100,-400)))
+        # self.set_goal((150, 900))
+
+    def generate_inner_positions(self):
+        #TODO implement
 
     def set_boundary_points(self, points):
         self.boundary = Polygon(points)
@@ -48,6 +51,7 @@ class RewardMapper(object):
         return collided
 
     def reached_goal(self):
+        #TODO incorporate velocity and heading
         ret = self.goal_rec.contains(self.ship)
         return ret
 

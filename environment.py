@@ -8,9 +8,10 @@ import buzz_python
 
 # __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn):
 class Environment(buzz_python.session_subscriber):
-    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn):
+    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal):
         super(Environment, self).__init__()
         self.buoys = _buoys_list
+        self.goal = _goal
         self.steps_between_actions = _step
         # self.vessel_id = '102'
         self.vessel_id = _vessel_id
@@ -34,8 +35,20 @@ class Environment(buzz_python.session_subscriber):
         self.max_angle = 0
         self.max_rot = 0
         self.reward_mapper = reward.RewardMapper(True)
-        self.init_pos = (-200, -300, 5)
-        self.init_vel = (6, 0, 0)
+        # self.init_pos = (-200, -300, 5)
+        # self.init_vel = (6, 0, 0)
+        self.init_state = list()
+        self._final_flag = False
+        self.initial_states_sequence = list()
+
+    def get_initial_states(self):
+        init_positions = self.reward_mapper.generate_inner_positions()
+        init_angles = (-15, 0, 15)
+
+        return list()
+
+    def is_final(self):
+        return self.reward_mapper.reached_goal()
 
     def on_state_changed(self, state):
         if state == buzz_python.STANDBY:
@@ -65,10 +78,15 @@ class Environment(buzz_python.session_subscriber):
 
         self.simulation.build()
         self.simulation.set_current_time_increment(0.1)
+        self.reward_mapper.set_boundary_points(self.buoys)
+        self.reward_mapper.set_goal(self.goal)
+
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
-        self.reset_state(self.init_pos[0], self.init_vel[0], self.init_pos[1], self.init_vel[1], self.init_pos[2],
-                                                                                                self.init_vel[2])
+        self.initial_states_sequence = self.get_initial_states()
+        self.init_state =self.initial_states_sequence.pop()
+        self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
+                             self.init_state[3], self.init_state[4], self.init_state[5])
         self.reward_mapper.update_ship_position(-200,-200,10)
         self.simulation.advance_time()
         self.advance()
@@ -148,11 +166,12 @@ class Environment(buzz_python.session_subscriber):
         print(self.reward_mapper.collided())
         if self.reward_mapper.collided():
             print("Collided!!!")
-            self.reset_state(self.init_pos[0], self.init_vel[0], self.init_pos[1], self.init_vel[1], self.init_pos[2], self.init_vel[2])
+            self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
+                             self.init_state[3], self.init_state[4], self.init_state[5])
             statePrime = self.get_state()  # Get next State
         return statePrime, action, reward
 
-    def reset_state(self, x, vel_x, y, vel_y, theta, vel_theta):
+    def reset_state(self, x, y, theta, vel_x, vel_y, vel_theta):
         self.vessel.set_linear_position([x, y, 0.00])
         self.vessel.set_linear_velocity([vel_x, vel_y, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])

@@ -86,13 +86,16 @@ class QLearning:
         return len(self.qTable)
         
     
-    def observe_reward(self,state,action,statePrime,reward):
+    def observe_reward(self,state,action,statePrime,reward, terminal_flag):
         """Performs the standard Q-Learning Update (only updated if the agent is exploring)"""
         if self.exploring:
             #TODO Include case for final states
             qValue= self.readQTable(state,action)
-            V = self.get_max_Q_value(statePrime)        
-            newQ = qValue + self.alpha * (reward + self.gamma * V - qValue)
+            V = self.get_max_Q_value(statePrime)
+            if terminal_flag:
+                newQ = qValue + self.alpha * (reward - qValue)
+            else:
+                newQ = qValue + self.alpha * (reward + self.gamma * V - qValue)
             # If the agent uses tile coding, the state is processed before accessing the Q-table
             if self.usesTile:
                 state = tuple(tilecoding.tiling(state))
