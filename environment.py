@@ -6,7 +6,7 @@ import actions
 import reward
 import buzz_python
 
-# __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn):
+
 class Environment(buzz_python.session_subscriber):
     def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal):
         super(Environment, self).__init__()
@@ -34,9 +34,7 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(False)
-        # self.init_pos = (-200, -300, 5)
-        # self.init_vel = (6, 0, 0)
+        self.reward_mapper = reward.RewardMapper(True)
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = list()
@@ -84,10 +82,11 @@ class Environment(buzz_python.session_subscriber):
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
         self.initial_states_sequence = self.get_initial_states()
+        self.init_state = self.get_state() #TODO remove this temporary line
         # self.init_state = self.initial_states_sequence.pop()
         # self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
         #                      self.init_state[3], self.init_state[4], self.init_state[5])
-        self.reward_mapper.update_ship_position(-200,-200,10)
+        # self.reward_mapper.update_ship(-200, -200, 10,, 0, 0
         self.simulation.advance_time()
         self.advance()
         self.advance()
@@ -161,15 +160,16 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.update(self.rudder)
         statePrime = self.get_state() #Get next State
 
-        self.reward_mapper.update_ship_position(statePrime[0],statePrime[1],statePrime[2])
-        reward = self.reward_mapper.get_reward()
+        self.reward_mapper.update_ship(statePrime[0], statePrime[1], statePrime[2],statePrime[3], statePrime[4],
+                                       statePrime[5])
+        rw = self.reward_mapper.get_reward()
         print(self.reward_mapper.collided())
         if self.reward_mapper.collided():
             print("Collided!!!")
             self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
                              self.init_state[3], self.init_state[4], self.init_state[5])
             statePrime = self.get_state()  # Get next State
-        return statePrime, action, reward
+        return statePrime, action, rw
 
     def reset_state(self, x, y, theta, vel_x, vel_y, vel_theta):
         self.vessel.set_linear_position([x, y, 0.00])

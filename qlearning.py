@@ -92,10 +92,10 @@ class QLearning:
             #TODO Include case for final states
             qValue= self.readQTable(state,action)
             V = self.get_max_Q_value(statePrime)
-            if terminal_flag:
-                newQ = qValue + self.alpha * (reward - qValue)
-            else:
-                newQ = qValue + self.alpha * (reward + self.gamma * V - qValue)
+            # if terminal_flag:
+            #     newQ = qValue + self.alpha * (reward - qValue)
+            # else:
+            newQ = qValue + self.alpha * (reward + self.gamma * V - qValue)
             # If the agent uses tile coding, the state is processed before accessing the Q-table
             if self.usesTile:
                 state = tuple(tilecoding.tiling(state))

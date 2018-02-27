@@ -1,6 +1,6 @@
 import numpy as np
 from itertools import product
-from shapely.geometry import Polygon, LineString
+from shapely.geometry import Polygon, LineString, Point
 from shapely import affinity
 from viewer import Viewer
 from math import sin, cos, radians
@@ -15,6 +15,8 @@ class RewardMapper(object):
         self.plot_flag = plot_flag
         self.view = Viewer()
         self.set_ship_geometry(((0,0),(10,10),(0,20)))
+        self.ship_vel = list()
+        self.ship_heading = 0
         # self.set_boundary_points(((-300,-400),(-300,-200),(-100,0), (20,200), (30,500), (30,700), (120,1000), \
         #                            (200, 1000), (140,700), (140,500), (90,200), (100,0), (-100,-200), (-100,-400)))
         # self.set_goal((150, 900))
@@ -32,12 +34,15 @@ class RewardMapper(object):
         self.ship_polygon = Polygon(points)
 
     def set_goal(self, points):
-        self.goal_rec = Polygon(((points[0] - 20, points[1] - 20), (points[0] - 20, points[1] + 20), (points[0] + 20, points[1] + 20),
-                            (points[0] + 20, points[1] - 20)))
+        factor = 100
+        self.goal_rec = Polygon(((points[0] - factor, points[1] - factor), (points[0] - factor, points[1] + factor), (points[0] + factor, points[1] + factor),
+                            (points[0] + factor, points[1] - factor)))
         if self.plot_flag:
-            self.view.plot_goal(points)
+            self.view.plot_goal(points, factor)
 
-    def update_ship_position(self, x, y, heading):
+    def update_ship(self, x, y, heading, vel_long, vel_lat, vel_theta):
+        self.ship_vel = [vel_long, vel_lat, vel_theta]
+        self.ship_heading = heading
         self.ship = affinity.translate(self.ship_polygon, x, y)
         self.ship = affinity.rotate(self.ship, heading, 'center')
         if self.plot_flag:
@@ -53,11 +58,11 @@ class RewardMapper(object):
 
     def reached_goal(self):
         #TODO incorporate velocity and heading
-        ret = self.goal_rec.contains(self.ship)
+        ret = self.goal_rec.contains(self.ship) and (self.ship_vel[0] < 1.5) and abs(self.ship_heading) < 10
         return ret
 
     def get_reward(self):
-        reward = -0.1
+        reward = -0.1*self.goal_rec.distance(self.ship)/self.goal_rec.distance(Point((14000, 4000))) #TODO test include ditance function in reward: self.goal_rec.distance(self.ship)/self.goal_rec.distance(Points((14000, 4000))/
         if self.collided():
             reward = -1
         elif self.reached_goal():
@@ -66,12 +71,12 @@ class RewardMapper(object):
 
 if __name__ == "__main__":
     reward_map = RewardMapper(True)
-    reward_map.update_ship_position(20, 20, 30)
+    reward_map.update_ship(20, 20, 30, 0, 0, 0)
     print(reward_map.collided())
     # reward_map.update_ship_position(200, 200, 50)
     # reward_map.set_goal((100, 1000))
     for i in range(500):
-        reward_map.update_ship_position(i, i, i)
+        reward_map.update_ship(i, i, i, 0, 0, 0)
         ret = reward_map.collided()
         if ret:
             print(ret)

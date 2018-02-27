@@ -11,21 +11,21 @@ import actions
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.json'
 json_dict = dict()
-episodes = 50
+episodes = 5000
 
 
 def get_args():
     """Arguments for the experiment
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t','--training_steps',type=int, default=100)
+    parser.add_argument('-t','--training_steps',type=int, default=1000)
     parser.add_argument('-e', '--evaluation_steps', type=int, default=5)
     return parser.parse_args()
 
 
 def build_objects():
     #TODO Use buoys from spreadsheet
-    steps_between_actions = 10
+    steps_between_actions = 20
     funnel_start = (14000, 7000)
     N01 = (11724.8015, 5582.9127)
     N03 =  (9191.6506, 4967.8532)
@@ -35,7 +35,7 @@ def build_objects():
     N06 = (6955.9288, 4227.1846)
     N04 = (9235.8653, 4772.7884)
     N02 = (11770.3259, 5378.4429)
-    funnel_end = (14000, 2000)
+    funnel_end = (14000, 4000)
     #TODO Organize JSON file
     #TODO Option for disable viewer
     #TODO Option for reading JSON and plotting it
@@ -84,7 +84,7 @@ def main():
                 episode_transitions_list.append(transition)
                 if final_flag:
                     continue
-            json_dict[u'Episode'] = episode_transitions_list
+            json_dict['Episode'+str(episode)] = episode_transitions_list
             json_str = json.dumps(json_dict)
             outfile.write(json_str)
         #Now that the training has finished, the agent can use his policy without updating it
