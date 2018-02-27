@@ -34,7 +34,7 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(True)
+        self.reward_mapper = reward.RewardMapper(False)
         # self.init_pos = (-200, -300, 5)
         # self.init_vel = (6, 0, 0)
         self.init_state = list()
@@ -84,9 +84,9 @@ class Environment(buzz_python.session_subscriber):
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
         self.initial_states_sequence = self.get_initial_states()
-        self.init_state =self.initial_states_sequence.pop()
-        self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
-                             self.init_state[3], self.init_state[4], self.init_state[5])
+        # self.init_state = self.initial_states_sequence.pop()
+        # self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
+        #                      self.init_state[3], self.init_state[4], self.init_state[5])
         self.reward_mapper.update_ship_position(-200,-200,10)
         self.simulation.advance_time()
         self.advance()

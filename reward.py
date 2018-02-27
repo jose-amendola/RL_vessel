@@ -21,6 +21,7 @@ class RewardMapper(object):
 
     def generate_inner_positions(self):
         #TODO implement
+        pass
 
     def set_boundary_points(self, points):
         self.boundary = Polygon(points)
