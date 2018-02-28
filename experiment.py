@@ -24,7 +24,6 @@ def get_args():
 
 
 def build_objects():
-    #TODO Use buoys from spreadsheet
     steps_between_actions = 20
     funnel_start = (14000, 7000)
     N01 = (11724.8015, 5582.9127)
@@ -61,7 +60,6 @@ def main():
         # At first, the agent is exploring
         agent.exploring = True
         #Executes the number of training steps specified in the -t parameter
-        #TODO Include episode loop
         for episode in range(episodes):
             episode_transitions_list = list()
             for step in range(parameter.training_steps):

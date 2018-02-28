@@ -17,13 +17,25 @@ class RewardMapper(object):
         self.set_ship_geometry(((0,0),(10,10),(0,20)))
         self.ship_vel = list()
         self.ship_heading = 0
+        self.goal_point = None
         # self.set_boundary_points(((-300,-400),(-300,-200),(-100,0), (20,200), (30,500), (30,700), (120,1000), \
         #                            (200, 1000), (140,700), (140,500), (90,200), (100,0), (-100,-200), (-100,-400)))
         # self.set_goal((150, 900))
 
     def generate_inner_positions(self):
-        #TODO implement
-        pass
+        points_dict = dict()
+        for line_x in range(int(self.goal_point[0]+400), int(self.goal_point[0] + 1000), 400):
+            line = LineString([(line_x, 0), (line_x, 15000)])
+            intersect = self.boundary.intersection(line)
+            if intersect.geom_type == 'LineString':
+                middle_point = (line_x, (intersect.bounds[1]+intersect.bounds[3]) / 2)
+                upper_point = (line_x, (middle_point[1] + intersect.bounds[3]) / 2)
+                lower_point = (line_x, (middle_point[1] + intersect.bounds[1]) / 2)
+                dist = self.goal_rec.distance(Point(middle_point)) #TODO remove line and use line_x - goal_point[0]
+                points_dict[middle_point] = dist
+                points_dict[upper_point] = dist
+                points_dict[lower_point] = dist
+        return points_dict
 
     def set_boundary_points(self, points):
         self.boundary = Polygon(points)
@@ -35,6 +47,7 @@ class RewardMapper(object):
 
     def set_goal(self, points):
         factor = 100
+        self.goal_point = points
         self.goal_rec = Polygon(((points[0] - factor, points[1] - factor), (points[0] - factor, points[1] + factor), (points[0] + factor, points[1] + factor),
                             (points[0] + factor, points[1] - factor)))
         if self.plot_flag:

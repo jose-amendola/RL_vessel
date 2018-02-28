@@ -1,5 +1,5 @@
 import turtle
-import asyncio
+import canvasvg
 
 class Viewer(object):
     def __init__(self):
@@ -45,4 +45,8 @@ class Viewer(object):
             turtle.setpos(point[0], point[1])
         turtle.end_fill()
         turtle.penup()
+
+    def __del__(self):
+        canvasvg.saveall("image.svg", turtle.canvas)
+
 

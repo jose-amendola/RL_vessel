@@ -5,6 +5,7 @@ import math
 import actions
 import reward
 import buzz_python
+import itertools
 
 
 class Environment(buzz_python.session_subscriber):
@@ -40,10 +41,14 @@ class Environment(buzz_python.session_subscriber):
         self.initial_states_sequence = list()
 
     def get_initial_states(self):
-        init_positions = self.reward_mapper.generate_inner_positions()
-        init_angles = (-15, 0, 15)
-
-        return list()
+        positions_dict = self.reward_mapper.generate_inner_positions()
+        init_angles = (-90, -110, -130)
+        states_list = list()
+        for position in positions_dict:
+            for angle in init_angles:
+                state = (position[0], position[1], angle, positions_dict[position]/5000,0,0)
+                states_list.append(state)
+        return states_list
 
     def is_final(self):
         return self.reward_mapper.reached_goal()
@@ -81,9 +86,11 @@ class Environment(buzz_python.session_subscriber):
 
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
-        self.initial_states_sequence = self.get_initial_states()
-        self.init_state = self.get_state() #TODO remove this temporary line
-        # self.init_state = self.initial_states_sequence.pop()
+        # self.initial_states_sequence = self.get_initial_states()
+        # self.init_state = self.get_state() #TODO remove this temporary line
+        self.initial_states_sequence = itertools.cycle(self.get_initial_states())
+
+        self.init_state = next(self.initial_states_sequence)
         # self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
         #                      self.init_state[3], self.init_state[4], self.init_state[5])
         # self.reward_mapper.update_ship(-200, -200, 10,, 0, 0
@@ -166,6 +173,7 @@ class Environment(buzz_python.session_subscriber):
         print(self.reward_mapper.collided())
         if self.reward_mapper.collided():
             print("Collided!!!")
+            self.init_state = next(self.initial_states_sequence)
             self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
                              self.init_state[3], self.init_state[4], self.init_state[5])
             statePrime = self.get_state()  # Get next State
