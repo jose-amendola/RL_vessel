@@ -6,7 +6,7 @@ preyActions = 4
 NORTH, SOUTH, WEST, EAST, NOOP = range(5)
 
 rudder_lvls = np.arange(-1.0, 1.01, 0.25)
-thruster_lvls = np.arange(-1.0, 1.01, 0.25)
+thruster_lvls = np.arange(-0.6, 0.61, 0.2)
 action_combinations = list(map(list, product(rudder_lvls, thruster_lvls)))
 possible_actions = range(len(action_combinations))
 

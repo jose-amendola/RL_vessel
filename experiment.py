@@ -11,14 +11,14 @@ import actions
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.json'
 json_dict = dict()
-episodes = 5000
+episodes = 5
 
 
 def get_args():
     """Arguments for the experiment
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t','--training_steps',type=int, default=1000)
+    parser.add_argument('-t', '--training_steps',type=int, default=2000)
     parser.add_argument('-e', '--evaluation_steps', type=int, default=5)
     return parser.parse_args()
 
@@ -55,7 +55,10 @@ def main():
         #TODO Use context for dumping json to file
         parameter = get_args()
         agent, env = build_objects()
-        json_dict['actions'] = actions.action_combinations
+        action_dict = dict()
+        for i in actions.possible_actions:
+            action_dict[str(i)] = actions.action_combinations[i]
+        json_dict['possible_actions'] = action_dict
         env.set_up()
         # At first, the agent is exploring
         agent.exploring = True
@@ -80,11 +83,11 @@ def main():
                 agent.observe_reward(state, action, statePrime, reward, final_flag)
                 print("***Training step "+str(step+1)+" Completed")
                 episode_transitions_list.append(transition)
+                json_dict['Episode'+str(episode)] = episode_transitions_list
                 if final_flag:
                     continue
-            json_dict['Episode'+str(episode)] = episode_transitions_list
-            json_str = json.dumps(json_dict)
-            outfile.write(json_str)
+        json_str = json.dumps(json_dict, indent=2)
+        outfile.write(json_str)
         #Now that the training has finished, the agent can use his policy without updating it
         agent.exploring = False
         # Executes the number of evaluation steps specified in the -e parameter

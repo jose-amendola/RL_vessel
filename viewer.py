@@ -1,5 +1,5 @@
 import turtle
-import canvasvg
+# import canvasvg
 
 class Viewer(object):
     def __init__(self):
@@ -25,6 +25,7 @@ class Viewer(object):
         # turtle.pendown()
 
     def plot_goal(self,point, radius):
+        #TODO Fix plot to centralized position
         turtle.speed(0)
         turtle.setpos(point[0],point[1])
         turtle.pendown()
@@ -46,7 +47,7 @@ class Viewer(object):
         turtle.end_fill()
         turtle.penup()
 
-    def __del__(self):
-        canvasvg.saveall("image.svg", turtle.canvas)
+    # def __del__(self):
+        # canvasvg.saveall("image.svg", turtle.getcanvas())
 
 
