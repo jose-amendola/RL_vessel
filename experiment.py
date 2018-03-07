@@ -15,7 +15,7 @@ variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S'
 main_loop_iterations = 10
 max_fit_iterations = 50
 max_episodes_per_batch = 10
-maximum_training_steps = 20
+maximum_training_steps = 200
 evaluation_steps = 1000
 
 steps_between_actions = 20
@@ -42,14 +42,18 @@ goal_factor = 100
 
 
 def load_pickle_file():
-    file_to_load = 'experiment_20180307125131'
+    file_to_load = 'experiment_20180307155623'
     with open(file_to_load, 'rb') as infile:
         var_list = pickle.load(infile)
-        test_a = pickle.load(infile)
-        test_b = pickle.load(infile)
-        test_c = pickle.load(infile)
+        episodes_list = list()
+        while True:
+            try:
+                ep = pickle.load(infile)
+                episodes_list.append(ep)
+            except EOFError as e:
+                break
         #TODO read episodes from first level and put in a list and handle EOFError
-    return var_list
+    return var_list, episodes_list
 
 
 def replay_trajectory(episodes):
@@ -62,6 +66,7 @@ def replay_trajectory(episodes):
             state = transition[0]
             view.plot_position
             view.plot_position(state[0], state[1], state[2])
+    view.freeze_screen()
 
 def train_from_batch(loaded_vars):
     batch_learner = learner.Learner()
@@ -124,6 +129,6 @@ def main():
     
 
 if __name__ == '__main__':
-    # main()
-    test = load_pickle_file()
-    replay_trajectory(test)
+    main()
+    # loaded_vars, ep_list = load_pickle_file()
+    # replay_trajectory(ep_list)

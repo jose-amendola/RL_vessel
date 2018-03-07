@@ -1,5 +1,6 @@
 import turtle
-# import canvasvg
+import tkinter
+
 
 class Viewer(object):
     def __init__(self):
@@ -24,14 +25,15 @@ class Viewer(object):
         turtle.setheading(converted_angle)
         # turtle.pendown()
 
-    def plot_goal(self,point, radius):
-        #TODO Fix plot to centralized position
+    def plot_goal(self,point, factor):
         turtle.speed(0)
-        turtle.setpos(point[0],point[1])
+        turtle.setpos(point[0] - factor, point[1] - factor)
         turtle.pendown()
         turtle.fillcolor('red')
         turtle.begin_fill()
-        turtle.circle(radius)
+        turtle.setpos(point[0] - factor, point[1] + factor)
+        turtle.setpos(point[0] + factor, point[1] + factor)
+        turtle.setpos(point[0] + factor, point[1] - factor)
         turtle.end_fill()
         turtle.penup()
 
@@ -46,6 +48,9 @@ class Viewer(object):
             turtle.setpos(point[0], point[1])
         turtle.end_fill()
         turtle.penup()
+
+    def freeze_screen(self):
+        tkinter.mainloop()
 
     # def __del__(self):
         # canvasvg.saveall("image.svg", turtle.getcanvas())
