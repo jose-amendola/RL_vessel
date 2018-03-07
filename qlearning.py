@@ -1,7 +1,7 @@
 import random
 import math
 import tilecoding
-
+import learner
 #This source indicates all possible actions
 import actions
 
@@ -47,7 +47,6 @@ class QLearning:
         
         return action
 
-        
         
     def policy_check(self,state):
         """In case a fixed action is included in the policy cache, that action is returned

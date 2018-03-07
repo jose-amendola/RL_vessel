@@ -3,10 +3,10 @@ from sklearn.svm import SVR
 
 class Learner(object):
     def __init__(self):
-        pass
+        self.batch_list = list()
 
-    def fit_transition(self, state, action, state_p, r):
-        pass
+    def add_to_batch(self, transition_list):
+        self.batch_list = self.batch_list + transition_list
 
-    def predict(self, state, action):
+    def fit_batch(self, max_iterations):
         pass

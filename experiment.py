@@ -6,16 +6,16 @@ import os
 import qlearning
 import environment
 import datetime
-import json
 import actions
 from viewer import Viewer
+import pickle
+import learner
 
-variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.json'
-json_dict = dict()
+variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
 max_fit_iterations = 50
 max_episodes_per_batch = 10
-maximum_training_steps = 2000
+maximum_training_steps = 20
 evaluation_steps = 1000
 
 steps_between_actions = 20
@@ -31,67 +31,83 @@ N02 = (11770.3259, 5378.4429)
 funnel_end = (14000, 4000)
 plot = False
 
-def build_objects():
 
-    #TODO Organize JSON file
-    #TODO Option for disable viewer
-    #TODO Option for reading JSON and plotting it
-    #TODO Fix viewer
-    buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
+buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
+vessel_id = '36'
+rudder_id = '0'
+thruster_id = '0'
+scenario = 'default'
+goal = ((N07[0]+Final[0])/2, (N07[1]+Final[1])/2)
+goal_factor = 100
 
-    vessel_id = '36'
-    rudder_id = '0'
-    thruster_id = '0'
-    scenario = 'default'
-    goal = ((N07[0]+Final[0])/2, (N07[1]+Final[1])/2)
-    return qlearning.QLearning(), environment.Environment(buoys, steps_between_actions, vessel_id,
-                                                          rudder_id, thruster_id, scenario, goal, plot)
 
-def replay_trajectory():
-    # view = Viewer()
-    # view.plot_boundary(points)
-    # view.plot_goal(points, factor)
-    # view.plot_position(x, y, heading)
+def load_pickle_file():
+    file_to_load = 'experiment_20180307125131'
+    with open(file_to_load, 'rb') as infile:
+        var_list = pickle.load(infile)
+        test_a = pickle.load(infile)
+        test_b = pickle.load(infile)
+        test_c = pickle.load(infile)
+        #TODO read episodes from first level and put in a list and handle EOFError
+    return var_list
+
+
+def replay_trajectory(episodes):
+    view = Viewer()
+    view.plot_boundary(buoys)
+    view.plot_goal(goal, goal_factor)
+    for episode in episodes:
+        transitions_list = episode['transitions_list']
+        for transition in transitions_list:
+            state = transition[0]
+            view.plot_position
+            view.plot_position(state[0], state[1], state[2])
+
+def train_from_batch(loaded_vars):
+    batch_learner = learner.Learner()
+    for ep in range(max_episodes_per_batch):
+        tag_name = 'ep#'+str(ep)
+        if tag_name in loaded_vars:
+            ep_dict = loaded_vars[tag_name]
+            batch_learner.add_to_batch(ep_dict['transitions_list'])
+    batch_learner.fit_batch(max_fit_iterations)
 
 
 def main():
-    with open(variables_file, 'w') as outfile:
-        #TODO Use context for dumping json to file
-        agent, env = build_objects()
+    with open(variables_file, 'wb') as outfile:
+        pickle_vars = dict()
+        agent = qlearning.QLearning()
+        env = environment.Environment(buoys, steps_between_actions, vessel_id,
+                                                      rudder_id, thruster_id, scenario, goal, plot)
         action_dict = dict()
         for i in actions.possible_actions:
             action_dict[str(i)] = actions.action_combinations[i]
-        json_dict['possible_actions'] = action_dict
+        pickle_vars['possible_actions'] = action_dict
         env.set_up()
-        # At first, the agent is exploring
         agent.exploring = True
-        #Executes the number of training steps specified in the -t parameter
-        for cycle in range(main_loop_iterations):
-            for episode in range(max_episodes_per_batch):
-                episode_transitions_list = list()
-                for step in range(maximum_training_steps):
-                    transition = dict()
-                    #The first step is to define the current state
-                    state = env.get_state()
-                    transition[u'state'] = state
-                    #The agent selects the action according to the state
-                    action = agent.select_action(state)
-                    #The state transition is processed
-                    statePrime, action, reward = env.step(action)
-                    transition[u'action'] = action
-                    transition[u'statePrime'] = statePrime
-                    transition[u'reward'] = reward
-                    #The agent Q-update is performed
-                    #TODO Get signal for final states in order to reset episode
-                    final_flag = env.is_final()
-                    agent.observe_reward(state, action, statePrime, reward, final_flag)
-                    print("***Training step "+str(step+1)+" Completed")
-                    episode_transitions_list.append(transition)
-                    json_dict['Episode'+str(episode)] = episode_transitions_list
-                    if final_flag != 0:
-                        continue
-        json_str = json.dumps(json_dict, indent=2)
-        outfile.write(json_str)
+        pickle.dump(pickle_vars, outfile)
+        for episode in range(max_episodes_per_batch):
+            episode_dict = dict()
+            episode_transitions_list = list()
+            final_flag = 0
+            for step in range(maximum_training_steps):
+                state = env.get_state()
+                action = agent.select_action(state)
+                state_rime, action, reward = env.step(action)
+                transition = (state, action, state_rime, reward)
+                final_flag = env.is_final()
+                agent.observe_reward(state, action, state_rime, reward, final_flag)
+                print("***Training step "+str(step+1)+" Completed")
+                episode_transitions_list.append(transition)
+                if final_flag != 0:
+                    continue
+            episode_dict['episode_number'] = episode
+            episode_dict['transitions_list'] = episode_transitions_list
+            episode_dict['final_flag'] = final_flag
+            pickle_vars['ep#'+str(episode)] = episode_dict
+            pickle.dump(episode_dict, outfile)
+
+
         #Now that the training has finished, the agent can use his policy without updating it
         agent.exploring = False
         # Executes the number of evaluation steps specified in the -e parameter
@@ -108,5 +124,6 @@ def main():
     
 
 if __name__ == '__main__':
-    main()
-    # replay_trajectory()
+    # main()
+    test = load_pickle_file()
+    replay_trajectory(test)

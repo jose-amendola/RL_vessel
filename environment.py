@@ -172,7 +172,7 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.update(self.rudder)
         statePrime = self.get_state() #Get next State
 
-        self.reward_mapper.update_ship(statePrime[0], statePrime[1], statePrime[2],statePrime[3], statePrime[4],
+        self.reward_mapper.update_ship(statePrime[0], statePrime[1], statePrime[2], statePrime[3], statePrime[4],
                                        statePrime[5])
         rw = self.reward_mapper.get_reward()
         print(self.reward_mapper.collided())
