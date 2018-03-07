@@ -9,7 +9,7 @@ import itertools
 
 
 class Environment(buzz_python.session_subscriber):
-    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal):
+    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _plot):
         super(Environment, self).__init__()
         self.buoys = _buoys_list
         self.goal = _goal
@@ -35,7 +35,7 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(True)
+        self.reward_mapper = reward.RewardMapper(_plot)
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = list()
@@ -51,7 +51,12 @@ class Environment(buzz_python.session_subscriber):
         return states_list
 
     def is_final(self):
-        return self.reward_mapper.reached_goal()
+        ret = 0
+        if self.reward_mapper.reached_goal():
+            ret = 1
+        elif self.reward_mapper.collided():
+            ret = -1
+        return ret
 
     def on_state_changed(self, state):
         if state == buzz_python.STANDBY:

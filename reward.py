@@ -13,7 +13,8 @@ class RewardMapper(object):
         self.ship_polygon = None
         self.ship = None
         self.plot_flag = plot_flag
-        self.view = Viewer()
+        if self.plot_flag:
+            self.view = Viewer()
         self.set_ship_geometry(((0,0),(10,10),(0,20)))
         self.ship_vel = list()
         self.ship_heading = 0
@@ -70,7 +71,7 @@ class RewardMapper(object):
         return collided
 
     def reached_goal(self):
-        #TODO incorporate velocity and heading
+        #TODO incorporate velocity and angle between heading and channel line
         ret = self.goal_rec.contains(self.ship) and (self.ship_vel[0] < 1.5) and abs(self.ship_heading) < 10
         if ret:
             print('Reached goal!!')
