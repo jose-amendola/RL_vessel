@@ -14,7 +14,7 @@ import learner
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
 max_fit_iterations = 50
-max_episodes_per_batch = 10
+max_episodes_per_batch = 2
 maximum_training_steps = 200
 evaluation_steps = 1000
 
@@ -42,7 +42,7 @@ goal_factor = 100
 
 
 def load_pickle_file():
-    file_to_load = 'experiment_20180307155623'
+    file_to_load = 'experiment_20180307221217'
     with open(file_to_load, 'rb') as infile:
         var_list = pickle.load(infile)
         episodes_list = list()
@@ -64,17 +64,15 @@ def replay_trajectory(episodes):
         transitions_list = episode['transitions_list']
         for transition in transitions_list:
             state = transition[0]
-            view.plot_position
             view.plot_position(state[0], state[1], state[2])
     view.freeze_screen()
 
-def train_from_batch(loaded_vars):
+def train_from_batch(episodes):
     batch_learner = learner.Learner()
     for ep in range(max_episodes_per_batch):
-        tag_name = 'ep#'+str(ep)
-        if tag_name in loaded_vars:
-            ep_dict = loaded_vars[tag_name]
-            batch_learner.add_to_batch(ep_dict['transitions_list'])
+            if ep < len(episodes):
+                episode = episodes[ep]
+                batch_learner.add_to_batch(episode['transitions_list'])
     batch_learner.fit_batch(max_fit_iterations)
 
 
@@ -129,6 +127,7 @@ def main():
     
 
 if __name__ == '__main__':
-    main()
-    # loaded_vars, ep_list = load_pickle_file()
+    # main()
+    loaded_vars, ep_list = load_pickle_file()
     # replay_trajectory(ep_list)
+    train_from_batch(ep_list)
