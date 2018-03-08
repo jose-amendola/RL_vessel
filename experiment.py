@@ -14,7 +14,7 @@ import learner
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
 max_fit_iterations = 50
-max_episodes_per_batch = 2
+max_episodes_per_batch = 15
 maximum_training_steps = 200
 evaluation_steps = 1000
 
@@ -42,7 +42,7 @@ goal_factor = 100
 
 
 def load_pickle_file():
-    file_to_load = 'experiment_20180307221217'
+    file_to_load = 'experiment_20180308083538'
     with open(file_to_load, 'rb') as infile:
         var_list = pickle.load(infile)
         episodes_list = list()
