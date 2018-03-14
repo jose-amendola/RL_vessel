@@ -14,8 +14,8 @@ import learner
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
 max_fit_iterations = 50
-max_episodes_per_batch = 15
-maximum_training_steps = 200
+max_steps_per_batch = 500
+maximum_training_steps = 20000
 evaluation_steps = 1000
 
 steps_between_actions = 20
@@ -30,6 +30,8 @@ N04 = (9235.8653, 4772.7884)
 N02 = (11770.3259, 5378.4429)
 funnel_end = (14000, 4000)
 plot = False
+goal_heading = 110
+goal_vel_x = 1.5
 
 
 buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
@@ -42,7 +44,7 @@ goal_factor = 100
 
 
 def load_pickle_file():
-    file_to_load = 'experiment_20180308083538'
+    file_to_load = 'experiment_20180308121725'
     with open(file_to_load, 'rb') as infile:
         var_list = pickle.load(infile)
         episodes_list = list()
@@ -69,10 +71,15 @@ def replay_trajectory(episodes):
 
 def train_from_batch(episodes):
     batch_learner = learner.Learner()
-    for ep in range(max_episodes_per_batch):
-            if ep < len(episodes):
+    batch_size = 0
+    for ep in episodes:
                 episode = episodes[ep]
-                batch_learner.add_to_batch(episode['transitions_list'])
+                remaining = max_steps_per_batch - len(episode['transitions_list']) - batch_size
+                if remaining >= 0:
+                    batch_learner.add_to_batch(episode['transitions_list'])
+                    batch_size += len(episode['transitions_list'])
+                else:
+                    batch_learner.add_to_batch(episode['transitions_list'][remaining])
     batch_learner.fit_batch(max_fit_iterations)
 
 
@@ -81,7 +88,7 @@ def main():
         pickle_vars = dict()
         agent = qlearning.QLearning()
         env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                                      rudder_id, thruster_id, scenario, goal, plot)
+                                                      rudder_id, thruster_id, scenario, goal, goal_heading, goal_vel_x, plot)
         action_dict = dict()
         for i in actions.possible_actions:
             action_dict[str(i)] = actions.action_combinations[i]
@@ -93,6 +100,7 @@ def main():
             episode_dict = dict()
             episode_transitions_list = list()
             final_flag = 0
+            env.new_episode()
             for step in range(maximum_training_steps):
                 state = env.get_state()
                 action = agent.select_action(state)
@@ -127,7 +135,7 @@ def main():
     
 
 if __name__ == '__main__':
-    # main()
-    loaded_vars, ep_list = load_pickle_file()
+    main()
+    # loaded_vars, ep_list = load_pickle_file()
     # replay_trajectory(ep_list)
-    train_from_batch(ep_list)
+    # train_from_batch(ep_list)

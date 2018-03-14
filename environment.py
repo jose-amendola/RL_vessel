@@ -9,10 +9,12 @@ import itertools
 
 
 class Environment(buzz_python.session_subscriber):
-    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _plot):
+    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _g_heading, _g_vel_l, _plot):
         super(Environment, self).__init__()
         self.buoys = _buoys_list
         self.goal = _goal
+        self.g_heading = _g_heading
+        self.g_vel_l = _g_vel_l
         self.steps_between_actions = _step
         # self.vessel_id = '102'
         self.vessel_id = _vessel_id
@@ -44,9 +46,10 @@ class Environment(buzz_python.session_subscriber):
         positions_dict = self.reward_mapper.generate_inner_positions()
         init_angles = (-90, -110, -130)
         states_list = list()
+        init_vel_l = self.get_state()[3]
         for position in positions_dict:
             for angle in init_angles:
-                state = (position[0], position[1], angle, positions_dict[position]/5000,0,0)
+                state = (position[0], position[1], angle, positions_dict[position]/5000*init_vel_l, 0, 0)
                 states_list.append(state)
         return states_list
 
@@ -87,7 +90,7 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.build()
         self.simulation.set_current_time_increment(0.1)
         self.reward_mapper.set_boundary_points(self.buoys)
-        self.reward_mapper.set_goal(self.goal)
+        self.reward_mapper.set_goal(self.goal, self.g_heading, self.g_vel_l)
 
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
@@ -183,6 +186,11 @@ class Environment(buzz_python.session_subscriber):
                              self.init_state[3], self.init_state[4], self.init_state[5])
             statePrime = self.get_state()  # Get next State
         return statePrime, action, rw
+
+    def new_episode(self):
+        self.init_state = next(self.initial_states_sequence)
+        self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
+                         self.init_state[3], self.init_state[4], self.init_state[5])
 
     def reset_state(self, x, y, theta, vel_x, vel_y, vel_theta):
         self.vessel.set_linear_position([x, y, 0.00])

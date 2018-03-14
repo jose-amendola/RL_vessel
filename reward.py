@@ -4,6 +4,8 @@ from shapely.geometry import Polygon, LineString, Point
 from shapely import affinity
 from viewer import Viewer
 from math import sin, cos, radians
+import numpy as np
+import math
 
 
 class RewardMapper(object):
@@ -17,8 +19,10 @@ class RewardMapper(object):
             self.view = Viewer()
         self.set_ship_geometry(((0,0),(10,10),(0,20)))
         self.ship_vel = list()
-        self.ship_heading = 0
+        self.ship_pos = list()
         self.goal_point = None
+        self.g_heading = None
+        self.g_vel_l = None
         # self.set_boundary_points(((-300,-400),(-300,-200),(-100,0), (20,200), (30,500), (30,700), (120,1000), \
         #                            (200, 1000), (140,700), (140,500), (90,200), (100,0), (-100,-200), (-100,-400)))
         # self.set_goal((150, 900))
@@ -46,17 +50,19 @@ class RewardMapper(object):
     def set_ship_geometry(self, points):
         self.ship_polygon = Polygon(points)
 
-    def set_goal(self, points):
+    def set_goal(self, point, heading, vel_l):
         factor = 100
-        self.goal_point = points
-        self.goal_rec = Polygon(((points[0] - factor, points[1] - factor), (points[0] - factor, points[1] + factor), (points[0] + factor, points[1] + factor),
-                            (points[0] + factor, points[1] - factor)))
+        self.goal_point = point
+        self.g_heading = heading
+        self.g_vel_l = vel_l
+        self.goal_rec = Polygon(((point[0] - factor, point[1] - factor), (point[0] - factor, point[1] + factor), (point[0] + factor, point[1] + factor),
+                            (point[0] + factor, point[1] - factor)))
         if self.plot_flag:
-            self.view.plot_goal(points, factor)
+            self.view.plot_goal(point, factor)
 
     def update_ship(self, x, y, heading, vel_long, vel_lat, vel_theta):
         self.ship_vel = [vel_long, vel_lat, vel_theta]
-        self.ship_heading = heading
+        self.ship_pos = [x,y,heading]
         self.ship = affinity.translate(self.ship_polygon, x, y)
         self.ship = affinity.rotate(self.ship, heading, 'center')
         if self.plot_flag:
@@ -71,14 +77,17 @@ class RewardMapper(object):
         return collided
 
     def reached_goal(self):
-        #TODO incorporate velocity and angle between heading and channel line
-        ret = self.goal_rec.contains(self.ship) and (self.ship_vel[0] < 1.5) and abs(self.ship_heading) < 10
-        if ret:
+        reached = self.goal_rec.contains(self.ship) and (self.ship_vel[0] < self.g_vel_l) and \
+              abs(self.ship_pos[2] - self.g_heading) < 10
+        if reached:
             print('Reached goal!!')
-        return ret
+        return reached
 
     def get_reward(self):
-        reward = -0.1*self.goal_rec.distance(self.ship)/self.goal_rec.distance(Point((14000, 4000))) #TODO test include ditance function in reward: self.goal_rec.distance(self.ship)/self.goal_rec.distance(Points((14000, 4000))/
+        ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading, self.g_vel_l, 0, 0))
+        array = np.array((self.ship_pos+self.ship_vel))
+        dist = np.linalg.norm(array - ref_array)
+        reward = -0.1*math.exp(-1/dist)
         if self.collided():
             reward = -1
         elif self.reached_goal():
