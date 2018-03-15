@@ -1,6 +1,10 @@
 from sklearn.svm import SVR
 import numpy as np
 import actions
+import pickle
+import datetime
+
+
 
 
 class Learner(object):
@@ -9,9 +13,9 @@ class Learner(object):
         self.learner = SVR(kernel='rbf', C=1, gamma=0.1)
         self.end_states = list()
 
-
-    def add_to_batch(self, transition_list):
-        self.end_states.append(transition_list[-1][2])
+    def add_to_batch(self, transition_list, final_flag):
+        if final_flag != 0:
+            self.end_states.append(transition_list[-1][2])
         self.batch_list = self.batch_list + transition_list
 
     def fit_batch(self, max_iterations):
@@ -24,7 +28,6 @@ class Learner(object):
         for it in range(max_iterations):
             self.learner.fit(samples, q_target)
             maxq_prediction = np.fromiter(map(lambda state_p: self.find_max_q(state_p), states_p), dtype=np.float64)
-
             q_target = rewards + maxq_prediction
 
     def find_max_q(self, state_p):

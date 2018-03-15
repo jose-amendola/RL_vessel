@@ -59,6 +59,7 @@ class Environment(buzz_python.session_subscriber):
             ret = 1
         elif self.reward_mapper.collided():
             ret = -1
+        print("Final step:", ret)
         return ret
 
     def on_state_changed(self, state):
@@ -193,6 +194,7 @@ class Environment(buzz_python.session_subscriber):
                          self.init_state[3], self.init_state[4], self.init_state[5])
 
     def reset_state(self, x, y, theta, vel_x, vel_y, vel_theta):
+        #TODO In this case consider local vel_coordinates
         self.vessel.set_linear_position([x, y, 0.00])
         self.vessel.set_linear_velocity([vel_x, vel_y, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])

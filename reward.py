@@ -55,6 +55,7 @@ class RewardMapper(object):
         self.goal_point = point
         self.g_heading = heading
         self.g_vel_l = vel_l
+    #TODO convert to global vel coordinates
         self.goal_rec = Polygon(((point[0] - factor, point[1] - factor), (point[0] - factor, point[1] + factor), (point[0] + factor, point[1] + factor),
                             (point[0] + factor, point[1] - factor)))
         if self.plot_flag:
@@ -74,6 +75,8 @@ class RewardMapper(object):
 
     def collided(self):
         collided = (not self.boundary.contains(self.ship))
+        if collided:
+            print('Collided!!')
         return collided
 
     def reached_goal(self):

@@ -9,6 +9,9 @@ rudder_lvls = np.arange(-1.0, 1.01, 0.25)
 thruster_lvls = np.arange(-0.6, 0.61, 0.2)
 action_combinations = list(map(list, product(rudder_lvls, thruster_lvls)))
 possible_actions = range(len(action_combinations))
+action_dict = dict()
+for i in possible_actions:
+    action_dict[str(i)] = action_combinations[i]
 
 def map_from_action(action_number):
     comb = action_combinations[action_number]
