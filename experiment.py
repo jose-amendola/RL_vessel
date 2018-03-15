@@ -15,8 +15,9 @@ variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S'
 main_loop_iterations = 10
 max_fit_iterations = 50
 max_steps_per_batch = 500
-maximum_training_steps = 20000
+maximum_training_steps = 200000000
 evaluation_steps = 1000
+max_episodes = 40
 
 steps_between_actions = 20
 funnel_start = (14000, 7000)
@@ -44,7 +45,7 @@ goal_factor = 100
 
 
 def load_pickle_file():
-    file_to_load = 'experiment_20180308121725'
+    file_to_load = 'experiment_20180308083538'
     with open(file_to_load, 'rb') as infile:
         var_list = pickle.load(infile)
         episodes_list = list()
@@ -72,14 +73,13 @@ def replay_trajectory(episodes):
 def train_from_batch(episodes):
     batch_learner = learner.Learner()
     batch_size = 0
-    for ep in episodes:
-                episode = episodes[ep]
-                remaining = max_steps_per_batch - len(episode['transitions_list']) - batch_size
-                if remaining >= 0:
-                    batch_learner.add_to_batch(episode['transitions_list'])
-                    batch_size += len(episode['transitions_list'])
-                else:
-                    batch_learner.add_to_batch(episode['transitions_list'][remaining])
+    for episode in episodes:
+        remaining = max_steps_per_batch - len(episode['transitions_list']) - batch_size
+        if remaining >= 0:
+            batch_learner.add_to_batch(episode['transitions_list'])
+            batch_size += len(episode['transitions_list'])
+        else:
+            batch_learner.add_to_batch(episode['transitions_list'][remaining])
     batch_learner.fit_batch(max_fit_iterations)
 
 
@@ -96,7 +96,7 @@ def main():
         env.set_up()
         agent.exploring = True
         pickle.dump(pickle_vars, outfile)
-        for episode in range(max_episodes_per_batch):
+        for episode in range(max_episodes):
             episode_dict = dict()
             episode_transitions_list = list()
             final_flag = 0
@@ -135,7 +135,7 @@ def main():
     
 
 if __name__ == '__main__':
-    main()
-    # loaded_vars, ep_list = load_pickle_file()
+    # main()
+    loaded_vars, ep_list = load_pickle_file()
     # replay_trajectory(ep_list)
-    # train_from_batch(ep_list)
+    train_from_batch(ep_list)
