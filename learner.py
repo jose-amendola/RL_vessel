@@ -29,6 +29,9 @@ class Learner(object):
             self.learner.fit(samples, q_target)
             maxq_prediction = np.fromiter(map(lambda state_p: self.find_max_q(state_p), states_p), dtype=np.float64)
             q_target = rewards + maxq_prediction
+            # if diff < EPSILON:
+            #     break
+            #TODO set comparisoon with epsilon parameter
 
     def find_max_q(self, state_p):
         qmax = -10000000000000000000
@@ -36,7 +39,7 @@ class Learner(object):
             qmax = 0
         else:
             for action in actions.possible_actions:
-                state_action = np.append(state,action)
+                state_action = np.append(state_p,action)
                 qpred = self.learner.predict(state_action)
                 if qpred > qmax:
                     qmax = qpred

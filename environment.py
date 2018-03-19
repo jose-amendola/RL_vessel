@@ -96,7 +96,6 @@ class Environment(buzz_python.session_subscriber):
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
         # self.initial_states_sequence = self.get_initial_states()
-        # self.init_state = self.get_state() #TODO remove this temporary line
         self.initial_states_sequence = itertools.cycle(self.get_initial_states())
 
         self.init_state = next(self.initial_states_sequence)
@@ -175,7 +174,7 @@ class Environment(buzz_python.session_subscriber):
         self.rudder.set_demanded_angle(angle_level*self.max_angle)
         self.simulation.update(self.rudder)
         statePrime = self.get_state() #Get next State
-
+        print('statePrime: ', statePrime)
         self.reward_mapper.update_ship(statePrime[0], statePrime[1], statePrime[2], statePrime[3], statePrime[4],
                                        statePrime[5])
         rw = self.reward_mapper.get_reward()
@@ -195,6 +194,7 @@ class Environment(buzz_python.session_subscriber):
 
     def reset_state(self, x, y, theta, vel_x, vel_y, vel_theta):
         #TODO In this case consider local vel_coordinates
+
         self.vessel.set_linear_position([x, y, 0.00])
         self.vessel.set_linear_velocity([vel_x, vel_y, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])

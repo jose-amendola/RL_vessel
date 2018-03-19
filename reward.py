@@ -23,9 +23,6 @@ class RewardMapper(object):
         self.goal_point = None
         self.g_heading = None
         self.g_vel_l = None
-        # self.set_boundary_points(((-300,-400),(-300,-200),(-100,0), (20,200), (30,500), (30,700), (120,1000), \
-        #                            (200, 1000), (140,700), (140,500), (90,200), (100,0), (-100,-200), (-100,-400)))
-        # self.set_goal((150, 900))
 
     def generate_inner_positions(self):
         points_dict = dict()
@@ -36,7 +33,7 @@ class RewardMapper(object):
                 middle_point = (line_x, (intersect.bounds[1]+intersect.bounds[3]) / 2)
                 upper_point = (line_x, (middle_point[1] + intersect.bounds[3]) / 2)
                 lower_point = (line_x, (middle_point[1] + intersect.bounds[1]) / 2)
-                dist = self.goal_rec.distance(Point(middle_point)) #TODO remove line and use line_x - goal_point[0]
+                dist = self.goal_rec.distance(Point(middle_point))
                 points_dict[middle_point] = dist
                 points_dict[upper_point] = dist
                 points_dict[lower_point] = dist
@@ -61,8 +58,8 @@ class RewardMapper(object):
         if self.plot_flag:
             self.view.plot_goal(point, factor)
 
-    def update_ship(self, x, y, heading, vel_long, vel_lat, vel_theta):
-        self.ship_vel = [vel_long, vel_lat, vel_theta]
+    def update_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta):
+        self.ship_vel = [global_vel_x, global_vel_y, global_vel_theta]
         self.ship_pos = [x,y,heading]
         self.ship = affinity.translate(self.ship_polygon, x, y)
         self.ship = affinity.rotate(self.ship, heading, 'center')
@@ -80,6 +77,7 @@ class RewardMapper(object):
         return collided
 
     def reached_goal(self):
+        vel_l =
         reached = self.goal_rec.contains(self.ship) and (self.ship_vel[0] < self.g_vel_l) and \
               abs(self.ship_pos[2] - self.g_heading) < 10
         if reached:

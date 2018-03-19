@@ -32,8 +32,8 @@ N04 = (9235.8653, 4772.7884)
 N02 = (11770.3259, 5378.4429)
 funnel_end = (14000, 4000)
 plot = True
-goal_heading = -110
-goal_vel_x = 1.5
+goal_heading_n_cw = -110
+goal_vel_lon = 1.5
 #TODO Check goal_heading and set it to angle of buoy line
 
 buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
@@ -55,7 +55,6 @@ def load_pickle_file(file_to_load):
                 episodes_list.append(ep)
             except EOFError as e:
                 break
-        #TODO read episodes from first level and put in a list and handle EOFError
     return var_list, episodes_list
 
 def load_agent(file_to_load):
@@ -94,7 +93,7 @@ def train_from_batch(episodes):
 def main():
     agent = qlearning.QLearning()
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading, goal_vel_x, plot)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_n_cw, goal_vel_lon, plot)
     with open(variables_file, 'wb') as outfile:
         pickle_vars = dict()
         pickle_vars['possible_actions'] = actions.action_dict
