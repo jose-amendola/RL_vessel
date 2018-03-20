@@ -102,6 +102,9 @@ def main():
             episode_transitions_list = list()
             final_flag = 0
             env.new_episode()
+            null_action_number = int(len(actions.action_combinations)/2)
+            env.step(null_action_number)
+            #TODO insert time advance (preferrably with timestep for propeller stabilization)
             for step in range(maximum_training_steps):
                 state = env.get_state()
                 print('Yaw:', state[2])

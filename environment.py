@@ -47,8 +47,9 @@ class Environment(buzz_python.session_subscriber):
         positions_dict = self.reward_mapper.generate_inner_positions()
         init_angles = (-120, -110, -100)
         states_list = list()
-        init_vel_x = self.get_state()[3]
-        init_vel_y = self.get_state()[4]
+        init_state = self.get_state()
+        init_vel_x = init_state[3]
+        init_vel_y = init_state[4]
         for position in positions_dict:
             for angle in init_angles:
                 state = (position[0], position[1], angle, positions_dict[position]/5000*init_vel_x, positions_dict[position]/5000*init_vel_y, 0)
@@ -97,14 +98,15 @@ class Environment(buzz_python.session_subscriber):
 
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
-        self.initial_states_sequence = itertools.cycle(self.get_initial_states())
 
-        self.init_state = next(self.initial_states_sequence)
         # self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
         #                      self.init_state[3], self.init_state[4], self.init_state[5])
         # self.reward_mapper.update_ship(-200, -200, 10,, 0, 0
         self.simulation.advance_time()
         self.advance()
+        self.initial_states_sequence = itertools.cycle(self.get_initial_states())
+
+        self.init_state = next(self.initial_states_sequence)
         self.advance()
         self.get_propulsion()
 
@@ -200,7 +202,7 @@ class Environment(buzz_python.session_subscriber):
         #TODO Fix ship behavior...
         self.vessel.set_linear_position([x, y, 0.00])
         self.vessel.set_linear_velocity([vel_x_l, vel_y_l, 0.00])
-        self.vessel.set_angular_position([0.00, 0.00, theta_l])
+        self.vessel.set_angular_position([0.00, 0.00, theta])
         self.vessel.set_angular_velocity([0.00, 0.00, vel_theta_l])
         self.simulation.sync(self.vessel)
 
