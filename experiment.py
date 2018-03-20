@@ -10,6 +10,7 @@ import actions
 from viewer import Viewer
 import pickle
 import learner
+import utils
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -32,10 +33,8 @@ N04 = (9235.8653, 4772.7884)
 N02 = (11770.3259, 5378.4429)
 funnel_end = (14000, 4000)
 plot = True
-goal_heading_n_cw = -110
+goal_heading_e_ccw = utils.channel_angle_e_ccw(N03, N05)
 goal_vel_lon = 1.5
-#TODO Check goal_heading and set it to angle of buoy line
-
 buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
 vessel_id = '36'
 rudder_id = '0'
@@ -76,7 +75,7 @@ def replay_trajectory(episodes):
 
 
 def train_from_batch(episodes):
-    batch_learner = learner.Learner()
+    batch_learner = learner.Learner(q_file)
     batch_size = 0
     for episode in episodes:
         remaining = max_steps_per_batch - len(episode['transitions_list']) - batch_size
@@ -86,14 +85,12 @@ def train_from_batch(episodes):
         else:
             batch_learner.add_to_batch(episode['transitions_list'][remaining])
     batch_learner.fit_batch(max_fit_iterations)
-    with open(q_file, 'wb') as outfile:
-        pickle.dump(batch_learner, outfile)
 
 
 def main():
     agent = qlearning.QLearning()
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_n_cw, goal_vel_lon, plot)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, plot)
     with open(variables_file, 'wb') as outfile:
         pickle_vars = dict()
         pickle_vars['possible_actions'] = actions.action_dict
@@ -126,19 +123,18 @@ def main():
     with open(q_file, 'wb') as outfile:
         pickle.dump(agent, outfile)
 
-# def evaluate_agent(ag_obj):
-#     #TODO Implement agent
-#     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-#                                   rudder_id, thruster_id, scenario, goal, goal_heading, goal_vel_x, plot)
-#     for step in range(evaluation_steps):
-#         # Mostly the same as training, but without observing the rewards
-#         # The first step is to define the current state
-#         state = env.get_state()
-#         # The agent selects the action according to the state
-#         action = agent.select_action(state)
-#         # The state transition is processed
-#         env.step(action)
-#         print("***Evaluation step " + str(step + 1) + " Completed")
+def evaluate_agent(ag_obj):
+    env = environment.Environment(buoys, steps_between_actions, vessel_id,
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, plot)
+    for step in range(evaluation_steps):
+        # Mostly the same as training, but without observing the rewards
+        # The first step is to define the current state
+        state = env.get_state()
+        # The agent selects the action according to the state
+        action = ag_obj.select_action(state)
+        # The state transition is processed
+        env.step(action)
+        print("***Evaluation step " + str(step + 1) + " Completed")
 
     
     

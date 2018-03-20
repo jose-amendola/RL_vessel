@@ -6,6 +6,7 @@ import actions
 import reward
 import buzz_python
 import itertools
+import utils
 
 
 class Environment(buzz_python.session_subscriber):
@@ -44,12 +45,13 @@ class Environment(buzz_python.session_subscriber):
 
     def get_initial_states(self):
         positions_dict = self.reward_mapper.generate_inner_positions()
-        init_angles = (-90, -110, -130)
+        init_angles = (-120, -110, -100)
         states_list = list()
-        init_vel_l = self.get_state()[3]
+        init_vel_x = self.get_state()[3]
+        init_vel_y = self.get_state()[4]
         for position in positions_dict:
             for angle in init_angles:
-                state = (position[0], position[1], angle, positions_dict[position]/5000*init_vel_l, 0, 0)
+                state = (position[0], position[1], angle, positions_dict[position]/5000*init_vel_x, positions_dict[position]/5000*init_vel_y, 0)
                 states_list.append(state)
         return states_list
 
@@ -95,7 +97,6 @@ class Environment(buzz_python.session_subscriber):
 
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
-        # self.initial_states_sequence = self.get_initial_states()
         self.initial_states_sequence = itertools.cycle(self.get_initial_states())
 
         self.init_state = next(self.initial_states_sequence)
@@ -142,6 +143,7 @@ class Environment(buzz_python.session_subscriber):
         self.max_angle = self.rudder.get_maximum_angle()
 
     def get_state(self):
+        #TODO Consider that the first time it gets the state...values are in local coords from BYC
         self.simulation.sync(self.vessel)
         lin_pos_vec = self.vessel.get_linear_position()
         ang_pos_vec = self.vessel.get_angular_position()
@@ -193,12 +195,13 @@ class Environment(buzz_python.session_subscriber):
                          self.init_state[3], self.init_state[4], self.init_state[5])
 
     def reset_state(self, x, y, theta, vel_x, vel_y, vel_theta):
-        #TODO In this case consider local vel_coordinates
-
+        vel_x_l,vel_y_l,theta_l = utils.global_to_local(vel_x,vel_y,theta)
+        vel_theta_l = - vel_theta
+        #TODO Fix ship behavior...
         self.vessel.set_linear_position([x, y, 0.00])
-        self.vessel.set_linear_velocity([vel_x, vel_y, 0.00])
-        self.vessel.set_angular_position([0.00, 0.00, theta])
-        self.vessel.set_angular_velocity([0.00, 0.00, vel_theta])
+        self.vessel.set_linear_velocity([vel_x_l, vel_y_l, 0.00])
+        self.vessel.set_angular_position([0.00, 0.00, theta_l])
+        self.vessel.set_angular_velocity([0.00, 0.00, vel_theta_l])
         self.simulation.sync(self.vessel)
 
     def __del__(self):

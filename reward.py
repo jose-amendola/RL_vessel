@@ -6,6 +6,7 @@ from viewer import Viewer
 from math import sin, cos, radians
 import numpy as np
 import math
+import utils
 
 
 class RewardMapper(object):
@@ -21,8 +22,9 @@ class RewardMapper(object):
         self.ship_vel = list()
         self.ship_pos = list()
         self.goal_point = None
-        self.g_heading = None
-        self.g_vel_l = None
+        self.g_heading_n_cw = None
+        self.g_vel_x = None
+        self.g_vel_y = None
 
     def generate_inner_positions(self):
         points_dict = dict()
@@ -50,9 +52,7 @@ class RewardMapper(object):
     def set_goal(self, point, heading, vel_l):
         factor = 100
         self.goal_point = point
-        self.g_heading = heading
-        self.g_vel_l = vel_l
-    #TODO convert to global vel coordinates
+        self.g_vel_x, self.g_vel_y, self.g_heading_n_cw = utils.local_to_global(vel_l, 0, heading)
         self.goal_rec = Polygon(((point[0] - factor, point[1] - factor), (point[0] - factor, point[1] + factor), (point[0] + factor, point[1] + factor),
                             (point[0] + factor, point[1] - factor)))
         if self.plot_flag:
@@ -77,15 +77,14 @@ class RewardMapper(object):
         return collided
 
     def reached_goal(self):
-        vel_l =
-        reached = self.goal_rec.contains(self.ship) and (self.ship_vel[0] < self.g_vel_l) and \
-              abs(self.ship_pos[2] - self.g_heading) < 10
+        reached = self.goal_rec.contains(self.ship) and (self.ship_vel[0] < self.g_vel_x) and \
+                  abs(self.ship_pos[2] - self.g_heading_n_cw) < 10
         if reached:
             print('Reached goal!!')
         return reached
 
     def get_reward(self):
-        ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading, self.g_vel_l, 0, 0))
+        ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw, self.g_vel_x, 0, 0))
         array = np.array((self.ship_pos+self.ship_vel))
         dist = np.linalg.norm(array - ref_array)
         reward = -0.1*math.exp(-1/dist)
