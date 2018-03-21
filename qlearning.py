@@ -58,6 +58,7 @@ class QLearning:
         """Returns the action that corresponds to the highest Q-value"""
         actions = self.getPossibleActions()
         v,a =  self.get_max_Q_value_action(state,actions)
+        print("maxq_value: ",v)
         return a
 
     def get_max_Q_value(self,state):
@@ -93,6 +94,7 @@ class QLearning:
             # If the agent uses tile coding, the state is processed before accessing the Q-table
             if self.usesTile:
                 state = tuple(tilecoding.tiling(state))
+                print("Tile: ", state)
             self.qTable[(state,action)] = newQ
 
     def readQTable(self,state,action):             

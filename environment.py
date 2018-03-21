@@ -199,7 +199,7 @@ class Environment(buzz_python.session_subscriber):
     def reset_state(self, x, y, theta, vel_x, vel_y, vel_theta):
         vel_x_l,vel_y_l,theta_l = utils.global_to_local(vel_x,vel_y,theta)
         vel_theta_l = - vel_theta
-        #TODO Fix ship behavior...
+        #Apparently Dyna ADV is using theta n_cw
         self.vessel.set_linear_position([x, y, 0.00])
         self.vessel.set_linear_velocity([vel_x_l, vel_y_l, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])

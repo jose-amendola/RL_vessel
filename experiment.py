@@ -32,7 +32,7 @@ N06 = (6955.9288, 4227.1846)
 N04 = (9235.8653, 4772.7884)
 N02 = (11770.3259, 5378.4429)
 funnel_end = (14000, 4000)
-plot = True
+plot = False
 goal_heading_e_ccw = utils.channel_angle_e_ccw(N03, N05)
 goal_vel_lon = 1.5
 buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
@@ -104,12 +104,13 @@ def main():
             env.new_episode()
             null_action_number = int(len(actions.action_combinations)/2)
             env.step(null_action_number)
-            #TODO insert time advance (preferrably with timestep for propeller stabilization)
             for step in range(maximum_training_steps):
                 state = env.get_state()
                 print('Yaw:', state[2])
                 action = agent.select_action(state)
                 state_rime, action, reward = env.step(action)
+                print('Action:', action, actions.action_combinations[action])
+                print('Reward:', reward)
                 transition = (state, action, state_rime, reward)
                 final_flag = env.is_final()
                 agent.observe_reward(state, action, state_rime, reward, final_flag)

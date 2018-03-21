@@ -8,7 +8,8 @@ def local_to_global(x_local, y_local, heading_e_ccw):
     m = np.matrix(((c, -s), (s, c)))
     local_array = np.matrix([[x_local, y_local]]).T
     transformed = m * local_array
-    return transformed.item(0), transformed.item(1), heading_n_cw
+    #TODO Check why y signal goes inverted
+    return transformed.item(0), -transformed.item(1), heading_n_cw
 
 
 def global_to_local(x_global, y_global, heading_n_cw):
@@ -34,3 +35,4 @@ if __name__ == "__main__":
     N03 = (9191.6506, 4967.8532)
     N05 = (6897.7712, 4417.3295)
     print(channel_angle_e_ccw(N03,N05))
+    print(local_to_global(1.5, 0, 194))
