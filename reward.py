@@ -28,14 +28,14 @@ class RewardMapper(object):
 
     def generate_inner_positions(self):
         points_dict = dict()
-        for line_x in range(int(self.goal_point[0]+1000), int(self.goal_point[0] + 5000), 500):
+        for line_x in range(int(self.goal_point[0]+100), int(self.goal_point[0] + 6000), 500):
             line = LineString([(line_x, 0), (line_x, 15000)])
             intersect = self.boundary.intersection(line)
             if intersect.geom_type == 'LineString':
                 middle_point = (line_x, (intersect.bounds[1]+intersect.bounds[3]) / 2)
                 upper_point = (line_x, (middle_point[1] + intersect.bounds[3]) / 2)
                 lower_point = (line_x, (middle_point[1] + intersect.bounds[1]) / 2)
-                dist = self.goal_rec.distance(Point(middle_point))
+                dist = Point(self.goal_point).distance(Point(middle_point))
                 points_dict[middle_point] = dist
                 points_dict[upper_point] = dist
                 points_dict[lower_point] = dist
@@ -77,8 +77,8 @@ class RewardMapper(object):
         return collided
 
     def reached_goal(self):
-        reached = self.goal_rec.contains(self.ship) and (self.ship_vel[0] < self.g_vel_x) and \
-                  abs(self.ship_pos[2] - self.g_heading_n_cw) < 10
+        cont = self.goal_rec.contains(self.ship)
+        reached = cont and abs(self.ship_vel[0]) < abs(self.g_vel_x) and abs(self.ship_pos[2] - self.g_heading_n_cw) < 20
         if reached:
             print('Reached goal!!')
         return reached
@@ -91,7 +91,8 @@ class RewardMapper(object):
         reward = -0.1*math.exp(-1/dist)
         if self.collided():
             reward = -1
-        elif self.reached_goal():
+        goal = self.reached_goal()
+        if goal:
             reward = 1
         return reward
 
@@ -107,5 +108,3 @@ if __name__ == "__main__":
         if ret:
             print(ret)
 
-#TODO Find a way to save Q table into file
-#TODO Save configurations and Q table

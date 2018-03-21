@@ -4,6 +4,7 @@ import tilecoding
 import learner
 #This source indicates all possible actions
 import actions
+import pickle
 
 class QLearning:
     
@@ -25,7 +26,7 @@ class QLearning:
     usesTile = True
 
 
-    def __init__(self,alpha=0.1,epsilon=0.1,gamma=0.9,initQ = 0):
+    def __init__(self,_file, alpha=0.1,epsilon=0.1,gamma=0.9,initQ = 0):
         """As parameters, please inform the learning rate (alpha), the discount factor (epsilon),
           and the value for initiating new Q-table entries (initQ)"""
         self.alpha = alpha
@@ -34,6 +35,7 @@ class QLearning:
         self.qTable = {}
         self.initQ = initQ
         self.exploring = True
+        self.file = _file
 
     
     def select_action(self, state):
@@ -131,7 +133,10 @@ class QLearning:
 
     def getPossibleActions(self):
         """Returns the possible actions"""
-        
         return actions.all_agent_actions()
+
+    def __del__(self):
+        with open(self.file, 'wb') as outfile:
+            pickle.dump(self, outfile)
 
  

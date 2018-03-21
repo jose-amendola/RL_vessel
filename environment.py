@@ -44,6 +44,7 @@ class Environment(buzz_python.session_subscriber):
         self.initial_states_sequence = list()
 
     def get_initial_states(self):
+        #TODO Implement mode where a fixed initial state is repeatedly set over the episodes
         positions_dict = self.reward_mapper.generate_inner_positions()
         init_angles = (-120, -110, -100)
         states_list = list()
@@ -52,7 +53,7 @@ class Environment(buzz_python.session_subscriber):
         init_vel_y = init_state[4]
         for position in positions_dict:
             for angle in init_angles:
-                state = (position[0], position[1], angle, positions_dict[position]/5000*init_vel_x, positions_dict[position]/5000*init_vel_y, 0)
+                state = (position[0], position[1], angle, positions_dict[position]/2000*init_vel_x, positions_dict[position]/2000*init_vel_y, 0)
                 states_list.append(state)
         return states_list
 
@@ -145,7 +146,6 @@ class Environment(buzz_python.session_subscriber):
         self.max_angle = self.rudder.get_maximum_angle()
 
     def get_state(self):
-        #TODO Consider that the first time it gets the state...values are in local coords from BYC
         self.simulation.sync(self.vessel)
         lin_pos_vec = self.vessel.get_linear_position()
         ang_pos_vec = self.vessel.get_angular_position()

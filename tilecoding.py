@@ -1,12 +1,19 @@
 def tiling(state):
     """Transform a state composed of a group of continuous features to tiles"""
 
+    #modification in order to scale the generalization for each state variable
+    scaled_state = list()
+    scaled_state = [state[0]/10, state[1]/10, state[2]/5, state[3]/1, state[4]/1, state[5]/1]
+
+
+
+
 
     # Default parameters for tiles
-    memct = 24  # memory for hashtable (Tile "size")
+    memct = 10000000  # memory for hashtable (Tile "size")
     numtilings = 1  # Number of tiles
 
-    return tiles(numtilings, memct, state)
+    return tiles(numtilings, memct, scaled_state)
 
 
 #----------------------------------------------------------------------------------------------------

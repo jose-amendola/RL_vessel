@@ -13,7 +13,8 @@ import learner
 import utils
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-q_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
 max_fit_iterations = 50
 max_steps_per_batch = 500
@@ -32,7 +33,7 @@ N06 = (6955.9288, 4227.1846)
 N04 = (9235.8653, 4772.7884)
 N02 = (11770.3259, 5378.4429)
 funnel_end = (14000, 4000)
-plot = False
+plot = True
 goal_heading_e_ccw = utils.channel_angle_e_ccw(N03, N05)
 goal_vel_lon = 1.5
 buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
@@ -75,7 +76,7 @@ def replay_trajectory(episodes):
 
 
 def train_from_batch(episodes):
-    batch_learner = learner.Learner(q_file)
+    batch_learner = learner.Learner(learner_file)
     batch_size = 0
     for episode in episodes:
         remaining = max_steps_per_batch - len(episode['transitions_list']) - batch_size
@@ -88,7 +89,7 @@ def train_from_batch(episodes):
 
 
 def main():
-    agent = qlearning.QLearning()
+    agent = qlearning.QLearning(q_file)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, plot)
     with open(variables_file, 'wb') as outfile:
@@ -116,15 +117,15 @@ def main():
                 agent.observe_reward(state, action, state_rime, reward, final_flag)
                 print("***Training step "+str(step+1)+" Completed")
                 episode_transitions_list.append(transition)
-            if final_flag != 0:
-                break
+                if final_flag != 0:
+                    break
             episode_dict['episode_number'] = episode
             episode_dict['transitions_list'] = episode_transitions_list
             episode_dict['final_flag'] = final_flag
             pickle_vars['ep#'+str(episode)] = episode_dict
             pickle.dump(episode_dict, outfile)
         #Now that the training has finished, the agent can use his policy without updating it
-    with open(q_file, 'wb') as outfile:
+    with open(learner_file, 'wb') as outfile:
         pickle.dump(agent, outfile)
 
 def evaluate_agent(ag_obj):
