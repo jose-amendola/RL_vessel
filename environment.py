@@ -7,6 +7,7 @@ import reward
 import buzz_python
 import itertools
 import utils
+import random
 
 
 class Environment(buzz_python.session_subscriber):
@@ -46,15 +47,13 @@ class Environment(buzz_python.session_subscriber):
     def get_initial_states(self):
         #TODO Implement mode where a fixed initial state is repeatedly set over the episodes
         positions_dict = self.reward_mapper.generate_inner_positions()
-        init_angles = (-120, -110, -100)
+        init_angle = -100
         states_list = list()
-        init_state = self.get_state()
-        init_vel_x = init_state[3]
-        init_vel_y = init_state[4]
         for position in positions_dict:
-            for angle in init_angles:
-                state = (position[0], position[1], angle, positions_dict[position]/2000*init_vel_x, positions_dict[position]/2000*init_vel_y, 0)
-                states_list.append(state)
+                state = (position[0]*random.triangular(0.8, 1.2), position[1]*random.triangular(0.8, 1.2),
+                         init_angle*random.triangular(0.8, 1.2),
+                         positions_dict[position]/4000*init_vel_x*random.triangular(0.8, 1.2),
+                         0, 0)
         return states_list
 
     def is_final(self):
@@ -186,24 +185,22 @@ class Environment(buzz_python.session_subscriber):
         if self.reward_mapper.collided():
             print("Collided!!!")
             self.init_state = next(self.initial_states_sequence)
-            self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
-                             self.init_state[3], self.init_state[4], self.init_state[5])
+            self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
+                                        self.init_state[4], self.init_state[5])
             statePrime = self.get_state()  # Get next State
         return statePrime, action, rw
 
     def new_episode(self):
         self.init_state = next(self.initial_states_sequence)
-        self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
-                         self.init_state[3], self.init_state[4], self.init_state[5])
+        self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
+                                    self.init_state[4], self.init_state[5])
 
-    def reset_state(self, x, y, theta, vel_x, vel_y, vel_theta):
-        vel_x_l,vel_y_l,theta_l = utils.global_to_local(vel_x,vel_y,theta)
-        vel_theta_l = - vel_theta
-        #Apparently Dyna ADV is using theta n_cw
+    def reset_state_localcoord(self, x, y, theta, vel_lon, vel_drift, vel_theta):
+       #Apparently Dyna ADV is using theta n_cw
         self.vessel.set_linear_position([x, y, 0.00])
-        self.vessel.set_linear_velocity([vel_x_l, vel_y_l, 0.00])
+        self.vessel.set_linear_velocity([vel_lon, vel_drift, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])
-        self.vessel.set_angular_velocity([0.00, 0.00, vel_theta_l])
+        self.vessel.set_angular_velocity([0.00, 0.00, vel_theta])
         self.simulation.sync(self.vessel)
 
     def __del__(self):
