@@ -49,11 +49,14 @@ class Environment(buzz_python.session_subscriber):
         positions_dict = self.reward_mapper.generate_inner_positions()
         init_angle = -100
         states_list = list()
+        init_vel_l = 6
         for position in positions_dict:
-                state = (position[0]*random.triangular(0.8, 1.2), position[1]*random.triangular(0.8, 1.2),
+            for count in range(10):
+                state = (position[0], position[1],
                          init_angle*random.triangular(0.8, 1.2),
-                         positions_dict[position]/4000*init_vel_x*random.triangular(0.8, 1.2),
+                         positions_dict[position]/4000*init_vel_l*random.triangular(0.8, 1.2),
                          0, 0)
+                states_list.append(state)
         return states_list
 
     def is_final(self):
