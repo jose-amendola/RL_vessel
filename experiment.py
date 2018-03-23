@@ -84,7 +84,7 @@ def train_from_batch(episodes):
             batch_learner.add_to_batch(episode['transitions_list'], episode['final_flag'])
             batch_size += len(episode['transitions_list'])
         else:
-            batch_learner.add_to_batch(episode['transitions_list'][remaining])
+            batch_learner.add_to_batch(episode['transitions_list'][0:remaining], 0)
     batch_learner.fit_batch(max_fit_iterations)
 
 
@@ -131,6 +131,12 @@ def main():
 def evaluate_agent(ag_obj):
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, plot)
+    env.set_up()
+    null_action_number = int(len(actions.action_combinations) / 2)
+    ag_obj.exploring = False
+    # env.start_original_episode()
+    env.step(null_action_number)
+    env.set_single_start_pos_mode()
     for step in range(evaluation_steps):
         # Mostly the same as training, but without observing the rewards
         # The first step is to define the current state
@@ -145,8 +151,11 @@ def evaluate_agent(ag_obj):
     
 
 if __name__ == '__main__':
-    main()
-    # loaded_vars, ep_list = load_pickle_file('experiment_20180315092927')
+    # main()
+    # loaded_vars, ep_list = load_pickle_file('experiment_20180322092813')
+    ag = load_agent('agent20180323183747')
+    evaluate_agent(ag)
     # replay_trajectory(ep_list)
     # train_from_batch(ep_list)
+
     # agent = load_agent('agent_20180308083538')

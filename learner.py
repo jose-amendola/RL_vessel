@@ -5,9 +5,10 @@ import pickle
 import datetime
 
 
-
-
 class Learner(object):
+
+    exploring = None
+
     def __init__(self, file_to_save):
         self.batch_list = list()
         self.learner = SVR(kernel='rbf', C=1, gamma=0.1)
@@ -27,6 +28,7 @@ class Learner(object):
         q_target = rewards
         samples = np.column_stack((states, act))
         for it in range(max_iterations):
+            print("FQI_iteration: ",it)
             self.learner.fit(samples, q_target)
             maxq_prediction = np.fromiter(map(lambda state_p: self.find_max_q(state_p), states_p), dtype=np.float64)
             q_target = rewards + maxq_prediction
@@ -37,7 +39,8 @@ class Learner(object):
             qmax = 0
         else:
             for action in actions.possible_actions:
-                state_action = np.append(state_p,action)
+                state_action = np.append(state_p, action)
+                state_action = np.reshape(state_action, (1, -1))
                 qpred = self.learner.predict(state_action)
                 if qpred > qmax:
                     qmax = qpred
@@ -48,11 +51,12 @@ class Learner(object):
         qmax = -10000000000000000000
         for action in actions.possible_actions:
             state_action = np.append(state, action)
+            state_action = np.reshape(state_action, (1, -1))
             qpred = self.learner.predict(state_action)
             if qpred > qmax:
                 selected_action = action
         return selected_action
 
-    def __del__(self):
-        with open(self.file, 'wb') as outfile:
-            pickle.dump(self, outfile)
+    # def __del__(self):
+    #     with open(self.file, 'wb') as outfile:
+    #         pickle.dump(self, outfile)

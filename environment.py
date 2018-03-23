@@ -198,6 +198,11 @@ class Environment(buzz_python.session_subscriber):
         self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
                                     self.init_state[4], self.init_state[5])
 
+    def set_single_start_pos_mode(self):
+        org_state = self.get_state()
+        vel_l, vel_drift, theta = utils.global_to_local(org_state[3],org_state[4],org_state[2])
+        self.init_state = [org_state[0], org_state[1], org_state[2], vel_l, vel_drift, 0]
+
     def reset_state_localcoord(self, x, y, theta, vel_lon, vel_drift, vel_theta):
        #Apparently Dyna ADV is using theta n_cw
         self.vessel.set_linear_position([x, y, 0.00])
