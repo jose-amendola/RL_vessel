@@ -57,6 +57,6 @@ class Learner(object):
                 selected_action = action
         return selected_action
 
-    # def __del__(self):
-    #     with open(self.file, 'wb') as outfile:
-    #         pickle.dump(self, outfile)
+    def __del__(self):
+        with open(self.file, 'wb') as outfile:
+            pickle.dump(self, outfile)

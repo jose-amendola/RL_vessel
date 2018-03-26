@@ -16,8 +16,8 @@ variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S'
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
-max_fit_iterations = 50
-max_steps_per_batch = 500
+max_fit_iterations = 100
+max_steps_per_batch = 1000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
 max_episodes = 400
@@ -136,7 +136,8 @@ def evaluate_agent(ag_obj):
     ag_obj.exploring = False
     # env.start_original_episode()
     env.step(null_action_number)
-    env.set_single_start_pos_mode()
+    init_state = [8000, 4600, -103, 2, 0, 0]
+    env.set_single_start_pos_mode(init_state)
     for step in range(evaluation_steps):
         # Mostly the same as training, but without observing the rewards
         # The first step is to define the current state
@@ -153,7 +154,7 @@ def evaluate_agent(ag_obj):
 if __name__ == '__main__':
     # main()
     # loaded_vars, ep_list = load_pickle_file('experiment_20180322092813')
-    ag = load_agent('agent20180323183747')
+    ag = load_agent('agent20180326132514')
     evaluate_agent(ag)
     # replay_trajectory(ep_list)
     # train_from_batch(ep_list)
