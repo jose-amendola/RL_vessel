@@ -96,6 +96,7 @@ def main():
         pickle_vars = dict()
         pickle_vars['possible_actions'] = actions.action_dict
         env.set_up()
+        env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
         agent.exploring = True
         pickle.dump(pickle_vars, outfile)
         for episode in range(max_episodes):
@@ -103,21 +104,21 @@ def main():
             episode_transitions_list = list()
             final_flag = 0
             env.new_episode()
-            null_action_number = int(len(actions.action_combinations)/2)
-            env.step(null_action_number)
             for step in range(maximum_training_steps):
                 state = env.get_state()
                 print('Yaw:', state[2])
-                action = agent.select_action(state)
-                state_rime, action, reward = env.step(action)
-                print('Action:', action, actions.action_combinations[action])
+                rot, angle = agent.select_action(state)
+                state_rime, reward = env.step(rot, angle)
+                # state_rime, reward = env.step(0, 0)
                 print('Reward:', reward)
-                transition = (state, action, state_rime, reward)
+                transition = (state, (rot, angle), state_rime, reward)
                 final_flag = env.is_final()
-                agent.observe_reward(state, action, state_rime, reward, final_flag)
+                agent.observe_reward(state, rot, angle, state_rime, reward, final_flag)
                 print("***Training step "+str(step+1)+" Completed")
                 episode_transitions_list.append(transition)
                 if final_flag != 0:
+                    env.step(0, 0)
+                    env.step(0, 0)
                     break
             episode_dict['episode_number'] = episode
             episode_dict['transitions_list'] = episode_transitions_list
@@ -135,7 +136,7 @@ def evaluate_agent(ag_obj):
     null_action_number = int(len(actions.action_combinations) / 2)
     ag_obj.exploring = False
     # env.start_original_episode()
-    env.step(null_action_number)
+    env.step(0, 0)
     init_state = [8000, 4600, -103, 2, 0, 0]
     env.set_single_start_pos_mode(init_state)
     for step in range(evaluation_steps):
@@ -145,16 +146,16 @@ def evaluate_agent(ag_obj):
         # The agent selects the action according to the state
         action = ag_obj.select_action(state)
         # The state transition is processed
-        env.step(action)
+        env.step(0, 0)
         print("***Evaluation step " + str(step + 1) + " Completed")
 
     
     
 
 if __name__ == '__main__':
-    # main()
+    main()
     # loaded_vars, ep_list = load_pickle_file('experiment_20180322092813')
-    ag = load_agent('agent20180326132514')
+    # ag = load_agent('agent20180326132514')
     evaluate_agent(ag)
     # replay_trajectory(ep_list)
     # train_from_batch(ep_list)

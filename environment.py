@@ -166,15 +166,17 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.advance_time()
         self.allow_advance_ev.clear()
 
-    def step(self, action):
+    def step(self, rot_level, angle_level):
         """**Implement Here***
             The state transition. The agent executed the action in the parameter
+            :param rot_level:
+            :param angle_level:
         """
         cycle = 0
         for cycle in range(self.steps_between_actions):
             self.advance()
-        print(action)
-        rot_level, angle_level = actions.map_from_action(action)
+        print('Rotation level: ',rot_level)
+        print('Angle level: ', angle_level)
         self.thruster.set_demanded_rotation(rot_level*self.max_rot)
         self.simulation.update(self.thruster)
         self.rudder.set_demanded_angle(angle_level*self.max_angle)
@@ -187,11 +189,11 @@ class Environment(buzz_python.session_subscriber):
         print(self.reward_mapper.collided())
         if self.reward_mapper.collided():
             print("Collided!!!")
-            self.init_state = next(self.initial_states_sequence)
-            self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
-                                        self.init_state[4], self.init_state[5])
-            statePrime = self.get_state()  # Get next State
-        return statePrime, action, rw
+            # self.init_state = next(self.initial_states_sequence)
+            # self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
+            #                             self.init_state[4], self.init_state[5])
+            # statePrime = self.get_state()  # Get next State
+        return statePrime, rw
 
     def new_episode(self):
         self.init_state = next(self.initial_states_sequence)
@@ -209,7 +211,7 @@ class Environment(buzz_python.session_subscriber):
                                     self.init_state[4], self.init_state[5])
         dummy_list = list()
         dummy_list.append(self.init_state)
-        self.init_state = itertools.cycle(dummy_list)
+        self.initial_states_sequence = itertools.cycle(dummy_list)
 
     def reset_state_localcoord(self, x, y, theta, vel_lon, vel_drift, vel_theta):
        #Apparently Dyna ADV is using theta n_cw
@@ -229,5 +231,5 @@ if __name__ == "__main__":
     test = Environment()
     test.set_up()
     for i in range(100):
-        ret = test.step(i)
+        ret = test.step(0, 0)
         print(ret)

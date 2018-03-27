@@ -46,8 +46,8 @@ class QLearning:
         #Else the best action is selected according to the Q-table
         else:
             action = self.policy_check(state)
-        
-        return action
+        rot, angle = actions.map_from_action(action)
+        return rot, angle
 
         
     def policy_check(self,state):
@@ -87,8 +87,10 @@ class QLearning:
         """Returns the size of the QTable"""
         return len(self.qTable)
     
-    def observe_reward(self, state, action, statePrime, reward, terminal_flag):
+    def observe_reward(self, state, rot, angle, statePrime, reward, terminal_flag):
         """Performs the standard Q-Learning Update (only updated if the agent is exploring)"""
+
+        action = actions.action_combinations.index([rot, angle])
         if self.exploring:
             qValue= self.readQTable(state,action)
             V = self.get_max_Q_value(statePrime)

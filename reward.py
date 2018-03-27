@@ -88,7 +88,8 @@ class RewardMapper(object):
         array = np.array((self.ship_pos+self.ship_vel))
         dist = np.linalg.norm(array - ref_array)
         print('distance_from_goal_state: ', dist)
-        reward = -0.1*math.exp(-1/dist)
+        # reward = -0.1*math.exp(-1/dist)
+        reward = -0.1
         if self.collided():
             reward = -1
         goal = self.reached_goal()
