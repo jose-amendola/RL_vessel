@@ -43,12 +43,12 @@ class QLearning:
         """ When this method is called, the agent executes an action based on its Q-table """
         #If exploring, an exploration strategy is executed
         if self.exploring:
-            action =  self.exp_strategy(state)
+            action = self.exp_strategy(state)
         #Else the best action is selected according to the Q-table
         else:
             action = self.policy_check(state)
-        rot, angle = self.action_space.map_from_action(action)
-        return rot, angle
+        angle, rot = self.action_space.map_from_action(action)
+        return angle, rot
 
         
     def policy_check(self,state):
@@ -84,10 +84,10 @@ class QLearning:
         """Returns the size of the QTable"""
         return len(self.qTable)
     
-    def observe_reward(self, state, rot, angle, statePrime, reward, terminal_flag):
+    def observe_reward(self, state, angle, rot, statePrime, reward, terminal_flag):
         """Performs the standard Q-Learning Update (only updated if the agent is exploring)"""
 
-        action = self.action_space.action_combinations.index([rot, angle])
+        action = self.action_space.action_combinations.index([angle, rot])
         if self.exploring:
             qValue= self.readQTable(state,action)
             V = self.get_max_Q_value(statePrime)

@@ -20,7 +20,7 @@ max_fit_iterations = 100
 max_steps_per_batch = 2000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
-max_episodes = 400
+max_episodes = 500
 
 steps_between_actions = 20
 funnel_start = (14000, 7000)
@@ -89,19 +89,22 @@ def train_from_batch(episodes):
 
 
 def main():
-    action_space_name = 'simple_action_space'
+    action_space_name = 'only_rudder_action_space'
     action_space = actions.BaseAction(action_space_name)
-    agent = qlearning.QLearning(q_file, action_space=action_space)
+    agent = qlearning.QLearning(q_file, epsilon=1, action_space=action_space)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, plot)
     with open(variables_file, 'wb') as outfile:
         pickle_vars = dict()
         pickle_vars['action_space'] = action_space_name
-        env.set_up()
-        env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+        # env.set_up()
+        # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
         agent.exploring = True
         pickle.dump(pickle_vars, outfile)
         for episode in range(max_episodes):
+            print('###STARTING EPISODE ', episode)
+            env.set_up()
+            env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
             episode_dict = dict()
             episode_transitions_list = list()
             final_flag = 0
@@ -109,24 +112,25 @@ def main():
             for step in range(maximum_training_steps):
                 state = env.get_state()
                 print('Yaw:', state[2])
-                rot, angle = agent.select_action(state)
+                angle, rot = agent.select_action(state)
                 state_rime, reward = env.step(rot, angle)
                 # state_rime, reward = env.step(0, 0)
                 print('Reward:', reward)
-                transition = (state, (rot, angle), state_rime, reward)
+                transition = (state, (angle, rot), state_rime, reward)
                 final_flag = env.is_final()
-                agent.observe_reward(state, rot, angle, state_rime, reward, final_flag)
+                agent.observe_reward(state, angle, rot, state_rime, reward, final_flag)
                 print("***Training step "+str(step+1)+" Completed")
                 episode_transitions_list.append(transition)
                 if final_flag != 0:
-                    env.step(0, 0)
-                    env.step(0, 0)
+                    # for i in range(10):
+                    #     env.step(0, 0)
                     break
             episode_dict['episode_number'] = episode
             episode_dict['transitions_list'] = episode_transitions_list
             episode_dict['final_flag'] = final_flag
             pickle_vars['ep#'+str(episode)] = episode_dict
             pickle.dump(episode_dict, outfile)
+            env.finish()
         #Now that the training has finished, the agent can use his policy without updating it
     with open(learner_file, 'wb') as outfile:
         pickle.dump(agent, outfile)
@@ -156,7 +160,7 @@ def evaluate_agent(ag_obj):
 
 if __name__ == '__main__':
     # main()
-    loaded_vars, ep_list = load_pickle_file('experiment_20180328215022')
+    loaded_vars, ep_list = load_pickle_file('experiment_20180329122618__')
     # ag = load_agent('agent20180326132514')
     # evaluate_agent(ag)
     # replay_trajectory(ep_list)

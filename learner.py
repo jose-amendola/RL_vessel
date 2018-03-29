@@ -9,9 +9,12 @@ class Learner(object):
 
     exploring = None
 
-    def __init__(self, file_to_save):
+    def __init__(self, file_to_save, regression=None):
         self.batch_list = list()
-        self.learner = SVR(kernel='rbf', C=1, gamma=0.1)
+        if regression:
+            pickle.load(regression)
+        else:
+            self.learner = SVR(kernel='rbf', C=1, gamma=0.1)
         self.end_states = list()
         self.file = file_to_save
 
@@ -27,7 +30,7 @@ class Learner(object):
         rewards = np.asarray([x[3] for x in self.batch_list], dtype=np.float64)
         states_p = [list(k[2]) for k in self.batch_list]
         q_target = rewards
-        samples = np.column_stack((states, act_tuple[0],act_tuple[1]))
+        samples = np.column_stack((states, act_tuple[0], act_tuple[1]))
         for it in range(max_iterations):
             print("FQI_iteration: ",it)
             self.learner.fit(samples, q_target)
@@ -60,4 +63,4 @@ class Learner(object):
 
     def __del__(self):
         with open(self.file, 'wb') as outfile:
-            pickle.dump(self, outfile)
+            pickle.dump(self, self.learner)

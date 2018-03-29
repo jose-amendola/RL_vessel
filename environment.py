@@ -7,6 +7,7 @@ import buzz_python
 import itertools
 import utils
 import random
+import time
 
 
 class Environment(buzz_python.session_subscriber):
@@ -198,6 +199,7 @@ class Environment(buzz_python.session_subscriber):
         self.init_state = next(self.initial_states_sequence)
         self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
                                     self.init_state[4], self.init_state[5])
+        self.step(0,0)
 
     def set_single_start_pos_mode(self, init_state=None):
         if not init_state:
@@ -219,6 +221,11 @@ class Environment(buzz_python.session_subscriber):
         self.vessel.set_angular_position([0.00, 0.00, theta])
         self.vessel.set_angular_velocity([0.00, 0.00, vel_theta])
         self.simulation.sync(self.vessel)
+
+    def finish(self):
+        if self.simulation:
+            self.simulation.stop()
+            time.sleep(3)
 
     def __del__(self):
         if self.simulation:

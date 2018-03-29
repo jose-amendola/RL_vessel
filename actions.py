@@ -8,6 +8,10 @@ spaces = {'simple_action_space': {
         'large_action_space':{
             'rudder_lvls':[-1, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
             'thruster_lvls':[-0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6]
+        },
+        'only_rudder_action_space':{
+            'rudder_lvls':[-0.4, 0.0, 0.4],
+            'thruster_lvls':[0.0]
         }
 }
 
