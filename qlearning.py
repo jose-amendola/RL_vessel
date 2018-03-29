@@ -26,7 +26,7 @@ class QLearning:
     usesTile = True
 
 
-    def __init__(self,_file, alpha=0.1,epsilon=0.1,gamma=0.9,initQ = 0):
+    def __init__(self,_file, alpha=0.1,epsilon=0.1,gamma=0.9,initQ = 0, action_space = actions.BaseAction('simple_action_space')):
         """As parameters, please inform the learning rate (alpha), the discount factor (epsilon),
           and the value for initiating new Q-table entries (initQ)"""
         self.alpha = alpha
@@ -36,6 +36,7 @@ class QLearning:
         self.initQ = initQ
         self.exploring = True
         self.file = _file
+        self.action_space = action_space
 
     
     def select_action(self, state):
@@ -46,7 +47,7 @@ class QLearning:
         #Else the best action is selected according to the Q-table
         else:
             action = self.policy_check(state)
-        rot, angle = actions.map_from_action(action)
+        rot, angle = self.action_space.map_from_action(action)
         return rot, angle
 
         
@@ -69,8 +70,6 @@ class QLearning:
         v,a =  self.get_max_Q_value_action(state,actions)
         return v
         
-        
-        
     def exp_strategy(self,state):
         """Returns the result of the exploration strategy"""
 
@@ -80,8 +79,6 @@ class QLearning:
         if prob <= self.epsilon:
             return random.choice(allActions)
         return self.max_Q_action(state)
-           
-
     
     def get_Q_size(self):
         """Returns the size of the QTable"""
@@ -90,7 +87,7 @@ class QLearning:
     def observe_reward(self, state, rot, angle, statePrime, reward, terminal_flag):
         """Performs the standard Q-Learning Update (only updated if the agent is exploring)"""
 
-        action = actions.action_combinations.index([rot, angle])
+        action = self.action_space.action_combinations.index([rot, angle])
         if self.exploring:
             qValue= self.readQTable(state,action)
             V = self.get_max_Q_value(statePrime)
@@ -135,7 +132,7 @@ class QLearning:
 
     def getPossibleActions(self):
         """Returns the possible actions"""
-        return actions.all_agent_actions()
+        return self.action_space.all_agent_actions()
 
     def __del__(self):
         with open(self.file, 'wb') as outfile:
