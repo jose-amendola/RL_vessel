@@ -166,7 +166,7 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.advance_time()
         self.allow_advance_ev.clear()
 
-    def step(self, rot_level, angle_level):
+    def step(self, angle_level, rot_level):
         """**Implement Here***
             The state transition. The agent executed the action in the parameter
             :param rot_level:
@@ -175,7 +175,7 @@ class Environment(buzz_python.session_subscriber):
         cycle = 0
         for cycle in range(self.steps_between_actions):
             self.advance()
-        print('Rotation level: ',rot_level)
+        print('Rotation level: ', rot_level)
         print('Angle level: ', angle_level)
         self.thruster.set_demanded_rotation(rot_level*self.max_rot)
         self.simulation.update(self.thruster)

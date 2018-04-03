@@ -16,7 +16,7 @@ variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S'
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
-max_fit_iterations = 100
+max_fit_iterations = 50
 max_steps_per_batch = 2000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
@@ -75,8 +75,8 @@ def replay_trajectory(episodes):
     view.freeze_screen()
 
 
-def train_from_batch(episodes):
-    batch_learner = learner.Learner(learner_file)
+def train_from_batch(episodes, pickle_vars):
+    batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'])
     batch_size = 0
     for episode in episodes:
         remaining = max_steps_per_batch - len(episode['transitions_list']) - batch_size
@@ -84,7 +84,8 @@ def train_from_batch(episodes):
             batch_learner.add_to_batch(episode['transitions_list'], episode['final_flag'])
             batch_size += len(episode['transitions_list'])
         else:
-            batch_learner.add_to_batch(episode['transitions_list'][0:remaining], 0)
+            batch_learner.add_to_batch(episode['transitions_list'][0:abs(remaining)], 0)
+            break
     batch_learner.fit_batch(max_fit_iterations)
 
 
@@ -113,7 +114,7 @@ def main():
                 state = env.get_state()
                 print('Yaw:', state[2])
                 angle, rot = agent.select_action(state)
-                state_rime, reward = env.step(rot, angle)
+                state_rime, reward = env.step(angle, rot)
                 # state_rime, reward = env.step(0, 0)
                 print('Reward:', reward)
                 transition = (state, (angle, rot), state_rime, reward)
@@ -135,35 +136,42 @@ def main():
     with open(learner_file, 'wb') as outfile:
         pickle.dump(agent, outfile)
 
+
 def evaluate_agent(ag_obj):
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, plot)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
-    null_action_number = int(len(actions.action_combinations) / 2)
-    ag_obj.exploring = False
+    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='only_rudder_action_space')
     # env.start_original_episode()
     env.step(0, 0)
-    init_state = [8000, 4600, -103, 2, 0, 0]
-    env.set_single_start_pos_mode(init_state)
+    env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+    env.new_episode()
+    final_flag = 0
+    agent.save_tree()
     for step in range(evaluation_steps):
         # Mostly the same as training, but without observing the rewards
         # The first step is to define the current state
         state = env.get_state()
         # The agent selects the action according to the state
-        action = ag_obj.select_action(state)
+        action = agent.select_action(state)
         # The state transition is processed
-        env.step(0, 0)
+        env.step(action[0], action[1])
+        final_flag = env.is_final()
         print("***Evaluation step " + str(step + 1) + " Completed")
+        if final_flag != 0:
+            break
 
     
     
 
 if __name__ == '__main__':
     # main()
-    loaded_vars, ep_list = load_pickle_file('experiment_20180329122618__')
-    # ag = load_agent('agent20180326132514')
-    # evaluate_agent(ag)
-    # replay_trajectory(ep_list)
-    train_from_batch(ep_list)
 
-    # agent = load_agent('agent_20180308083538')
+    # ag = load_agent('agent20180403153333')
+    # evaluate_agent(ag)
+
+    loaded_vars, ep_list = load_pickle_file('experiment_b__')
+    # replay_trajectory(ep_list)
+    train_from_batch(ep_list, loaded_vars)
+
+
