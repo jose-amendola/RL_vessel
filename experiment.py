@@ -20,7 +20,7 @@ max_fit_iterations = 50
 max_steps_per_batch = 2000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
-max_episodes = 500
+max_episodes = 5000
 
 steps_between_actions = 20
 funnel_start = (14000, 7000)
@@ -123,8 +123,6 @@ def main():
                 print("***Training step "+str(step+1)+" Completed")
                 episode_transitions_list.append(transition)
                 if final_flag != 0:
-                    # for i in range(10):
-                    #     env.step(0, 0)
                     break
             episode_dict['episode_number'] = episode
             episode_dict['transitions_list'] = episode_transitions_list
@@ -165,13 +163,13 @@ def evaluate_agent(ag_obj):
     
 
 if __name__ == '__main__':
-    # main()
+    main()
 
     # ag = load_agent('agent20180403153333')
     # evaluate_agent(ag)
 
-    loaded_vars, ep_list = load_pickle_file('experiment_b__')
+    # loaded_vars, ep_list = load_pickle_file('experiment_b__')
     # replay_trajectory(ep_list)
-    train_from_batch(ep_list, loaded_vars)
+    # train_from_batch(ep_list, loaded_vars)
 
 

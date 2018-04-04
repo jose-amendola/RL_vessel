@@ -225,7 +225,7 @@ class Environment(buzz_python.session_subscriber):
     def finish(self):
         if self.simulation:
             self.simulation.stop()
-            time.sleep(3)
+            time.sleep(10)
 
     def __del__(self):
         if self.simulation:
