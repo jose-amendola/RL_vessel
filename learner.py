@@ -16,9 +16,9 @@ class Learner(object):
         if load_saved_regression:
             self.learner = load_saved_regression
         else:
-            # self.learner = SVR(kernel='rbf', C=1, gamma=0.1)
+            self.learner = SVR(kernel='rbf', C=0.2, gamma=0.1)
             # self.learner = RandomForestRegressor()
-            self.learner = tree.DecisionTreeRegressor()
+            # self.learner = tree.DecisionTreeRegressor()
         self.end_states = dict()
         self.file = file_to_save
         self.discount_factor = 1.0
@@ -78,9 +78,9 @@ class Learner(object):
                 selected_action = action
         return selected_action
 
-    def save_tree(self):
-        if isinstance(self.learner, tree.DecisionTreeRegressor):
-            tree.export_graphviz(self.learner, out_file='tree.dot')
+    # def save_tree(self):
+    #     if isinstance(self.learner, tree.DecisionTreeRegressor):
+    #         tree.export_graphviz(self.learner, out_file='tree.dot')
 
     def __del__(self):
         with open(self.file, 'wb') as outfile:

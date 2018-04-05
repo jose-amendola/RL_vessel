@@ -16,7 +16,7 @@ variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S'
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
-max_fit_iterations = 50
+max_fit_iterations = 1000
 max_tuples_per_batch = 20000000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
@@ -165,7 +165,7 @@ def evaluate_agent(ag_obj):
 if __name__ == '__main__':
     # main()
 
-    # ag = load_agent('agent20180403153333')
+    # ag = load_agent('agent20180405120155')
     # evaluate_agent(ag)
 
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')
@@ -175,7 +175,7 @@ if __name__ == '__main__':
         loaded_vars, ep_list = load_pickle_file(file)
         ep = ep + ep_list
     train_from_batch(ep, loaded_vars)
-    # replay_trajectory(ep_list)
+    # replay_trajectory(ep)
     # train_from_batch(ep_list, loaded_vars)
 
 
