@@ -17,7 +17,7 @@ learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
 max_fit_iterations = 50
-max_steps_per_batch = 2000
+max_tuples_per_batch = 20000000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
 max_episodes = 5000
@@ -79,7 +79,7 @@ def train_from_batch(episodes, pickle_vars):
     batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'])
     batch_size = 0
     for episode in episodes:
-        remaining = max_steps_per_batch - len(episode['transitions_list']) - batch_size
+        remaining = max_tuples_per_batch - len(episode['transitions_list']) - batch_size
         if remaining >= 0:
             batch_learner.add_to_batch(episode['transitions_list'], episode['final_flag'])
             batch_size += len(episode['transitions_list'])
@@ -163,12 +163,18 @@ def evaluate_agent(ag_obj):
     
 
 if __name__ == '__main__':
-    main()
+    # main()
 
     # ag = load_agent('agent20180403153333')
     # evaluate_agent(ag)
 
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')
+    files_list = ['experiment_a__', 'experiment_b__', 'experiment_c__', 'experiment_d__', 'experiment_e__']
+    ep = list()
+    for file in files_list:
+        loaded_vars, ep_list = load_pickle_file(file)
+        ep = ep + ep_list
+    train_from_batch(ep, loaded_vars)
     # replay_trajectory(ep_list)
     # train_from_batch(ep_list, loaded_vars)
 

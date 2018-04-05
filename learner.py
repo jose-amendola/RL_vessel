@@ -19,17 +19,16 @@ class Learner(object):
             # self.learner = SVR(kernel='rbf', C=1, gamma=0.1)
             # self.learner = RandomForestRegressor()
             self.learner = tree.DecisionTreeRegressor()
-        self.end_states = list()
+        self.end_states = dict()
         self.file = file_to_save
         self.discount_factor = 1.0
         self.mode = 'angle_only'
         self.action_space = actions.BaseAction(action_space_name)
 
     def add_to_batch(self, transition_list, final_flag):
-        if final_flag != 0:
-            #TODO Fix not all end_states are being identified
-            self.end_states.append(transition_list[-1][2])
         self.batch_list = self.batch_list + transition_list
+        if final_flag != 0:
+            self.end_states[len(self.batch_list)-1] = final_flag
 
     def fit_batch(self, max_iterations):
         states = [list(k[0]) for k in self.batch_list]
@@ -45,14 +44,16 @@ class Learner(object):
         for it in range(max_iterations):
             print("FQI_iteration: ", it)
             self.learner.fit(samples, q_target)
-            self.save_tree()
-            maxq_prediction = np.fromiter(map(lambda state_p: self.find_max_q(state_p), states_p), dtype=np.float64)
+            # self.save_tree()
+            maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(states_p)])
             q_target = rewards + self.discount_factor*maxq_prediction
 
 
-    def find_max_q(self, state_p):
+    def find_max_q(self, i, state_p):
+
         qmax = -float('Inf')
-        if state_p in self.end_states:
+        final = self.end_states.get(i)
+        if final != None:
             qmax = 0
         else:
             for action in self.action_space.action_combinations:
