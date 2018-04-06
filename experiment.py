@@ -11,12 +11,13 @@ from viewer import Viewer
 import pickle
 import learner
 import utils
+import reward
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
-max_fit_iterations = 1000
+max_fit_iterations = 50
 max_tuples_per_batch = 20000000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
@@ -76,7 +77,11 @@ def replay_trajectory(episodes):
 
 
 def train_from_batch(episodes, pickle_vars):
-    batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'])
+    replace_reward = reward.RewardMapper(plot_flag=False)
+    replace_reward.set_boundary_points(buoys)
+    replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
+    batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
+                                    r_m_=replace_reward)
     batch_size = 0
     for episode in episodes:
         remaining = max_tuples_per_batch - len(episode['transitions_list']) - batch_size
@@ -145,7 +150,7 @@ def evaluate_agent(ag_obj):
     env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
     env.new_episode()
     final_flag = 0
-    agent.save_tree()
+    # agent.save_tree()
     for step in range(evaluation_steps):
         # Mostly the same as training, but without observing the rewards
         # The first step is to define the current state
@@ -164,11 +169,12 @@ def evaluate_agent(ag_obj):
 
 if __name__ == '__main__':
     # main()
-
-    # ag = load_agent('agent20180405120155')
+    #
+    # ag = load_agent('agent20180406183307')
     # evaluate_agent(ag)
 
-    # loaded_vars, ep_list = load_pickle_file('experiment_b__')
+
+    loaded_vars, ep_list = load_pickle_file('experiment_b__')
     files_list = ['experiment_a__', 'experiment_b__', 'experiment_c__', 'experiment_d__', 'experiment_e__']
     ep = list()
     for file in files_list:

@@ -5,13 +5,17 @@ import numpy as np
 import actions
 import pickle
 import datetime
+import reward
 
 
 class Learner(object):
 
     exploring = None
 
-    def __init__(self, file_to_save='default_agent', load_saved_regression=False, action_space_name='simple_action_space'):
+    def __init__(self, file_to_save='default_agent', load_saved_regression=False,
+                 action_space_name='simple_action_space',
+                 r_m_=None):
+        self.rw_mp = r_m_
         self.batch_list = list()
         if load_saved_regression:
             self.learner = load_saved_regression
@@ -25,10 +29,29 @@ class Learner(object):
         self.mode = 'angle_only'
         self.action_space = actions.BaseAction(action_space_name)
 
+    def replace_reward(self, transition_list):
+        for transition in transition_list:
+            resulting_state = transition[2]
+            self.rw_mp.update_ship(resulting_state[0],
+                                   resulting_state[1],
+                                   resulting_state[2],
+                                   resulting_state[3],
+                                   resulting_state[4],
+                                   resulting_state[5])
+            new_reward = self.rw_mp.get_reward()
+            tmp = list(transition)
+            tmp[3] = new_reward
+            transition = tuple(tmp)
+        return transition_list
+
     def add_to_batch(self, transition_list, final_flag):
-        self.batch_list = self.batch_list + transition_list
-        if final_flag != 0:
-            self.end_states[len(self.batch_list)-1] = final_flag
+        if self.rw_mp is not None:
+            transition_list = self.replace_reward(transition_list)
+        if final_flag == 1:
+            self.batch_list = self.batch_list + transition_list
+            if final_flag != 0:
+                self.end_states[len(self.batch_list)-1] = final_flag
+
 
     def fit_batch(self, max_iterations):
         states = [list(k[0]) for k in self.batch_list]
@@ -44,7 +67,6 @@ class Learner(object):
         for it in range(max_iterations):
             print("FQI_iteration: ", it)
             self.learner.fit(samples, q_target)
-            # self.save_tree()
             maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(states_p)])
             q_target = rewards + self.discount_factor*maxq_prediction
 
