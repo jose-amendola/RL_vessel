@@ -30,6 +30,7 @@ def channel_angle_e_ccw(point_a, point_b):
     return 360 - np.rad2deg(angle)
 
 if __name__ == "__main__":
+    print(global_to_local(-2.91453, -0.6997167, -103.5))
     print(global_to_local(-1,-1,-135))
     print(local_to_global(1.41, 0, 225))
     N03 = (9191.6506, 4967.8532)
