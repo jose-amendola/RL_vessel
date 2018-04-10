@@ -28,7 +28,7 @@ class RewardMapper(object):
 
     def generate_inner_positions(self):
         points_dict = dict()
-        for line_x in range(int(self.goal_point[0]+100), int(self.goal_point[0] + 6000), 500):
+        for line_x in range(int(self.goal_point[0]+5000), int(self.goal_point[0] + 6000), 500):
             line = LineString([(line_x, 0), (line_x, 15000)])
             intersect = self.boundary.intersection(line)
             if intersect.geom_type == 'LineString':

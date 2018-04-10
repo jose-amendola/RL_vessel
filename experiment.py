@@ -146,7 +146,7 @@ def main():
     action_space = actions.BaseAction(action_space_name)
     agent = qlearning.QLearning(q_file, epsilon=1, action_space=action_space)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
     with open(variables_file, 'wb') as outfile:
         pickle_vars = dict()
         pickle_vars['action_space'] = action_space_name
@@ -157,7 +157,7 @@ def main():
         for episode in range(max_episodes):
             print('###STARTING EPISODE ', episode)
             env.set_up()
-            env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+            # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
             episode_dict = dict()
             episode_transitions_list = list()
             final_flag = 0
