@@ -18,7 +18,7 @@ variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S'
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
-max_fit_iterations = 500
+max_fit_iterations = 2000
 max_tuples_per_batch = 20000000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
@@ -142,11 +142,11 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
 
 
 def main():
-    action_space_name = 'only_rudder_action_space'
+    action_space_name = 'large_action_space'
     action_space = actions.BaseAction(action_space_name)
     agent = qlearning.QLearning(q_file, epsilon=1, action_space=action_space)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, plot)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     with open(variables_file, 'wb') as outfile:
         pickle_vars = dict()
         pickle_vars['action_space'] = action_space_name
@@ -192,8 +192,8 @@ def evaluate_agent(ag_obj):
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
     agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='only_rudder_action_space')
-    # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
-    env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
+    env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+    # env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
     env.new_episode()
     final_flag = 0
     with open('debug.txt', 'w') as outfile:
@@ -217,10 +217,10 @@ def evaluate_agent(ag_obj):
     
 
 if __name__ == '__main__':
-    # main()
+    main()
     #
-    ag = load_agent('agent20180408222604')
-    evaluate_agent(ag)
+    # ag = load_agent('agentN500KNN2Rew.DGD')
+    # evaluate_agent(ag)
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')

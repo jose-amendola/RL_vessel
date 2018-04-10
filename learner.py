@@ -22,14 +22,14 @@ class Learner(object):
         if load_saved_regression:
             self.learner = load_saved_regression
         else:
-            self.learner = neighbors.KNeighborsRegressor(2, weights='distance')
-            # self.learner = SVR(kernel='rbf', C=0.2, gamma=1)
+            # self.learner = neighbors.KNeighborsRegressor(2, weights='distance')
+            self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
             # self.learner = RandomForestRegressor()
             # self.learner = tree.DecisionTreeRegressor()
         self.end_states = dict()
         self.file = file_to_save
         self.discount_factor = 1.0
-        self.mode = 'angle_only'
+        self.mode = 'angle_and_rotation'# self.mode = 'angle_only'
         self.action_space = actions.BaseAction(action_space_name)
         self.states = list()
         self.act = list()
@@ -96,6 +96,8 @@ class Learner(object):
             for action in self.action_space.action_combinations:
                 if self.mode == 'angle_only':
                     state_action = np.append(state_p, action[0])
+                else:
+                    state_action = np.append(state_p, action)
                 state_action = np.reshape(state_action, (1, -1))
                 qpred = self.learner.predict(state_action)
                 if qpred > qmax:
@@ -109,10 +111,12 @@ class Learner(object):
         for action in self.action_space.action_combinations:
             if self.mode == 'angle_only':
                 state_action = np.append(state, action[0])
+            else:
+                state_action = np.append(state, action)
             state_action = np.reshape(state_action, (1, -1))
             qpred = self.learner.predict(state_action)
-            print(self.learner.kneighbors(state_action))
-            print(self.learner.get_params(deep=True))
+            # print(self.learner.kneighbors(state_action))
+            # print(self.learner.get_params(deep=True))
             print(qpred)
             print(action[0])
             if qpred > qmax:

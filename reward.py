@@ -85,10 +85,10 @@ class RewardMapper(object):
         return reached
 
     def get_reward(self):
-        # ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw, self.g_vel_x, self.g_vel_y, 0))
-        # array = np.array((self.ship_pos+self.ship_vel))
-        ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw))
-        array = np.array((self.ship_pos))
+        ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw, self.g_vel_x, self.g_vel_y, 0))
+        array = np.array((self.ship_pos+self.ship_vel))
+        # ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw))
+        # array = np.array((self.ship_pos))
         dist = np.linalg.norm(array - ref_array)
         print('distance_from_goal_state: ', dist)
         shore_dist = self.boundary.exterior.distance(self.ship)

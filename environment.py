@@ -45,7 +45,6 @@ class Environment(buzz_python.session_subscriber):
         self.initial_states_sequence = list()
 
     def get_initial_states(self):
-        #TODO Implement mode where a fixed initial state is repeatedly set over the episodes
         positions_dict = self.reward_mapper.generate_inner_positions()
         init_angle = -100
         states_list = list()
