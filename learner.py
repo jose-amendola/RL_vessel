@@ -22,8 +22,8 @@ class Learner(object):
         if load_saved_regression:
             self.learner = load_saved_regression
         else:
-            # self.learner = neighbors.KNeighborsRegressor(2, weights='distance')
-            self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
+            self.learner = neighbors.KNeighborsRegressor(2, weights='distance')
+            # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
             # self.learner = RandomForestRegressor()
             # self.learner = tree.DecisionTreeRegressor()
         self.end_states = dict()
@@ -59,15 +59,16 @@ class Learner(object):
     def add_to_batch(self, transition_list, final_flag):
         if self.rw_mp is not None:
             transition_list = self.replace_reward(transition_list)
-        if final_flag == 1:
-            self.batch_list = self.batch_list + transition_list
-            if final_flag != 0:
-                self.end_states[len(self.batch_list)-1] = final_flag
+        self.batch_list = self.batch_list + transition_list
+        if final_flag != 0:
+            self.end_states[len(self.batch_list)-1] = final_flag
 
     def set_up_agent(self):
         self.states = [list(k[0]) for k in self.batch_list]
         if self.mode == 'angle_only':
             self.act = [(x[1][0]) for x in self.batch_list]
+        else:
+            self.act = [(x[1]) for x in self.batch_list]
         self.rewards = np.asarray([x[3] for x in self.batch_list], dtype=np.float64)
         self.states_p = [list(k[2]) for k in self.batch_list]
         self.q_target = self.rewards
@@ -81,6 +82,9 @@ class Learner(object):
             self.learner.fit(self.samples, self.q_target)
             maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
             self.q_target = self.rewards + self.discount_factor*maxq_prediction
+            if it % 20 == 0:
+                with open(self.file, 'wb') as outfile:
+                    pickle.dump(self.learner, outfile)
             if debug:
                 print(self.q_target,file=self.debug_file)
                 print('\n\n', file=self.debug_file)
