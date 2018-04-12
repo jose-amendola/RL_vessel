@@ -10,7 +10,7 @@ import utils
 
 
 class RewardMapper(object):
-    def __init__(self, plot_flag=True):
+    def __init__(self, plot_flag=True, r_mode_='exp_border_target'):
         self.boundary = None
         self.goal_rec = None
         self.ship_polygon = None
@@ -25,6 +25,9 @@ class RewardMapper(object):
         self.g_heading_n_cw = None
         self.g_vel_x = None
         self.g_vel_y = None
+        self.reward_mode = r_mode_
+        self.last_angle_selected = None
+        self.last_rot_selected = None
 
     def generate_inner_positions(self):
         points_dict = dict()
@@ -58,7 +61,9 @@ class RewardMapper(object):
         if self.plot_flag:
             self.view.plot_goal(point, factor)
 
-    def update_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta):
+    def update_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta, angle, rot):
+        self.last_angle_selected = angle
+        self.last_rot_selected = rot
         self.ship_vel = [global_vel_x, global_vel_y, global_vel_theta]
         self.ship_pos = [x,y,heading]
         self.ship = affinity.translate(self.ship_polygon, x, y)
@@ -92,7 +97,14 @@ class RewardMapper(object):
         dist = np.linalg.norm(array - ref_array)
         print('distance_from_goal_state: ', dist)
         shore_dist = self.boundary.exterior.distance(self.ship)
-        reward = -0.1*math.exp(-0.1*shore_dist/dist)
+        #Distances are always positive so reward varies between 0 and -0.1
+        if self.reward_mode == 'exp_border_target':
+            reward = -0.1 * math.exp(-0.1*shore_dist/dist)
+        elif self.reward_mode == 'exp_border_target_rot_angle':
+            #TODO finish function prototype
+            alignment_factor = (self.g_heading_n_cw - self.ship_pos[2])*self.last_angle_selected
+
+            reward = -0.1 * math.exp(-0.1 * shore_dist / dist)*(self.last_rot_selected - 1)
         # reward = -0.1
         # reward = -0.001*dist/self.boundary.distance(self.ship)
         if self.collided():
@@ -104,12 +116,12 @@ class RewardMapper(object):
 
 if __name__ == "__main__":
     reward_map = RewardMapper(True)
-    reward_map.update_ship(20, 20, 30, 0, 0, 0)
+    reward_map.update_ship(20, 20, 30, 0, 0, 0, 0, )
     print(reward_map.collided())
     # reward_map.update_ship_position(200, 200, 50)
     # reward_map.set_goal((100, 1000))
     for i in range(500):
-        reward_map.update_ship(i, i, i, 0, 0, 0)
+        reward_map.update_ship(i, i, i, 0, 0, 0, 0, )
         ret = reward_map.collided()
         if ret:
             print(ret)

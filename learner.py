@@ -42,12 +42,9 @@ class Learner(object):
         new_list = list()
         for transition in transition_list:
             resulting_state = transition[2]
-            self.rw_mp.update_ship(resulting_state[0],
-                                   resulting_state[1],
-                                   resulting_state[2],
-                                   resulting_state[3],
-                                   resulting_state[4],
-                                   resulting_state[5])
+            action_selected = transition[1]
+            self.rw_mp.update_ship(resulting_state[0], resulting_state[1], resulting_state[2], resulting_state[3],
+                                   resulting_state[4], resulting_state[5], action_selected[0], action_selected[1])
             new_reward = self.rw_mp.get_reward()
             tmp = list(transition)
             tmp[3] = new_reward

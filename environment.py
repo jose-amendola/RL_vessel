@@ -183,7 +183,7 @@ class Environment(buzz_python.session_subscriber):
         statePrime = self.get_state() #Get next State
         print('statePrime: ', statePrime)
         self.reward_mapper.update_ship(statePrime[0], statePrime[1], statePrime[2], statePrime[3], statePrime[4],
-                                       statePrime[5])
+                                       statePrime[5], angle_level, rot_level)
         rw = self.reward_mapper.get_reward()
         print(self.reward_mapper.collided())
         if self.reward_mapper.collided():
