@@ -16,14 +16,14 @@ import json
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+sample_file = "samples" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
 max_fit_iterations = 2000
 max_tuples_per_batch = 20000000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
-max_episodes = 5000
-
+max_episodes = 5000000
 steps_between_actions = 20
 funnel_start = (14000, 7000)
 N01 = (11724.8015, 5582.9127)
@@ -78,7 +78,7 @@ def replay_trajectory(episodes):
 
 
 def train_from_batch(episodes, pickle_vars):
-    replace_reward = reward.RewardMapper(plot_flag=False)
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='exp_border_target_rot_angle')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
@@ -100,7 +100,7 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon,
                                   False)
 
-    replace_reward = reward.RewardMapper(plot_flag=False)
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='exp_border_target_rot_angle')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
@@ -139,12 +139,44 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
         #     print('For FQI iteration: ',it,' Total reward: ', total_reward, ' and result: ', final_flag)
 
 
+def sample_transitions():
+    #TODO Implement
+    action_space_name = 'large_action_space'
+    action_space = actions.BaseAction(action_space_name)
+    env = environment.Environment(buoys, steps_between_actions, vessel_id,
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
+    # pickle_vars = dict()
+    # pickle_vars['action_space'] = action_space_name
+    for episode in range(max_episodes):
+        print('###STARTING EPISODE ', episode)
+        #TODO fix onconsistency in order of methods from Environment
+        env.set_sampling_mode()
+        episode_dict = dict()
+        episode_transitions_list = list()
+        final_flag = 0
+        env.new_episode()
+        for action in action_space.action_combinations:
+            env.set_up()
+            env.reset_to_last_start()
+            state = env.get_state()
+            angle = action[0]
+            rot = action[1]
+            state_prime, rw = env.step(angle, rot)
+            print('Reward:', rw)
+            final_flag = env.is_final()
+            # New format
+            transition = (state, (angle, rot), state_prime, rw, final_flag)
+            episode_transitions_list.append(transition)
+            env.finish()
+    with open(sample_file, 'wb') as outfile:
+        pickle.dump(episode_dict, outfile)
+
 
 
 def main():
     action_space_name = 'large_action_space'
     action_space = actions.BaseAction(action_space_name)
-    agent = qlearning.QLearning(q_file, epsilon=1, action_space=action_space)
+    agent = qlearning.QLearning(q_file, epsilon=1, action_space=action_space, gamma=0)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
     with open(variables_file, 'wb') as outfile:
@@ -157,7 +189,7 @@ def main():
         for episode in range(max_episodes):
             print('###STARTING EPISODE ', episode)
             env.set_up()
-            # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+            env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
             episode_dict = dict()
             episode_transitions_list = list()
             final_flag = 0
@@ -218,20 +250,20 @@ def evaluate_agent(ag_obj):
 
 if __name__ == '__main__':
     # main()
-    #
-    # ag = load_agent('agent20180411132634')
+    sample_transitions()
+    # ag = load_agent('agent201804 v     11132634')
     # evaluate_agent(ag)
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')
     # train_from_single_episode(ep_list, loaded_vars, 1)
     # files_list = ['experiment_a__', 'experiment_b__',  'experiment_c__', 'experiment_d__', 'experiment_e__']
-    files_list = ['experiment_full_action_a', 'experiment_full_action_b', 'experiment_full_action_c']
-    ep = list()
-    for file in files_list:
-        loaded_vars, ep_list = load_pickle_file(file)
-        ep = ep + ep_list
-    train_from_batch(ep, loaded_vars)
+    # files_list = ['experiment_full_action_a', 'experiment_full_action_b', 'experiment_full_action_c']
+    # ep = list()
+    # for file in files_list:
+    #     loaded_vars, ep_list = load_pickle_file(file)
+    #     ep = ep + ep_list
+    # train_from_batch(ep, loaded_vars)
     # replay_trajectory(ep)
     # train_from_batch(ep_list, loaded_vars)
 

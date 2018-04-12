@@ -29,6 +29,9 @@ class RewardMapper(object):
         self.last_angle_selected = None
         self.last_rot_selected = None
 
+    def is_inbound_nonterminal_coordinate(self, x, y):
+        return self.boundary.contains(Point(x, y)) and not self.goal_rec.contains(Point(x, y))
+
     def generate_inner_positions(self):
         points_dict = dict()
         for line_x in range(int(self.goal_point[0]+5000), int(self.goal_point[0] + 6000), 500):
@@ -102,9 +105,9 @@ class RewardMapper(object):
             reward = -0.1 * math.exp(-0.1*shore_dist/dist)
         elif self.reward_mode == 'exp_border_target_rot_angle':
             #TODO finish function prototype
-            alignment_factor = (self.g_heading_n_cw - self.ship_pos[2])*self.last_angle_selected
+            alignment_factor = 1 - (self.g_heading_n_cw - self.ship_pos[2])/(self.last_angle_selected*180)
 
-            reward = -0.1 * math.exp(-0.1 * shore_dist / dist)*(self.last_rot_selected - 1)
+            reward = -0.1 * math.exp(-0.1 * shore_dist / dist)*alignment_factor*(1 - self.last_rot_selected)
         # reward = -0.1
         # reward = -0.001*dist/self.boundary.distance(self.ship)
         if self.collided():

@@ -8,6 +8,7 @@ import itertools
 import utils
 import random
 import time
+import numpy as np
 
 
 class Environment(buzz_python.session_subscriber):
@@ -39,10 +40,25 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(_plot)
+        self.reward_mapper = reward.RewardMapper(_plot, r_mode_='exp_border_target_rot_angle')
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = list()
+
+    def get_sample_states(self):
+        #TODO implement
+        x = np.linspace(5000, 12000, 50)
+        y = np.linspace(3000, 8000, 50)
+        theta = np.linspace(-80, -140, 5)
+        vlon = np.linspace(1.5, 3.0, 5)
+        g = np.meshgrid(x, y, theta, vlon)
+        tmp = np.vstack(map(np.ravel, g))
+        combinations = np.transpose(tmp)
+        states = list()
+        for comb in combinations:
+            if self.reward_mapper.is_inbound_nonterminal_coordinate(comb[0], comb[1]):
+                states.append((comb[0], comb[1], comb[2], comb[3], 0, 0))
+        return states
 
     def get_initial_states(self):
         positions_dict = self.reward_mapper.generate_inner_positions()
@@ -106,9 +122,9 @@ class Environment(buzz_python.session_subscriber):
         # self.reward_mapper.update_ship(-200, -200, 10,, 0, 0
         self.simulation.advance_time()
         self.advance()
-        self.initial_states_sequence = itertools.cycle(self.get_initial_states())
+        # self.initial_states_sequence = itertools.cycle(self.get_initial_states())
 
-        self.init_state = next(self.initial_states_sequence)
+        # self.init_state = next(self.initial_states_sequence)
         self.advance()
         self.get_propulsion()
 
@@ -198,7 +214,6 @@ class Environment(buzz_python.session_subscriber):
         self.init_state = next(self.initial_states_sequence)
         self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
                                     self.init_state[4], self.init_state[5])
-        self.step(0,0)
 
     def set_single_start_pos_mode(self, init_state=None):
         if not init_state:
@@ -212,6 +227,13 @@ class Environment(buzz_python.session_subscriber):
         dummy_list = list()
         dummy_list.append(self.init_state)
         self.initial_states_sequence = itertools.cycle(dummy_list)
+
+    def set_sampling_mode(self):
+        self.initial_states_sequence = itertools.cycle(self.get_sample_states())
+
+    def reset_to_last_start(self):
+        self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
+                                    self.init_state[4], self.init_state[5])
 
     def reset_state_localcoord(self, x, y, theta, vel_lon, vel_drift, vel_theta):
        #Apparently Dyna ADV is using theta n_cw
