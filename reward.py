@@ -102,7 +102,10 @@ class RewardMapper(object):
         shore_dist = self.boundary.exterior.distance(self.ship)
         #Distances are always positive so reward varies between 0 and -0.1
         if self.reward_mode == 'exp_border_target':
-            reward = -0.1 * math.exp(-0.1*shore_dist/dist)
+            if dist > 0:
+                reward = -0.1 * math.exp(-0.1*shore_dist/dist)
+            else:
+                reward = 100
         elif self.reward_mode == 'exp_border_target_rot_angle':
             #TODO finish function prototype
             alignment_factor = 1 - (self.g_heading_n_cw - self.ship_pos[2])/(self.last_angle_selected*180)

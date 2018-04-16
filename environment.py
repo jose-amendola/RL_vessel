@@ -40,10 +40,12 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(_plot, r_mode_='exp_border_target_rot_angle')
+        self.reward_mapper = reward.RewardMapper(_plot, r_mode_='exp_border_target')
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = list()
+        self.reward_mapper.set_boundary_points(self.buoys)
+        self.reward_mapper.set_goal(self.goal, self.g_heading, self.g_vel_l)
 
     def get_sample_states(self):
         #TODO implement
@@ -111,9 +113,6 @@ class Environment(buzz_python.session_subscriber):
 
         self.simulation.build()
         self.simulation.set_current_time_increment(0.1)
-        self.reward_mapper.set_boundary_points(self.buoys)
-        self.reward_mapper.set_goal(self.goal, self.g_heading, self.g_vel_l)
-
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
 
@@ -228,8 +227,12 @@ class Environment(buzz_python.session_subscriber):
         dummy_list.append(self.init_state)
         self.initial_states_sequence = itertools.cycle(dummy_list)
 
-    def set_sampling_mode(self):
-        self.initial_states_sequence = itertools.cycle(self.get_sample_states())
+    def set_sampling_mode(self, start=0, end=-1):
+        if end == -1:
+            states = self.get_sample_states()[start:]
+        else:
+            states = self.get_sample_states()[start:end]
+        self.initial_states_sequence = itertools.cycle(states)
 
     def reset_to_last_start(self):
         self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
@@ -246,7 +249,7 @@ class Environment(buzz_python.session_subscriber):
     def finish(self):
         if self.simulation:
             self.simulation.stop()
-            time.sleep(10)
+            time.sleep(5)
 
     def __del__(self):
         if self.simulation:

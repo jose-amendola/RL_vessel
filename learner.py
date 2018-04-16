@@ -60,6 +60,18 @@ class Learner(object):
         if final_flag != 0:
             self.end_states[len(self.batch_list)-1] = final_flag
 
+    def load_sample_file(self, file_to_load):
+        transitions = list()
+        with open(file_to_load, 'rb') as infile:
+            try:
+                while True:
+                    transition = pickle.load(infile)
+                    transitions.append(transition)
+            except EOFError as e:
+                pass
+        self.batch_list = transitions
+
+
     def set_up_agent(self):
         self.states = [list(k[0]) for k in self.batch_list]
         if self.mode == 'angle_only':
