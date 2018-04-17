@@ -9,6 +9,7 @@ import utils
 import random
 import time
 import numpy as np
+import subprocess
 
 
 class Environment(buzz_python.session_subscriber):
@@ -46,6 +47,7 @@ class Environment(buzz_python.session_subscriber):
         self.initial_states_sequence = list()
         self.reward_mapper.set_boundary_points(self.buoys)
         self.reward_mapper.set_goal(self.goal, self.g_heading, self.g_vel_l)
+        self.dyna_proc = None
 
     def get_sample_states(self):
         #TODO implement
@@ -98,6 +100,7 @@ class Environment(buzz_python.session_subscriber):
             self.allow_advance_ev.set()
 
     def set_up(self):
+        self.dyna_proc = subprocess.Popen(['./dyna/Dyna-fasttime.exe ','--pid', '407', '-f', 'suape-local.json', '-c', '127.0.0.1'])
         # ds = buzz_python.create_bson_data_source(self.mongo_addr, self.dbname)
         ds = buzz_python.create_bson_data_source('suape-local.json')
         ser = buzz_python.create_bson_serializer(ds)
@@ -209,10 +212,10 @@ class Environment(buzz_python.session_subscriber):
             # statePrime = self.get_state()  # Get next State
         return statePrime, rw
 
-    def new_episode(self):
+    def move_to_next_start(self):
         self.init_state = next(self.initial_states_sequence)
-        self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
-                                    self.init_state[4], self.init_state[5])
+        # self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
+        #                             self.init_state[4], self.init_state[5])
 
     def set_single_start_pos_mode(self, init_state=None):
         if not init_state:
@@ -234,7 +237,7 @@ class Environment(buzz_python.session_subscriber):
             states = self.get_sample_states()[start:end]
         self.initial_states_sequence = itertools.cycle(states)
 
-    def reset_to_last_start(self):
+    def reset_to_start(self):
         self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
                                     self.init_state[4], self.init_state[5])
 
@@ -249,7 +252,7 @@ class Environment(buzz_python.session_subscriber):
     def finish(self):
         if self.simulation:
             self.simulation.stop()
-            time.sleep(5)
+            self.dyna_proc.terminate()
 
     def __del__(self):
         if self.simulation:

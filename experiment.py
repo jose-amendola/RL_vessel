@@ -16,7 +16,7 @@ import json
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-sample_file = "samples" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+sample_file = "samples/samples" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 q_file = "q_table" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 main_loop_iterations = 10
 max_fit_iterations = 2000
@@ -153,56 +153,59 @@ def sample_transitions():
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
     # pickle_vars = dict()
     # pickle_vars['action_space'] = action_space_name
-    tmp_list = list()
-    with open(sample_file, 'wb') as outfile:
-        for episode in range(max_episodes):
-            print('### NEW STARTING STATE ###')
-            #TODO fix onconsistency in order of methods from Environment
-            env.set_sampling_mode()
-            episode_transitions_list = list()
-            final_flag = 0
-            for action in action_space.action_combinations:
-                env.set_up()
-                env.new_episode()
-                for i in range(2):
-                    env.reset_to_last_start()
-                    state = env.get_state()
-                    angle = action[0]
-                    rot = action[1]
-                    state_prime, rw = env.step(angle, rot)
-                    print('Reward:', rw)
-                    final_flag = env.is_final()
-                    # New format
-                    transition = (state, (angle, rot), state_prime, rw, final_flag)
-                    episode_transitions_list.append(transition)
-                    pickle.dump(transition, outfile)
-                env.finish()
-                outfile.flush()
+    env.set_sampling_mode()
+    for episode in range(max_episodes):
+        print('### NEW STARTING STATE ###')
+        #TODO fix onconsistency in order of methods from Environment
+        env.move_to_next_start()
+        episode_transitions_list = list()
+        final_flag = 0
+        for action in action_space.action_combinations:
+            env.set_up()
+            env.reset_to_start()
+            for i in range(2):
+                state = env.get_state()
+                angle = action[0]
+                rot = action[1]
+                state_prime, rw = env.step(angle, rot)
+                print('Reward:', rw)
+                final_flag = env.is_final()
+                # New format
+                transition = (state, (angle, rot), state_prime, rw, final_flag)
+                episode_transitions_list.append(transition)
+            env.finish()
+        if episode % 1 == 0 and episode != 0:
+            with open(sample_file+'_'+str(episode), 'wb') as outfile:
+                pickle.dump(episode_transitions_list, outfile)
+                episode_transitions_list = list()
+
+
 
 
 
 def main():
     action_space_name = 'large_action_space'
     action_space = actions.BaseAction(action_space_name)
-    agent = qlearning.QLearning(q_file, epsilon=1, action_space=action_space, gamma=0)
+    agent = qlearning.QLearning(q_file, epsilon=0.1, action_space=action_space, gamma=0.9)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     with open(variables_file, 'wb') as outfile:
         pickle_vars = dict()
         pickle_vars['action_space'] = action_space_name
-        # env.set_up()
-        # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+        env.set_up()
+        env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
         agent.exploring = True
         pickle.dump(pickle_vars, outfile)
         for episode in range(max_episodes):
             print('###STARTING EPISODE ', episode)
-            env.set_up()
-            env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+            # env.set_up()
+            # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
             episode_dict = dict()
             episode_transitions_list = list()
             final_flag = 0
-            env.new_episode()
-            for step in range(maximum_training_steps):
+            env.move_to_next_start()
+            env.reset_to_start()
+            for step in range(500):
                 state = env.get_state()
                 print('Yaw:', state[2])
                 angle, rot = agent.select_action(state)
@@ -216,6 +219,8 @@ def main():
                 episode_transitions_list.append(transition)
                 if final_flag != 0:
                     break
+                state_rime, reward = env.step(0, 0)
+                state_rime, reward = env.step(0, 0)
             episode_dict['episode_number'] = episode
             episode_dict['transitions_list'] = episode_transitions_list
             episode_dict['final_flag'] = final_flag
@@ -234,7 +239,7 @@ def evaluate_agent(ag_obj):
     agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='large_action_space')
     # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
     env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
-    env.new_episode()
+    env.move_to_next_start()
     final_flag = 0
     with open('debug.txt', 'w') as outfile:
         for step in range(evaluation_steps):
