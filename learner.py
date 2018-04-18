@@ -36,7 +36,7 @@ class Learner(object):
         self.rewards = list()
         self.states_p = list()
         self.q_target = list()
-        self.debug_file = open('debug_fqi'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.txt','w')
+        # self.debug_file = open('debug_fqi'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.txt','w')
 
     def replace_reward(self, transition_list):
         new_list = list()
@@ -94,9 +94,9 @@ class Learner(object):
             if it % 20 == 0:
                 with open(self.file, 'wb') as outfile:
                     pickle.dump(self.learner, outfile)
-            if debug:
-                print(self.q_target,file=self.debug_file)
-                print('\n\n', file=self.debug_file)
+            # if debug:
+                # print(self.q_target,file=self.debug_file)
+                # print('\n\n', file=self.debug_file)
 
 
 
@@ -139,7 +139,7 @@ class Learner(object):
         return selected_action
 
     def __del__(self):
-        self.debug_file.close()
+        # self.debug_file.close()
         with open(self.file, 'wb') as outfile:
             pickle.dump(self.learner, outfile)
 

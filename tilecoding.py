@@ -3,7 +3,7 @@ def tiling(state):
 
     #modification in order to scale the generalization for each state variable
     scaled_state = list()
-    scaled_state = [state[0]/10, state[1]/10, state[2]/5, state[3]/1, state[4]/1, state[5]/1]
+    scaled_state = [state[0]/10, state[1]/10, state[2]/10, state[3]/10, state[4]/10, state[5]/10]
 
 
 

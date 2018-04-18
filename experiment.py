@@ -24,7 +24,7 @@ max_tuples_per_batch = 20000000
 maximum_training_steps = 20000000
 evaluation_steps = 1000
 max_episodes = 5000000
-steps_between_actions = 20
+steps_between_actions = 100
 funnel_start = (14000, 7000)
 N01 = (11724.8015, 5582.9127)
 N03 = (9191.6506, 4967.8532)
@@ -174,7 +174,7 @@ def sample_transitions():
                 transition = (state, (angle, rot), state_prime, rw, final_flag)
                 episode_transitions_list.append(transition)
             env.finish()
-        if episode % 1 == 0 and episode != 0:
+        if episode % 1000 == 0 and episode != 0:
             with open(sample_file+'_'+str(episode), 'wb') as outfile:
                 pickle.dump(episode_transitions_list, outfile)
                 episode_transitions_list = list()
@@ -184,7 +184,7 @@ def sample_transitions():
 
 
 def main():
-    action_space_name = 'large_action_space'
+    action_space_name = 'simple_action_space'
     action_space = actions.BaseAction(action_space_name)
     agent = qlearning.QLearning(q_file, epsilon=0.1, action_space=action_space, gamma=0.9)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
@@ -192,14 +192,14 @@ def main():
     with open(variables_file, 'wb') as outfile:
         pickle_vars = dict()
         pickle_vars['action_space'] = action_space_name
-        env.set_up()
-        env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+        # env.set_up()
+        # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
         agent.exploring = True
         pickle.dump(pickle_vars, outfile)
         for episode in range(max_episodes):
             print('###STARTING EPISODE ', episode)
-            # env.set_up()
-            # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+            env.set_up()
+            env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
             episode_dict = dict()
             episode_transitions_list = list()
             final_flag = 0
@@ -219,8 +219,8 @@ def main():
                 episode_transitions_list.append(transition)
                 if final_flag != 0:
                     break
-                state_rime, reward = env.step(0, 0)
-                state_rime, reward = env.step(0, 0)
+                # state_rime, reward = env.step(0, 0)
+                # state_rime, reward = env.step(0, 0)
             episode_dict['episode_number'] = episode
             episode_dict['transitions_list'] = episode_transitions_list
             episode_dict['final_flag'] = final_flag
@@ -262,8 +262,8 @@ def evaluate_agent(ag_obj):
     
 
 if __name__ == '__main__':
-    # main()
-    sample_transitions()
+    main()
+    # sample_transitions()
     # ag = load_agent('agent201804 v     11132634')
     # evaluate_agent(ag)
     #
