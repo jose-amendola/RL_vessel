@@ -53,10 +53,10 @@ class Environment(buzz_python.session_subscriber):
 
     def get_sample_states(self):
         #TODO implement
-        x = np.linspace(5000, 12000, 50)
-        y = np.linspace(3000, 8000, 50)
-        theta = np.linspace(-80, -140, 5)
-        vlon = np.linspace(1.5, 3.0, 5)
+        x = np.linspace(5000, 13000, 32)
+        y = np.linspace(3000, 8000, 20)
+        theta = np.linspace(-80, -130, 6)
+        vlon = np.linspace(1.5, 3.0, 4)
         g = np.meshgrid(x, y, theta, vlon)
         tmp = np.vstack(map(np.ravel, g))
         combinations = np.transpose(tmp)
@@ -233,10 +233,16 @@ class Environment(buzz_python.session_subscriber):
         self.initial_states_sequence = itertools.cycle(dummy_list)
 
     def set_sampling_mode(self, start=0, end=-1):
-        if end == -1:
-            states = self.get_sample_states()[start:]
-        else:
-            states = self.get_sample_states()[start:end]
+        states = self.get_sample_states()
+        start = int(start)
+        end = int(end)
+        if len(states) > start:
+            if len(states) > end != -1:
+                states = states[start:end]
+            else:
+                states = states[start:]
+
+
         self.initial_states_sequence = itertools.cycle(states)
 
     def reset_to_start(self):

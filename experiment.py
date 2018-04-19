@@ -13,6 +13,7 @@ import learner
 import utils
 import reward
 import json
+import argparse
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -145,14 +146,14 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
         #     print('For FQI iteration: ',it,' Total reward: ', total_reward, ' and result: ', final_flag)
 
 
-def sample_transitions():
+def sample_transitions(start_state=0, end_state=-1):
     #TODO Implement
     action_space_name = 'simple_action_space'
     action_space = actions.BaseAction(action_space_name)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
     env.set_up()
-    env.set_sampling_mode()
+    env.set_sampling_mode(start_state, end_state)
     for episode in range(max_episodes):
         print('### NEW STARTING STATE ###')
         #TODO fix onconsistency in order of methods from Environment
@@ -172,8 +173,8 @@ def sample_transitions():
                 # New format
                 transition = (state, (angle, rot), state_prime, rw, final_flag)
                 episode_transitions_list.append(transition)
-        if episode % 1000 == 0 and episode != 0:
-            with open(sample_file+'_'+str(episode), 'wb') as outfile:
+        if episode % 100 == 0 and episode != 0:
+            with open(sample_file+'_s_'+str(start)+'_'+str(episode), 'wb') as outfile:
                 pickle.dump(episode_transitions_list, outfile)
                 episode_transitions_list = list()
 
@@ -259,8 +260,19 @@ def evaluate_agent(ag_obj):
     
 
 if __name__ == '__main__':
-    main()
-    # sample_transitions()
+    # main()
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('s', type=str, help='Start')
+    parser.add_argument('e', type=str, help='End')
+
+    args = parser.parse_args()
+    start = 0
+    end = -1
+    if args.s:
+        start = args.s
+    if args.e:
+        end = args.e
+    sample_transitions(start, end)
     # ag = load_agent('agent201804 v     11132634')
     # evaluate_agent(ag)
     #
