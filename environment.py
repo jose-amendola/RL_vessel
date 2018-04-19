@@ -102,7 +102,7 @@ class Environment(buzz_python.session_subscriber):
             self.allow_advance_ev.set()
 
     def set_up(self):
-        self.dyna_proc = subprocess.Popen(['Dyna.exe ','--pid', '407', '-f', 'suape-local.json', '-c', '127.0.0.1'])
+        self.dyna_proc = subprocess.Popen(['Dyna_reset_prop.exe ','--pid', '407', '-f', 'suape-local.json', '-c', '127.0.0.1'])
         # ds = buzz_python.create_bson_data_source(self.mongo_addr, self.dbname)
         ds = buzz_python.create_bson_data_source('suape-local.json')
         ser = buzz_python.create_bson_serializer(ds)
