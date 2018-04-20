@@ -8,17 +8,39 @@ import pickle
 import datetime
 import reward
 import datetime
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasRegressor
+
+import types
+import tempfile
+import keras.models
+
+
+
 
 
 def custom_metric(state_action_a, state_action_b):
     dist_list = list()
-    weights = ((1/5000), (1/5000), (1/180), (1/5), (1/5), 1.0, 0)
+    weights = ((1/5000), (1/5000), (1/180), (1/5), (1/5), 1.0, 1.0)
     for vars in zip(state_action_a, state_action_b, weights):
         var_dist = np.float(abs((vars[0] - vars[1])*vars[2]))
         dist_list.append(var_dist)
     dist = np.average(dist_list)
     #TODO Use fixed divisors for ref distance..avoid zero
     return dist
+
+def get_nn(obj):
+    if obj:
+        model = keras.models.load_model(obj)
+    else:
+        # create model
+        model = Sequential()
+        model.add(Dense(8, input_dim=8, kernel_initializer='normal', activation='rbf'))
+        model.add(Dense(1, kernel_initializer='normal'))
+        # Compile model
+        model.compile(loss='mean_squared_error', optimizer='adam')
+    return model
 
 
 class Learner(object):
@@ -27,18 +49,28 @@ class Learner(object):
 
     def __init__(self, file_to_save='default_agent', load_saved_regression=False,
                  action_space_name='simple_action_space',
-                 r_m_=None):
+                 r_m_=None, nn_=False):
         self.rw_mp = r_m_
         self.batch_list = list()
-        if load_saved_regression:
-            self.learner = load_saved_regression
+        self.nn_flag = nn_
+        if self.nn_flag:
+            self.learner = self.learner = get_nn(load_saved_regression)
         else:
-            self.learner = neighbors.KNeighborsRegressor(2, weights='distance', metric=custom_metric)
-            # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
-            # self.learner = RandomForestRegressor()
-            # self.learner = tree.DecisionTreeRegressor()
+            if load_saved_regression:
+                self.learner = load_saved_regression
+            else:
+                pass
+                # self.learner = neighbors.KNeighborsRegressor(2, weights='distance', metric=custom_metric)
+
+                # self.nn_flag = True
+                # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
+                # self.learner = RandomForestRegressor()
+                # self.learner = tree.DecisionTreeRegressor()
         self.end_states = dict()
-        self.file = file_to_save
+        r_mode = '__'
+        if self.rw_mp:
+            r_mode = self.rw_mp.reward_mode
+        self.file = file_to_save+self.learner.__class__.__name__+'_r_'+ r_mode
         self.discount_factor = 1.0
         self.mode = 'angle_and_rotation'# self.mode = 'angle_only'
         self.action_space = actions.BaseAction(action_space_name)
@@ -77,6 +109,7 @@ class Learner(object):
             try:
                 while True:
                     transitions = pickle.load(infile)
+                    transitions = self.replace_reward(transitions)
             except EOFError as e:
                 pass
         self.batch_list = self.batch_list + transitions
@@ -104,8 +137,11 @@ class Learner(object):
             maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
             self.q_target = self.rewards + self.discount_factor*maxq_prediction
             if it % 1 == 0 and it != 0:
-                with open(self.file, 'wb') as outfile:
-                    pickle.dump(self.learner, outfile)
+                if self.nn_flag:
+                    self.learner.save(self.file)
+                else:
+                    with open(self.file, 'wb') as outfile:
+                        pickle.dump(self.learner, outfile)
             # if debug:
                 # print(self.q_target,file=self.debug_file)
                 # print('\n\n', file=self.debug_file)
@@ -141,22 +177,21 @@ class Learner(object):
             else:
                 state_action = np.append(state, action)
             state_action = np.reshape(state_action, (1, -1))
-            self.learner.set_params(metric=custom_metric)
             qpred = self.learner.predict(state_action)
-            # print(self.learner.kneighbors(state_action))
-            # print(self.learner.get_params(deep=True))
-            print(qpred)
-            print(action[0])
             if qpred > qmax:
                 qmax = qpred
                 selected_action = action
-                #TODO Implement random choice for equal q value cases
+            #TODO Implement random choice for equal q value cases
+        print(qmax)
+        print(selected_action[0])
+        print(selected_action[1])
         return selected_action
 
     def __del__(self):
+        pass
         # self.debug_file.close()
-        with open(self.file, 'wb') as outfile:
-            pickle.dump(self.learner, outfile)
+        # with open(self.file, 'wb') as outfile:
+        #     pickle.dump(self.learner, outfile)
 
 if __name__ == '__main__':
     with open('agent20180408200244', 'rb') as infile:
