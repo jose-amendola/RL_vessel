@@ -237,7 +237,7 @@ def evaluate_agent(ag_obj):
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
-    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='large_action_space')
+    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='simple_action_space')
     # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
     env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
     env.move_to_next_start()
@@ -275,9 +275,9 @@ if __name__ == '__main__':
         start = args.s
     if args.e:
         end = args.e
-    sample_transitions(start, end)
-    # ag = load_agent('agent201804 v     11132634')
-    # evaluate_agent(ag)
+    # sample_transitions(start, end)
+    ag = load_agent('default_agent')
+    evaluate_agent(ag)
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')
@@ -291,6 +291,6 @@ if __name__ == '__main__':
     # train_from_batch(ep, loaded_vars)
     # replay_trajectory(ep)
     # train_from_batch(ep_list, loaded_vars)
-    # train_from_samples(['samples20180419100653_s_0_100','samples20180419100653_s_0_200','samples20180419100653_s_0_300',
-    #                     'samples20180419100653_s_0_400','samples20180419100653_s_0_500','samples20180419100653_s_0_600'])
+    # train_from_samples(['samples20180419231035_s_0_100','samples20180419231035_s_0_200','samples20180419231035_s_0_300',
+    #                     'samples20180419231035_s_0_400'])
 

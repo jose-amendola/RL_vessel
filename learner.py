@@ -12,8 +12,9 @@ import datetime
 
 def custom_metric(state_action_a, state_action_b):
     dist_list = list()
-    for vars in zip(state_action_a[:-2], state_action_b[:-2]):
-        var_dist = abs((vars[0] - vars[1]) / vars[0])
+    weights = ((1/5000), (1/5000), (1/180), (1/5), (1/5), 1.0, 0)
+    for vars in zip(state_action_a, state_action_b, weights):
+        var_dist = np.float(abs((vars[0] - vars[1])*vars[2]))
         dist_list.append(var_dist)
     dist = np.average(dist_list)
     #TODO Use fixed divisors for ref distance..avoid zero
@@ -82,6 +83,7 @@ class Learner(object):
 
 
     def set_up_agent(self):
+        print("Batch size: ", len(self.batch_list))
         self.states = [list(k[0]) for k in self.batch_list]
         if self.mode == 'angle_only':
             self.act = [(x[1][0]) for x in self.batch_list]
@@ -89,6 +91,7 @@ class Learner(object):
             self.act = [(x[1]) for x in self.batch_list]
         self.rewards = np.asarray([x[3] for x in self.batch_list], dtype=np.float64)
         self.states_p = [list(k[2]) for k in self.batch_list]
+        self.end_states = [(x[4]) for x in self.batch_list]
         self.q_target = self.rewards
         self.states = np.array(self.states)
         self.act = np.array(self.act)
@@ -100,7 +103,7 @@ class Learner(object):
             self.learner.fit(self.samples, self.q_target)
             maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
             self.q_target = self.rewards + self.discount_factor*maxq_prediction
-            if it % 20 == 0:
+            if it % 1 == 0 and it != 0:
                 with open(self.file, 'wb') as outfile:
                     pickle.dump(self.learner, outfile)
             # if debug:
@@ -110,9 +113,11 @@ class Learner(object):
 
 
     def find_max_q(self, i, state_p):
+        print('  >>>Finding max_q for : ',i)
         qmax = -float('Inf')
-        final = self.end_states.get(i)
-        if final != None:
+        # final = self.end_states.get(i)
+        if self.end_states[i] !=0:
+            print('final')
             qmax = 0
         else:
             for action in self.action_space.action_combinations:
@@ -136,6 +141,7 @@ class Learner(object):
             else:
                 state_action = np.append(state, action)
             state_action = np.reshape(state_action, (1, -1))
+            self.learner.set_params(metric=custom_metric)
             qpred = self.learner.predict(state_action)
             # print(self.learner.kneighbors(state_action))
             # print(self.learner.get_params(deep=True))

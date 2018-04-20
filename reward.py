@@ -108,8 +108,9 @@ class RewardMapper(object):
                 reward = 100
         elif self.reward_mode == 'exp_border_target_relative':
             dist_list = list()
-            for vars in zip(ref_array, array):
-                var_dist = abs((vars[0] - vars[1])/vars[0])
+            weights = (5000, 5000, 180, 5, 5, 1)
+            for vars in zip(ref_array, array, weights):
+                var_dist = abs((vars[0] - vars[1])/vars[2])
                 dist_list.append(var_dist)
             dist = np.average(dist_list)
             if dist > 0:
