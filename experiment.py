@@ -77,12 +77,15 @@ def replay_trajectory(episodes):
             view.plot_position(state[0], state[1], state[2])
     view.freeze_screen()
 
-def train_from_samples(sample_file):
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='exp_border_target_rot_angle')
+def train_from_samples(sample_files):
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='exp_border_target_relative')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(r_m_=replace_reward)
-    batch_learner.load_sample_file(sample_file)
+    for file in sample_files:
+        batch_learner.load_sample_file(file)
+    batch_learner.set_up_agent()
+    batch_learner.fqi_step(50)
 
 def train_from_batch(episodes, pickle_vars):
     replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='exp_border_target_rot_angle')
@@ -100,7 +103,7 @@ def train_from_batch(episodes, pickle_vars):
             batch_learner.add_to_batch(episode['transitions_list'][0:abs(remaining)], 0)
             break
     batch_learner.set_up_agent()
-    batch_learner.fit_batch(max_fit_iterations)
+    batch_learner.fqi_step(max_fit_iterations)
 
 def train_from_single_episode(episodes, pickle_vars, ep_number):
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
@@ -124,9 +127,9 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
     batch_learner.set_up_agent()
     for it in range(max_fit_iterations):
         if it % 10 == 0:
-            batch_learner.fit_batch(1,debug=True)
+            batch_learner.fqi_step(1, debug=True)
         else:
-            batch_learner.fit_batch(1, debug=False)
+            batch_learner.fqi_step(1, debug=False)
         # if it % 10 == 0:
         #     env.set_up()
         #     env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
@@ -154,11 +157,11 @@ def sample_transitions(start_state=0, end_state=-1):
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
     env.set_up()
     env.set_sampling_mode(start_state, end_state)
+    transitions_list = list()
     for episode in range(max_episodes):
-        print('### NEW STARTING STATE ###')
+        print('### NEW STARTING STATE ###',episode)
         #TODO fix onconsistency in order of methods from Environment
         env.move_to_next_start()
-        episode_transitions_list = list()
         final_flag = 0
         for action in action_space.action_combinations:
             # env.set_up()
@@ -172,11 +175,11 @@ def sample_transitions(start_state=0, end_state=-1):
                 final_flag = env.is_final()
                 # New format
                 transition = (state, (angle, rot), state_prime, rw, final_flag)
-                episode_transitions_list.append(transition)
+                transitions_list.append(transition)
         if episode % 100 == 0 and episode != 0:
             with open(sample_file+'_s_'+str(start)+'_'+str(episode), 'wb') as outfile:
-                pickle.dump(episode_transitions_list, outfile)
-                episode_transitions_list = list()
+                pickle.dump(transitions_list, outfile)
+                transitions_list = list()
 
 
 
@@ -288,5 +291,6 @@ if __name__ == '__main__':
     # train_from_batch(ep, loaded_vars)
     # replay_trajectory(ep)
     # train_from_batch(ep_list, loaded_vars)
-    # train_from_samples('samples20180416192315')
+    # train_from_samples(['samples20180419100653_s_0_100','samples20180419100653_s_0_200','samples20180419100653_s_0_300',
+    #                     'samples20180419100653_s_0_400','samples20180419100653_s_0_500','samples20180419100653_s_0_600'])
 

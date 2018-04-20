@@ -94,7 +94,7 @@ def train_from_batch(episodes, pickle_vars):
             batch_learner.add_to_batch(episode['transitions_list'][0:abs(remaining)], 0)
             break
     batch_learner.set_up_agent()
-    batch_learner.fit_batch(max_fit_iterations)
+    batch_learner.fqi_step(max_fit_iterations)
 
 def train_from_single_episode(episodes, pickle_vars, ep_number):
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
@@ -118,9 +118,9 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
     batch_learner.set_up_agent()
     for it in range(max_fit_iterations):
         if it % 10 == 0:
-            batch_learner.fit_batch(1,debug=True)
+            batch_learner.fqi_step(1, debug=True)
         else:
-            batch_learner.fit_batch(1, debug=False)
+            batch_learner.fqi_step(1, debug=False)
         # if it % 10 == 0:
         #     env.set_up()
         #     env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])

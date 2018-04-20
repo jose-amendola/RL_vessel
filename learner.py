@@ -10,6 +10,16 @@ import reward
 import datetime
 
 
+def custom_metric(state_action_a, state_action_b):
+    dist_list = list()
+    for vars in zip(state_action_a[:-2], state_action_b[:-2]):
+        var_dist = abs((vars[0] - vars[1]) / vars[0])
+        dist_list.append(var_dist)
+    dist = np.average(dist_list)
+    #TODO Use fixed divisors for ref distance..avoid zero
+    return dist
+
+
 class Learner(object):
 
     exploring = None
@@ -22,7 +32,7 @@ class Learner(object):
         if load_saved_regression:
             self.learner = load_saved_regression
         else:
-            self.learner = neighbors.KNeighborsRegressor(2, weights='distance')
+            self.learner = neighbors.KNeighborsRegressor(2, weights='distance', metric=custom_metric)
             # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
             # self.learner = RandomForestRegressor()
             # self.learner = tree.DecisionTreeRegressor()
@@ -65,11 +75,10 @@ class Learner(object):
         with open(file_to_load, 'rb') as infile:
             try:
                 while True:
-                    transition = pickle.load(infile)
-                    transitions.append(transition)
+                    transitions = pickle.load(infile)
             except EOFError as e:
                 pass
-        self.batch_list = transitions
+        self.batch_list = self.batch_list + transitions
 
 
     def set_up_agent(self):
@@ -85,7 +94,7 @@ class Learner(object):
         self.act = np.array(self.act)
         self.samples = np.column_stack((self.states, self.act))
 
-    def fit_batch(self, max_iterations, debug=False):
+    def fqi_step(self, max_iterations, debug=False):
         for it in range(max_iterations):
             print("FQI_iteration: ", it)
             self.learner.fit(self.samples, self.q_target)

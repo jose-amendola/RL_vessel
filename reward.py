@@ -106,6 +106,16 @@ class RewardMapper(object):
                 reward = -0.1 * math.exp(-0.1*shore_dist/dist)
             else:
                 reward = 100
+        elif self.reward_mode == 'exp_border_target_relative':
+            dist_list = list()
+            for vars in zip(ref_array, array):
+                var_dist = abs((vars[0] - vars[1])/vars[0])
+                dist_list.append(var_dist)
+            dist = np.average(dist_list)
+            if dist > 0:
+                reward = -0.1 * math.exp(-0.1 * shore_dist / dist)
+            else:
+                reward = 100
         elif self.reward_mode == 'exp_border_target_rot_angle':
             #TODO finish function prototype
             alignment_factor = 1 - (self.g_heading_n_cw - self.ship_pos[2])/(self.last_angle_selected*180)
