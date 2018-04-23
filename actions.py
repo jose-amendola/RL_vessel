@@ -5,6 +5,10 @@ spaces = {'simple_action_space': {
         'rudder_lvls':[-0.5, 0.0, 0.5],
         'thruster_lvls':[-0.5, 0.0, 0.5]
         },
+        'cte_rotation': {
+        'rudder_lvls':[-0.5, 0.0, 0.5],
+        'thruster_lvls':[-0.5]
+        },
         'large_action_space':{
             'rudder_lvls':[-0.5, 0.0, 0.5],
             'thruster_lvls':[-0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6]

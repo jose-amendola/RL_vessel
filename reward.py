@@ -30,7 +30,7 @@ class RewardMapper(object):
         self.last_rot_selected = None
 
     def is_inbound_nonterminal_coordinate(self, x, y):
-        return self.boundary.contains(Point(x, y)) and not self.goal_rec.contains(Point(x, y))
+        return self.boundary.buffer(-20).contains(Point(x, y)) and not self.goal_rec.contains(Point(x, y))
 
     def generate_inner_positions(self):
         points_dict = dict()

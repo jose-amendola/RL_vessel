@@ -10,18 +10,19 @@ class Viewer(object):
         turtle.degrees()
         turtle.penup()
         self.step_count = 0
-        self.steps_for_stamp = 10
+        self.steps_for_stamp = 1
         # turtle.tracer(0, 0)s
 
     def plot_position(self, x, y , theta):
         converted_angle = 180 - theta
         turtle.fillcolor('gray')
         turtle.setpos(x, y)
-        if self.step_count == self.steps_for_stamp:
-            turtle.stamp()
-            self.step_count = 0
-        else:
-            self.step_count += 1
+        # if self.step_count == self.steps_for_stamp:
+        #     turtle.stamp()
+        #     self.step_count = 0
+        # else:
+        #     self.step_count += 1
+        turtle.stamp()
         turtle.setheading(converted_angle)
         # turtle.pendown()
 

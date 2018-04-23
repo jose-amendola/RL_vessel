@@ -151,10 +151,10 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
 
 def sample_transitions(start_state=0, end_state=-1):
     #TODO Implement
-    action_space_name = 'simple_action_space'
+    action_space_name = 'cte_rotation'
     action_space = actions.BaseAction(action_space_name)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
     env.set_sampling_mode(start_state, end_state)
     transitions_list = list()
@@ -166,7 +166,7 @@ def sample_transitions(start_state=0, end_state=-1):
         for action in action_space.action_combinations:
             # env.set_up()
             env.reset_to_start()
-            for i in range(2):
+            for i in range(50):
                 state = env.get_state()
                 angle = action[0]
                 rot = action[1]
@@ -176,11 +176,15 @@ def sample_transitions(start_state=0, end_state=-1):
                 # New format
                 transition = (state, (angle, rot), state_prime, rw, final_flag)
                 transitions_list.append(transition)
+                if final_flag != 0:
+                    break
         if episode % 100 == 0 and episode != 0:
-            with open(sample_file+'_s_'+str(start)+'_'+str(episode), 'wb') as outfile:
+            with open(sample_file+'action_'+ action_space_name + '_s'+str(start)+'_'+str(episode), 'wb') as outfile:
                 pickle.dump(transitions_list, outfile)
                 transitions_list = list()
-
+    with open(sample_file + 'action_' + action_space_name + '_s' + str(start) + '_' + str(episode), 'wb') as outfile:
+        pickle.dump(transitions_list, outfile)
+        transitions_list = list()
 
 
 
@@ -275,9 +279,9 @@ if __name__ == '__main__':
         start = args.s
     if args.e:
         end = args.e
-    # sample_transitions(start, end)
+    sample_transitions(start, end)
     # ag = load_agent('default_agentSequential_r_exp_border_target')
-    evaluate_agent('default_agentSequential_r_exp_border_target.h5')
+    # evaluate_agent('default_agentSequential_r_exp_border_target.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')
