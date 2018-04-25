@@ -154,7 +154,7 @@ def sample_transitions(start_state=0, end_state=-1):
     action_space_name = 'cte_rotation'
     action_space = actions.BaseAction(action_space_name)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
     env.set_up()
     env.set_sampling_mode(start_state, end_state)
     transitions_list = list()
@@ -178,7 +178,7 @@ def sample_transitions(start_state=0, end_state=-1):
                 transitions_list.append(transition)
                 if final_flag != 0:
                     break
-        if episode % 100 == 0 and episode != 0:
+        if episode % 10 == 0 and episode != 0:
             with open(sample_file+'action_'+ action_space_name + '_s'+str(start)+'_'+str(episode), 'wb') as outfile:
                 pickle.dump(transitions_list, outfile)
                 transitions_list = list()

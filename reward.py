@@ -86,8 +86,9 @@ class RewardMapper(object):
 
     def reached_goal(self):
         cont = self.goal_rec.contains(self.ship)
-        reached = cont and abs(self.ship_vel[0]) < abs(self.g_vel_x) and abs(self.ship_pos[2] - self.g_heading_n_cw) < 20
+        # reached = cont and abs(self.ship_vel[0]) < abs(self.g_vel_x) and abs(self.ship_pos[2] - self.g_heading_n_cw) < 20
         # reached = abs(self.ship_pos[2] - self.g_heading_n_cw) < 20 and cont
+        reached = cont
         if reached:
             print('Reached goal!!')
         return reached

@@ -53,10 +53,10 @@ class Environment(buzz_python.session_subscriber):
 
     def get_sample_states(self):
         #TODO implement
-        x = np.linspace(5000, 13000, 7)
-        y = np.linspace(3000, 8000, 1000)
-        theta = np.linspace(-90, -120, 6)
-        np.append(theta, 103)
+        x = np.linspace(5000, 13000, 8)
+        y = np.linspace(3000, 8000, 100)
+        theta = np.linspace(-90, -120, 4)
+        theta = np.append(theta, 103)
         vlon = np.linspace(1.5, 3.0, 4)
         g = np.meshgrid(x, y, theta, vlon)
         tmp = np.vstack(map(np.ravel, g))

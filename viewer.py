@@ -10,7 +10,7 @@ class Viewer(object):
         turtle.degrees()
         turtle.penup()
         self.step_count = 0
-        self.steps_for_stamp = 1
+        self.steps_for_stamp = 10
         # turtle.tracer(0, 0)s
 
     def plot_position(self, x, y , theta):
