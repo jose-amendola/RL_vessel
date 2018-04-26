@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="294f6bc1-6e88-4b05-9ab4-ef1dddfc8a65" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/process_tuples.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/simulation_settings.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/actions.py" afterPath="$PROJECT_DIR$/actions.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/environment.py" afterPath="$PROJECT_DIR$/environment.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/experiment.py" afterPath="$PROJECT_DIR$/experiment.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learner.py" afterPath="$PROJECT_DIR$/learner.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/reward.py" afterPath="$PROJECT_DIR$/reward.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/viewer.py" afterPath="$PROJECT_DIR$/viewer.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,10 +16,10 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="environment.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="environment.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/environment.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="549">
+            <state relative-caret-position="4632">
               <caret line="276" column="23" lean-forward="false" selection-start-line="276" selection-start-column="19" selection-end-line="276" selection-end-column="23" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
@@ -35,8 +31,8 @@
       <file leaf-file-name="experiment.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/experiment.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="297">
-              <caret line="179" column="25" lean-forward="false" selection-start-line="179" selection-start-column="25" selection-end-line="179" selection-end-column="25" />
+            <state relative-caret-position="221">
+              <caret line="17" column="0" lean-forward="false" selection-start-line="17" selection-start-column="0" selection-end-line="47" selection-end-column="17" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -47,8 +43,8 @@
       <file leaf-file-name="actions.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/actions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="7" column="8" lean-forward="true" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="8" />
+            <state relative-caret-position="102">
+              <caret line="7" column="8" lean-forward="false" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="8" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
                 <marker date="1524432619700" expanded="true" signature="357:435" ph="..." />
@@ -57,24 +53,46 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="numeric.py" pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/numpy/core/numeric.py">
+      <file leaf-file-name="learner.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/learner.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="491" column="0" lean-forward="false" selection-start-line="491" selection-start-column="0" selection-end-line="491" selection-end-column="0" />
+            <state relative-caret-position="577">
+              <caret line="103" column="64" lean-forward="true" selection-start-line="103" selection-start-column="64" selection-end-line="103" selection-end-column="64" />
+              <folding>
+                <element signature="e#0#27#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="process_tuples.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/process_tuples.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="391">
+              <caret line="35" column="15" lean-forward="false" selection-start-line="35" selection-start-column="15" selection-end-line="35" selection-end-column="15" />
+              <folding>
+                <element signature="e#0#33#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="simulation_settings.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/simulation_settings.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-153">
+              <caret line="0" column="12" lean-forward="false" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="learner.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/learner.py">
+      <file leaf-file-name="patches.py" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/matplotlib/patches.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="193">
-              <caret line="17" column="0" lean-forward="true" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#27#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-636">
+              <caret line="1217" column="0" lean-forward="false" selection-start-line="1217" selection-start-column="0" selection-end-line="1217" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -89,31 +107,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="regression.py" pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/sklearn/neighbors/regression.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="407">
-              <caret line="143" column="43" lean-forward="false" selection-start-line="143" selection-start-column="43" selection-end-line="143" selection-end-column="43" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="shape_base.py" pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/numpy/lib/shape_base.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6052">
-              <caret line="368" column="0" lean-forward="false" selection-start-line="368" selection-start-column="0" selection-end-line="368" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="reward.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="reward.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/reward.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="110">
-              <caret line="137" column="28" lean-forward="false" selection-start-line="137" selection-start-column="17" selection-end-line="137" selection-end-column="28" />
+            <state relative-caret-position="765">
+              <caret line="138" column="28" lean-forward="false" selection-start-line="138" selection-start-column="17" selection-end-line="138" selection-end-column="28" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -124,9 +122,16 @@
       <file leaf-file-name="viewer.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/viewer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
+            <state relative-caret-position="391">
               <caret line="24" column="22" lean-forward="false" selection-start-line="24" selection-start-column="22" selection-end-line="24" selection-end-column="22" />
-              <folding />
+              <folding>
+                <marker date="1524698435928" expanded="true" signature="76:329" ph="..." />
+                <marker date="1524698435928" expanded="true" signature="373:733" ph="..." />
+                <marker date="1524698435928" expanded="true" signature="481:640" ph="..." />
+                <marker date="1524698435928" expanded="true" signature="773:1171" ph="..." />
+                <marker date="1524698435928" expanded="true" signature="1215:1514" ph="..." />
+                <marker date="1524698435928" expanded="true" signature="1577:1657" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -170,8 +175,8 @@
       <find>train_from_samples</find>
       <find>plot_</find>
       <find>update_ship</find>
-      <find>step</find>
       <find>steps_between_actions</find>
+      <find>step</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -196,20 +201,22 @@
         <option value="$PROJECT_DIR$/learner.py" />
         <option value="$PROJECT_DIR$/viewer.py" />
         <option value="$PROJECT_DIR$/reward.py" />
-        <option value="$PROJECT_DIR$/environment.py" />
         <option value="$PROJECT_DIR$/experiment.py" />
+        <option value="$PROJECT_DIR$/environment.py" />
+        <option value="$PROJECT_DIR$/simulation_settings.py" />
+        <option value="$PROJECT_DIR$/process_tuples.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-6" />
-    <option name="y" value="1" />
+    <option name="x" value="-7" />
+    <option name="y" value="2" />
     <option name="width" value="1378" />
     <option name="height" value="733" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
-    <navigator proportions="" version="1">
+    <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -222,7 +229,24 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="RL_vessel" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="RL_vessel" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -242,8 +266,10 @@
           <option name="mySupportsDeletion" value="false" />
           <option name="myCanBeAbsent" value="false" />
           <option name="myId" value="UPDATED" />
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/environment.py</PATH>
           <PATH vcs="Git" revision="">$PROJECT_DIR$/experiment.py</PATH>
-          <PATH vcs="Git" revision="">$PROJECT_DIR$/learner.py</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/reward.py</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/viewer.py</PATH>
         </FILE-GROUP>
         <FILE-GROUP>
           <option name="myUpdateName" value="Created" />
@@ -251,6 +277,69 @@
           <option name="mySupportsDeletion" value="false" />
           <option name="myCanBeAbsent" value="false" />
           <option name="myId" value="CREATED" />
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423153618action_cte_rotation_s0_10</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423153618action_cte_rotation_s0_20</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423153618action_cte_rotation_s0_30</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423153618action_cte_rotation_s0_40</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423153618action_cte_rotation_s0_50</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423153618action_cte_rotation_s0_60</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423153618action_cte_rotation_s0_70</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_10</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_100</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_110</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_120</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_130</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_140</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_150</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_160</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_170</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_180</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_190</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_20</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_200</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_210</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_220</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_230</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_240</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_250</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_260</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_270</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_280</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_290</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_30</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_300</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_310</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_40</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_50</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_60</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_70</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_80</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180423191129action_cte_rotation_s80_90</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_10</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_100</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_110</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_120</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_130</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_140</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_150</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_160</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_170</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_180</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_190</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_20</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_200</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_210</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_220</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_230</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_240</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_250</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_30</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_40</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_50</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_60</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_70</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_80</PATH>
+          <PATH vcs="Git" revision="">$PROJECT_DIR$/dyna/samples/samples20180424182335action_cte_rotation_s310_90</PATH>
         </FILE-GROUP>
         <FILE-GROUP>
           <option name="myUpdateName" value="Deleted" />
@@ -351,25 +440,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.experiment">
-    <configuration default="false" name="environment" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="RL_vessel" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/environment.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <method />
-    </configuration>
+  <component name="RunManager" selected="Python.process_tuples">
     <configuration default="false" name="reward" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -442,6 +513,24 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <method />
     </configuration>
+    <configuration default="false" name="process_tuples" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="RL_vessel" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/process_tuples.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <method />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -507,19 +596,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.environment" />
-      <item index="1" class="java.lang.String" itemvalue="Python.reward" />
-      <item index="2" class="java.lang.String" itemvalue="Python.utils" />
-      <item index="3" class="java.lang.String" itemvalue="Python.learner" />
-      <item index="4" class="java.lang.String" itemvalue="Python.experiment" />
+      <item index="0" class="java.lang.String" itemvalue="Python.reward" />
+      <item index="1" class="java.lang.String" itemvalue="Python.utils" />
+      <item index="2" class="java.lang.String" itemvalue="Python.learner" />
+      <item index="3" class="java.lang.String" itemvalue="Python.experiment" />
+      <item index="4" class="java.lang.String" itemvalue="Python.process_tuples" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.experiment" />
-        <item index="1" class="java.lang.String" itemvalue="Python.learner" />
-        <item index="2" class="java.lang.String" itemvalue="Python.utils" />
-        <item index="3" class="java.lang.String" itemvalue="Python.reward" />
-        <item index="4" class="java.lang.String" itemvalue="Python.environment" />
+        <item index="0" class="java.lang.String" itemvalue="Python.process_tuples" />
+        <item index="1" class="java.lang.String" itemvalue="Python.experiment" />
+        <item index="2" class="java.lang.String" itemvalue="Python.learner" />
+        <item index="3" class="java.lang.String" itemvalue="Python.utils" />
+        <item index="4" class="java.lang.String" itemvalue="Python.reward" />
       </list>
     </recent_temporary>
   </component>
@@ -688,7 +777,14 @@
       <option name="project" value="LOCAL" />
       <updated>1524227683718</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="new_sampling">
+      <created>1524481422795</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1524481422795</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TodoView">
@@ -701,18 +797,18 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-6" y="1" width="1378" height="733" extended-state="0" />
+    <frame x="-7" y="2" width="1378" height="733" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24963397" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2496329" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.11163522" sideWeight="0.48535872" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2208" sideWeight="0.24743025" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2208" sideWeight="0.75256974" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1984252" sideWeight="0.4795022" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1424" sideWeight="0.33847284" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3376" sideWeight="0.66152716" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1024" sideWeight="0.47650513" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32913387" sideWeight="0.49707174" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.8062992" sideWeight="0.863836" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3744" sideWeight="0.8450808" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -765,7 +861,8 @@
     <MESSAGE value="new_dyna" />
     <MESSAGE value="sampling_correction+metric" />
     <MESSAGE value="todo&gt;fix_classifier" />
-    <option name="LAST_COMMIT_MESSAGE" value="todo&gt;fix_classifier" />
+    <MESSAGE value="new_sampling" />
+    <option name="LAST_COMMIT_MESSAGE" value="new_sampling" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -785,36 +882,20 @@
           <line>252</line>
           <option name="timeStamp" value="109" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/process_tuples.py</url>
+          <line>43</line>
+          <option name="timeStamp" value="117" />
+        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="112" />
+      <option name="time" value="118" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/reward.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1139">
-          <caret line="71" column="47" lean-forward="true" selection-start-line="71" selection-start-column="47" selection-end-line="71" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5236">
-          <caret line="308" column="0" lean-forward="false" selection-start-line="308" selection-start-column="0" selection-end-line="308" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/blabla.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1955">
-          <caret line="117" column="14" lean-forward="false" selection-start-line="117" selection-start-column="8" selection-end-line="117" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/actions.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="187">
@@ -1081,15 +1162,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="510">
           <caret line="30" column="0" lean-forward="false" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/numpy/lib/shape_base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6052">
-          <caret line="368" column="0" lean-forward="false" selection-start-line="368" selection-start-column="0" selection-end-line="368" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1097,6 +1169,58 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-5343">
           <caret line="272" column="8" lean-forward="false" selection-start-line="272" selection-start-column="8" selection-end-line="272" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/numpy/core/numeric.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8007">
+          <caret line="491" column="0" lean-forward="false" selection-start-line="491" selection-start-column="0" selection-end-line="491" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/viewer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="24" column="22" lean-forward="false" selection-start-line="24" selection-start-column="22" selection-end-line="24" selection-end-column="22" />
+          <folding>
+            <marker date="1524698435928" expanded="true" signature="76:329" ph="..." />
+            <marker date="1524698435928" expanded="true" signature="373:733" ph="..." />
+            <marker date="1524698435928" expanded="true" signature="481:640" ph="..." />
+            <marker date="1524698435928" expanded="true" signature="773:1171" ph="..." />
+            <marker date="1524698435928" expanded="true" signature="1215:1514" ph="..." />
+            <marker date="1524698435928" expanded="true" signature="1577:1657" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/actions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="7" column="8" lean-forward="false" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <marker date="1524432619700" expanded="true" signature="357:435" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/environment.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4632">
+          <caret line="276" column="23" lean-forward="false" selection-start-line="276" selection-start-column="19" selection-end-line="276" selection-end-column="23" />
+          <folding>
+            <element signature="e#24#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/numpy/lib/shape_base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-7081">
+          <caret line="368" column="0" lean-forward="false" selection-start-line="368" selection-start-column="0" selection-end-line="368" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1116,69 +1240,58 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/learner.py">
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/matplotlib/patches.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="193">
-          <caret line="17" column="0" lean-forward="true" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#27#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python36/Lib/site-packages/numpy/core/numeric.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="491" column="0" lean-forward="false" selection-start-line="491" selection-start-column="0" selection-end-line="491" selection-end-column="0" />
+        <state relative-caret-position="-636">
+          <caret line="1217" column="0" lean-forward="false" selection-start-line="1217" selection-start-column="0" selection-end-line="1217" selection-end-column="0" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/viewer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="24" column="22" lean-forward="false" selection-start-line="24" selection-start-column="22" selection-end-line="24" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/reward.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="137" column="28" lean-forward="false" selection-start-line="137" selection-start-column="17" selection-end-line="137" selection-end-column="28" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/actions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="8" lean-forward="true" selection-start-line="7" selection-start-column="8" selection-end-line="7" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <marker date="1524432619700" expanded="true" signature="357:435" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/experiment.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="297">
-          <caret line="179" column="25" lean-forward="false" selection-start-line="179" selection-start-column="25" selection-end-line="179" selection-end-column="25" />
+        <state relative-caret-position="221">
+          <caret line="17" column="0" lean-forward="false" selection-start-line="17" selection-start-column="0" selection-end-line="47" selection-end-column="17" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/environment.py">
+    <entry file="file://$PROJECT_DIR$/simulation_settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="549">
-          <caret line="276" column="23" lean-forward="false" selection-start-line="276" selection-start-column="19" selection-end-line="276" selection-end-column="23" />
+        <state relative-caret-position="-153">
+          <caret line="0" column="12" lean-forward="false" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/process_tuples.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="35" column="15" lean-forward="false" selection-start-line="35" selection-start-column="15" selection-end-line="35" selection-end-column="15" />
           <folding>
-            <element signature="e#24#37#0" expanded="true" />
+            <element signature="e#0#33#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/learner.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="577">
+          <caret line="103" column="64" lean-forward="true" selection-start-line="103" selection-start-column="64" selection-end-line="103" selection-end-column="64" />
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/reward.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="765">
+          <caret line="138" column="28" lean-forward="false" selection-start-line="138" selection-start-column="17" selection-end-line="138" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
