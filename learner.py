@@ -182,11 +182,12 @@ class Learner(object):
                 state_action = np.append(state, action)
             state_action = np.reshape(state_action, (1, -1))
             qpred = self.learner.predict(state_action)
+            print("Qpred an state_action",qpred,state_action)
             if qpred > qmax:
                 qmax = qpred
                 selected_action = action
             #TODO Implement random choice for equal q value cases
-        print(qmax)
+        print("Max",qmax)
         print(selected_action[0])
         print(selected_action[1])
         return selected_action
