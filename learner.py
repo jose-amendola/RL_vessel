@@ -8,13 +8,13 @@ import pickle
 import datetime
 import reward
 import datetime
-# from keras.models import Sequential
-# from keras.layers import Dense
-# from keras.wrappers.scikit_learn import KerasRegressor
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasRegressor
 
 import types
 import tempfile
-# import keras.models
+import keras.models
 
 
 
@@ -36,7 +36,8 @@ def get_nn(obj):
     else:
         # create model
         model = Sequential()
-        model.add(Dense(8, input_dim=8, kernel_initializer='normal', activation='rbf'))
+        model.add(Dense(8, input_shape=(8,), kernel_initializer='normal', activation='sigmoid'))
+        model.add(Dense(8, input_shape=(8,), kernel_initializer='normal', activation='sigmoid'))
         model.add(Dense(1, kernel_initializer='normal'))
         # Compile model
         model.compile(loss='mean_squared_error', optimizer='adam')
@@ -103,6 +104,9 @@ class Learner(object):
         if final_flag != 0:
             self.end_states[len(self.batch_list)-1] = final_flag
 
+    def add_tuples(self, tuples_list):
+        self.batch_list = self.batch_list + tuples_list
+
     def load_sample_file(self, file_to_load):
         transitions = list()
         with open(file_to_load, 'rb') as infile:
@@ -141,7 +145,7 @@ class Learner(object):
                     self.learner.save(self.file)
                 else:
                     with open(self.file, 'wb') as outfile:
-                        pickle.dump(self.learner, outfile)
+                        pickle.dump(self.learner+'.h5', outfile)
             # if debug:
                 # print(self.q_target,file=self.debug_file)
                 # print('\n\n', file=self.debug_file)

@@ -78,7 +78,7 @@ def replay_trajectory(episodes):
     view.freeze_screen()
 
 def train_from_samples(sample_files):
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='exp_border_target')
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='cte')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(r_m_=replace_reward)
@@ -241,7 +241,7 @@ def evaluate_agent(ag_obj):
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
-    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='simple_action_space', nn_=True)
+    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='cte_rotation', nn_=True)
     env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
     # env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
     env.move_to_next_start()
@@ -279,9 +279,9 @@ if __name__ == '__main__':
         start = args.s
     if args.e:
         end = args.e
-    sample_transitions(start, end)
+    # sample_transitions(start, end)
     # ag = load_agent('default_agentSequential_r_exp_border_target')
-    # evaluate_agent('default_agentSequential_r_exp_border_target.h5')
+    evaluate_agent('default_agentSequential_r_cte.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')

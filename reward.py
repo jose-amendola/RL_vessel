@@ -10,7 +10,7 @@ import utils
 
 
 class RewardMapper(object):
-    def __init__(self, plot_flag=True, r_mode_='exp_border_target'):
+    def __init__(self, plot_flag=True, r_mode_='cte'):
         self.boundary = None
         self.goal_rec = None
         self.ship_polygon = None
@@ -20,7 +20,9 @@ class RewardMapper(object):
             self.view = Viewer()
         self.set_ship_geometry(((0,0),(10,10),(0,20)))
         self.ship_vel = list()
+        self.ship_last_vel = list()
         self.ship_pos = list()
+        self.ship_last_pos = list()
         self.goal_point = None
         self.g_heading_n_cw = None
         self.g_vel_x = None
@@ -65,6 +67,8 @@ class RewardMapper(object):
             self.view.plot_goal(point, factor)
 
     def update_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta, angle, rot):
+        self.ship_last_pos = self.ship_pos
+        self.ship_last_vel = self.ship_vel
         self.last_angle_selected = angle
         self.last_rot_selected = rot
         self.ship_vel = [global_vel_x, global_vel_y, global_vel_theta]
@@ -94,35 +98,45 @@ class RewardMapper(object):
         return reached
 
     def get_reward(self):
-        ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw, self.g_vel_x, self.g_vel_y, 0))
-        array = np.array((self.ship_pos+self.ship_vel))
-        # ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw))
-        # array = np.array((self.ship_pos))
-        dist = np.linalg.norm(array - ref_array)
-        print('distance_from_goal_state: ', dist)
+        # ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw, self.g_vel_x, self.g_vel_y, 0))
+        # array = np.array((self.ship_pos+self.ship_vel))
+        ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw))
+        array = np.array((self.ship_pos))
+        old_array = np.array((self.ship_last_pos))
+        new_dist = np.linalg.norm(array - ref_array)
+        old_dist = np.linalg.norm(array - ref_array)
+        print('distance_from_goal_state: ', new_dist)
         shore_dist = self.boundary.exterior.distance(self.ship)
+        reward = -0.1
         #Distances are always positive so reward varies between 0 and -0.1
-        if self.reward_mode == 'exp_border_target':
-            if dist > 0:
-                reward = -0.1 * math.exp(-0.1*shore_dist/dist)
-            else:
-                reward = 100
-        elif self.reward_mode == 'exp_border_target_relative':
-            dist_list = list()
-            weights = (5000, 5000, 180, 5, 5, 1)
-            for vars in zip(ref_array, array, weights):
-                var_dist = abs((vars[0] - vars[1])/vars[2])
-                dist_list.append(var_dist)
-            dist = np.average(dist_list)
-            if dist > 0:
-                reward = -0.1 * math.exp(-0.1 * shore_dist / dist)
-            else:
-                reward = 100
-        elif self.reward_mode == 'exp_border_target_rot_angle':
-            #TODO finish function prototype
-            alignment_factor = 1 - (self.g_heading_n_cw - self.ship_pos[2])/(self.last_angle_selected*180)
-
-            reward = -0.1 * math.exp(-0.1 * shore_dist / dist)*alignment_factor*(1 - self.last_rot_selected)
+        # if self.reward_mode == 'exp_border_target':
+        #     if dist > 0:
+        #         reward = -0.1 * math.exp(-0.1*shore_dist/dist)
+        #     else:
+        #         reward = 100
+        if self.reward_mode == 'cte':
+            reward = - 0.1
+        # elif self.reward_mode == 'potential':
+        #     if dist > 0:
+        #         reward = -0.1 * math.exp(-0.1*shore_dist/dist)
+        #     else:
+        #         reward = 100
+        # elif self.reward_mode == 'exp_border_target_relative':
+        #     dist_list = list()
+        #     weights = (5000, 5000, 180, 5, 5, 1)
+        #     for vars in zip(ref_array, array, weights):
+        #         var_dist = abs((vars[0] - vars[1])/vars[2])
+        #         dist_list.append(var_dist)
+        #     dist = np.average(dist_list)
+        #     if dist > 0:
+        #         reward = -0.1 * math.exp(-0.1 * shore_dist / dist)
+        #     else:
+        #         reward = 100
+        # elif self.reward_mode == 'exp_border_target_rot_angle':
+        #     #TODO finish function prototype
+        #     alignment_factor = 1 - (self.g_heading_n_cw - self.ship_pos[2])/(self.last_angle_selected*180)
+        #
+        #     reward = -0.1 * math.exp(-0.1 * shore_dist / dist)*alignment_factor*(1 - self.last_rot_selected)
         # reward = -0.1
         # reward = -0.001*dist/self.boundary.distance(self.ship)
         if self.collided():
