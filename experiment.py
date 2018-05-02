@@ -154,11 +154,12 @@ def sample_transitions(start_state=0, end_state=-1):
     action_space_name = 'cte_rotation'
     action_space = actions.BaseAction(action_space_name)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
-    env.set_sampling_mode(start_state, end_state)
+    # env.set_sampling_mode(start_state, end_state)
+    env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
     transitions_list = list()
-    for episode in range(max_episodes):
+    for episode in range(1):
         print('### NEW STARTING STATE ###',episode)
         #TODO fix onconsistency in order of methods from Environment
         env.move_to_next_start()
@@ -166,11 +167,12 @@ def sample_transitions(start_state=0, end_state=-1):
         for action in action_space.action_combinations:
             # env.set_up()
             env.reset_to_start()
-            for i in range(50):
+            for i in range(50000):
                 state = env.get_state()
                 angle = action[0]
                 rot = action[1]
-                state_prime, rw = env.step(angle, rot)
+                # state_prime, rw = env.step(angle, rot)
+                state_prime, rw = env.step(0, -0.5)
                 print('Reward:', rw)
                 final_flag = env.is_final()
                 # New format
@@ -178,7 +180,11 @@ def sample_transitions(start_state=0, end_state=-1):
                 transitions_list.append(transition)
                 if final_flag != 0:
                     break
-        if episode % 10 == 0 and episode != 0:
+            with open(sample_file + 'action_' + action_space_name + '_s' + str(start) + '_' + str(episode),
+                      'wb') as outfile:
+                pickle.dump(transitions_list, outfile)
+                transitions_list = list()
+        if episode % 1 == 0 and episode != 0:
             with open(sample_file+'action_'+ action_space_name + '_s'+str(start)+'_'+str(episode), 'wb') as outfile:
                 pickle.dump(transitions_list, outfile)
                 transitions_list = list()
@@ -190,11 +196,11 @@ def sample_transitions(start_state=0, end_state=-1):
 
 
 def main():
-    action_space_name = 'simple_action_space'
+    action_space_name = 'cte_rotation'
     action_space = actions.BaseAction(action_space_name)
-    agent = qlearning.QLearning(q_file, epsilon=0.1, action_space=action_space, gamma=0.9)
+    agent = qlearning.QLearning(q_file, epsilon=0.1, action_space=action_space, gamma=1.0)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     # with open(variables_file, 'wb') as outfile:
     pickle_vars = dict()
     pickle_vars['action_space'] = action_space_name
@@ -205,8 +211,7 @@ def main():
     # pickle.dump(pickle_vars, outfile)
     for episode in range(500):
         print('###STARTING EPISODE ', episode)
-        episode_dict = dict()
-        episode_transitions_list = list()
+        transitions_list = list()
         final_flag = 0
         env.move_to_next_start()
         env.reset_to_start()
@@ -221,34 +226,33 @@ def main():
             final_flag = env.is_final()
             agent.observe_reward(state, angle, rot, state_prime, reward, final_flag)
             print("***Training step "+str(step+1)+" Completed")
-            episode_transitions_list.append(transition)
+            transitions_list.append(transition)
             if final_flag != 0:
                 break
                 # state_rime, reward = env.step(0, 0)
                 # state_rime, reward = env.step(0, 0)
-            # episode_dict['episode_number'] = episode
-            # episode_dict['transitions_list'] = episode_transitions_list
-            # episode_dict['final_flag'] = final_flag
-            # pickle_vars['ep#'+str(episode)] = episode_dict
-            # pickle.dump(episode_dict, outfile)
-            # env.finish()
-        #Now that the training has finished, the agent can use his policy without updating it
+        with open('qlearning_' + 'action_' + action_space_name + '_' + str(episode),
+                  'wb') as outfile:
+            pickle.dump(transitions_list, outfile)
+            transitions_list = list()
     with open(learner_file, 'wb') as outfile:
         pickle.dump(agent, outfile)
 
 
 def evaluate_agent(ag_obj):
+    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='cte_rotation', nn_=True)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
-    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='cte_rotation', nn_=True)
-    env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+    # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+    env.set_single_start_pos_mode([12000, 5500, -90, 3, 0, 0])
     # env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
     env.move_to_next_start()
     final_flag = 0
     with open('debug.txt', 'w') as outfile:
         for step in range(evaluation_steps):
-            state = env.get_state()
+            state = env.get_state(state_mode='simple_state')
+            state = env.convert_to_simple_state(state)
             print(state, file=outfile)
             action = agent.select_action(state)
             print(action, file=outfile)
@@ -271,6 +275,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('s', type=str, help='Start')
     parser.add_argument('e', type=str, help='End')
+    parser.add_argument('--mode', type=str, help='End')
 
     args = parser.parse_args()
     start = 0
@@ -279,9 +284,11 @@ if __name__ == '__main__':
         start = args.s
     if args.e:
         end = args.e
+
+    # main()
     # sample_transitions(start, end)
-    # ag = load_agent('default_agentSequential_r_exp_border_target')
-    evaluate_agent('default_agentSequential_r_cte.h5')
+    # ag = load_agent('agent_20180429174542Sequential_r_potentialit2')
+    evaluate_agent('agents/agent_20180502012219Sequential_r_potentialit50.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')

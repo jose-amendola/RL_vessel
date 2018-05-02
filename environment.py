@@ -11,7 +11,7 @@ import time
 import numpy as np
 import subprocess
 import os
-
+from simulation_settings import *
 
 class Environment(buzz_python.session_subscriber):
     def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _g_heading, _g_vel_l, _plot):
@@ -42,28 +42,32 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(_plot, r_mode_='exp_border_target')
+        self.reward_mapper = reward.RewardMapper(_plot, r_mode_='potential')
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = list()
         self.reward_mapper.set_boundary_points(self.buoys)
         self.reward_mapper.set_goal(self.goal, self.g_heading, self.g_vel_l)
+        self.reward_mapper.get_guidance_line()
+        self.reward_mapper.set_shore_lines(upper_shore, lower_shore)
         os.chdir('./dyna')
         self.dyna_proc = None
 
     def get_sample_states(self):
         #TODO implement
-        x = np.linspace(5000, 13000, 8)
+        x = np.linspace(5000, 13000, 16)
         y = np.linspace(3000, 8000, 100)
-        theta = np.linspace(-90, -120, 4)
-        theta = np.append(theta, 103)
-        vlon = np.linspace(1.5, 3.0, 4)
+        # theta = np.linspace(-90, -120, 4)
+        # theta = np.append(theta, -103)
+        vel_decay = 4/13000
+        theta = -103
+        # vlon = np.linspace(1.5, 3.0, 4)
         g = np.meshgrid(x, y, theta, vlon)
         tmp = np.vstack(map(np.ravel, g))
         combinations = np.transpose(tmp)
         states = list()
         for comb in combinations:
-            if self.reward_mapper.is_inbound_nonterminal_coordinate(comb[0], comb[1]):
+            if self.reward_mapper.is_inbound_coordinate(comb[0], comb[1]):
                 states.append((comb[0], comb[1], comb[2], comb[3], 0, 0))
         return states
 
@@ -167,7 +171,7 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.update(self.rudder)
         self.max_angle = self.rudder.get_maximum_angle()
 
-    def get_state(self):
+    def get_state(self, state_mode=None):
         self.simulation.sync(self.vessel)
         lin_pos_vec = self.vessel.get_linear_position()
         ang_pos_vec = self.vessel.get_angular_position()
@@ -180,6 +184,12 @@ class Environment(buzz_python.session_subscriber):
         yp = lin_vel_vec[1]
         thetap = ang_vel_vec[2]
         return x, y, theta, xp, yp, thetap
+
+    def convert_to_simple_state(self, state):
+        v_lon, v_drift, n_used = utils.global_to_local(state[3], state[4], state[2])
+        bl = self.reward_mapper.get_shore_balance(state[0], state[1])
+        return (v_lon, state[2], bl)
+
 
     def advance(self):
         self.allow_advance_ev.wait()
@@ -257,6 +267,7 @@ class Environment(buzz_python.session_subscriber):
         self.vessel.set_linear_velocity([vel_lon, vel_drift, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])
         self.vessel.set_angular_velocity([0.00, 0.00, vel_theta])
+        self.reward_mapper.initialize_ship(x,y,theta,vel_lon,vel_drift,vel_theta)
         self.simulation.sync(self.vessel)
 
     def finish(self):

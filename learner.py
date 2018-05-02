@@ -9,15 +9,14 @@ import datetime
 import reward
 import datetime
 from keras.models import Sequential
+from keras import optimizers
 from keras.layers import Dense
-from keras.wrappers.scikit_learn import KerasRegressor
-
-import types
-import tempfile
 import keras.models
+from keras.utils import plot_model
 
+import random
 
-
+state_mode = 'simple_state'
 
 
 def custom_metric(state_action_a, state_action_b):
@@ -36,11 +35,17 @@ def get_nn(obj):
     else:
         # create model
         model = Sequential()
-        model.add(Dense(8, input_shape=(8,), kernel_initializer='normal', activation='sigmoid'))
-        model.add(Dense(8, input_shape=(8,), kernel_initializer='normal', activation='sigmoid'))
-        model.add(Dense(1, kernel_initializer='normal'))
+        if state_mode == 'simple_state':
+            model.add(Dense(20, input_shape=(4,), activation='relu'))
+        else:
+            model.add(Dense(20, input_shape=(7,), activation='relu'))
+        model.add(Dense(20, activation='relu'))
+        model.add(Dense(1, activation='linear'))
         # Compile model
-        model.compile(loss='mean_squared_error', optimizer='adam')
+        # sgd = optimizers.SGD(lr=1, decay=0, momentum=0.9, nesterov=True)
+        # rmsprop = optimizers.RMSprop(lr=1)
+        model.compile(loss='mean_squared_error', optimizer='rmsprop')
+        # plot_model(model, to_file='model.png')
     return model
 
 
@@ -48,50 +53,64 @@ class Learner(object):
 
     exploring = None
 
-    def __init__(self, file_to_save='default_agent', load_saved_regression=False,
-                 action_space_name='simple_action_space',
+    def __init__(self, file_to_save='agents/agent_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S'), load_saved_regression=False,
+                 action_space_name='cte_rotation',
                  r_m_=None, nn_=False):
         self.rw_mp = r_m_
+        self.debug  = True
+        self.current_step = 0
+        self.debug_file = open('agents/debug_fqi_step' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.txt','w')
         self.batch_list = list()
         self.nn_flag = nn_
         if self.nn_flag:
-            self.learner = self.learner = get_nn(load_saved_regression)
+            self.learner = get_nn(load_saved_regression)
         else:
-            if load_saved_regression:
-                self.learner = load_saved_regression
-            else:
-                pass
-                # self.learner = neighbors.KNeighborsRegressor(2, weights='distance', metric=custom_metric)
-
-                # self.nn_flag = True
-                # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
-                # self.learner = RandomForestRegressor()
-                # self.learner = tree.DecisionTreeRegressor()
+            pass
+            # if load_saved_regression:
+            #     self.learner = load_saved_regression
+            # else:
+            #     pass
+            #     # self.learner = neighbors.KNeighborsRegressor(2, weights='distance', metric=custom_metric)
+            #
+            #     # self.nn_flag = True
+            #     # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
+            #     # self.learner = RandomForestRegressor()
+            #     # self.learner = tree.DecisionTreeRegressor()
         self.end_states = dict()
-        r_mode = '__'
-        if self.rw_mp:
-            r_mode = self.rw_mp.reward_mode
-        self.file = file_to_save+self.learner.__class__.__name__+'_r_'+ r_mode
         self.discount_factor = 1.0
-        self.mode = 'angle_and_rotation'# self.mode = 'angle_only'
+        self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
         self.action_space = actions.BaseAction(action_space_name)
         self.states = list()
         self.act = list()
         self.rewards = list()
         self.states_p = list()
         self.q_target = list()
-        # self.debug_file = open('debug_fqi'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.txt','w')
+        r_mode = '__'
+        self.file = None
+        if self.rw_mp:
+            r_mode = self.rw_mp.reward_mode
+        self.file = file_to_save + self.learner.__class__.__name__ + '_r_' + r_mode
 
     def replace_reward(self, transition_list):
         new_list = list()
+        first_state = transition_list[0][0]
+        self.rw_mp.initialize_ship(first_state[0], first_state[1], first_state[2], first_state[3],
+                                   first_state[4], first_state[5])
         for transition in transition_list:
             resulting_state = transition[2]
             action_selected = transition[1]
             self.rw_mp.update_ship(resulting_state[0], resulting_state[1], resulting_state[2], resulting_state[3],
                                    resulting_state[4], resulting_state[5], action_selected[0], action_selected[1])
             new_reward = self.rw_mp.get_reward()
+            ret = 0
+            if self.rw_mp.collided():
+                ret = -1
+            elif self.rw_mp.reached_goal():
+                ret = 1
+            print("Final step:", ret)
             tmp = list(transition)
             tmp[3] = new_reward
+            tmp[4] = ret
             transition = tuple(tmp)
             new_list.append(transition)
         print(new_list[-1])
@@ -136,19 +155,25 @@ class Learner(object):
 
     def fqi_step(self, max_iterations, debug=False):
         for it in range(max_iterations):
+            self.current_step = it
             print("FQI_iteration: ", it)
-            self.learner.fit(self.samples, self.q_target)
+            self.learner.fit(self.samples, self.q_target, batch_size=1000, verbose=2, nb_epoch=50)
+            layer_a = self.learner.layers[0].get_weights()
+            layer_b = self.learner.layers[1].get_weights()
+            layer_c = self.learner.layers[2].get_weights()
             maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
             self.q_target = self.rewards + self.discount_factor*maxq_prediction
-            if it % 1 == 0 and it != 0:
+            if it % 10 == 0 and it != 0:
                 if self.nn_flag:
-                    self.learner.save(self.file)
+                    self.learner.save(self.file+'it'+str(it)+'.h5')
                 else:
                     with open(self.file, 'wb') as outfile:
-                        pickle.dump(self.learner+'.h5', outfile)
-            # if debug:
-                # print(self.q_target,file=self.debug_file)
-                # print('\n\n', file=self.debug_file)
+                        pickle.dump(self.learner, outfile)
+                if self.debug:
+                    print(maxq_prediction, file=self.debug_file)
+                    print(self.q_target,file=self.debug_file)
+                    print('\n\n', file=self.debug_file)
+        self.current_step = 0
 
 
 
@@ -166,15 +191,21 @@ class Learner(object):
                 else:
                     state_action = np.append(state_p, action)
                 state_action = np.reshape(state_action, (1, -1))
-                qpred = self.learner.predict(state_action)
+                qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
+                # if self.current_step % 1 == 0 and self.current_step != 0 and self.debug:
+                #     print(action, file=self.debug_file)
+                #     print(qpred, file=self.debug_file)
+                print('Q value and respective action: ',qpred,action)
                 if qpred > qmax:
                     qmax = qpred
+        print('Returning Qmax value: ',qmax)
         return qmax
 
     def select_action(self, state):
         selected_action = None
         qmax = -float('Inf')
         print('Select action')
+        choice_list = list()
         for action in self.action_space.action_combinations:
             if self.mode == 'angle_only':
                 state_action = np.append(state, action[0])
@@ -185,7 +216,11 @@ class Learner(object):
             print("Qpred an state_action",qpred,state_action)
             if qpred > qmax:
                 qmax = qpred
-                selected_action = action
+                # selected_action = action
+                choice_list = [action]
+            elif qpred == qmax:
+                choice_list.append(action)
+        selected_action = random.choice(choice_list)
             #TODO Implement random choice for equal q value cases
         print("Max",qmax)
         print(selected_action[0])
@@ -193,10 +228,10 @@ class Learner(object):
         return selected_action
 
     def __del__(self):
-        pass
-        # self.debug_file.close()
-        # with open(self.file, 'wb') as outfile:
-        #     pickle.dump(self.learner, outfile)
+        if self.debug:
+            self.debug_file.close()
+        with open(self.file, 'wb') as outfile:
+            pickle.dump(self.learner, outfile)
 
 if __name__ == '__main__':
     with open('agent20180408200244', 'rb') as infile:

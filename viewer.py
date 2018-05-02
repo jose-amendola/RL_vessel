@@ -26,6 +26,13 @@ class Viewer(object):
         turtle.setheading(converted_angle)
         # turtle.pendown()
 
+    def plot_guidance_line(self, point_a, point_b):
+        turtle.pendown()
+        turtle.setpos(point_a[0], point_a[1])
+        turtle.setpos(point_b[0], point_b[1])
+        turtle.penup()
+
+
     def plot_goal(self,point, factor):
         turtle.speed(0)
         turtle.setpos(point[0] - factor, point[1] - factor)

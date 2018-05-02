@@ -23,6 +23,7 @@ class RewardMapper(object):
         self.ship_last_vel = list()
         self.ship_pos = list()
         self.ship_last_pos = list()
+        self.last_ship = None
         self.goal_point = None
         self.g_heading_n_cw = None
         self.g_vel_x = None
@@ -30,9 +31,12 @@ class RewardMapper(object):
         self.reward_mode = r_mode_
         self.last_angle_selected = None
         self.last_rot_selected = None
+        self.guid_line = None
+        self.upper_shore = None
+        self.lower_shore = None
 
-    def is_inbound_nonterminal_coordinate(self, x, y):
-        return self.boundary.buffer(-20).contains(Point(x, y)) and not self.goal_rec.contains(Point(x, y))
+    def is_inbound_coordinate(self, x, y):
+        return self.boundary.buffer(-20).contains(Point(x, y))
 
     def generate_inner_positions(self):
         points_dict = dict()
@@ -49,16 +53,45 @@ class RewardMapper(object):
                 points_dict[lower_point] = dist
         return points_dict
 
+    def get_middle_y(self, x):
+        line = LineString([(x, 0), (x, 15000)])
+        intersect = self.boundary.intersection(line)
+        return (intersect.bounds[1] + intersect.bounds[3]) / 2
+
+    def get_guidance_line(self):
+        y_temp_a = self.get_middle_y(8000)
+        y_temp_b = self.get_middle_y(9000)
+        x_a = 3600
+        x_b = 14000
+        m,b = np.polyfit([8000,9000],[y_temp_a,y_temp_b],1)
+        y_a = m*x_a+b
+        y_b = m*x_b+b
+        self.guid_line = LineString([(x_a, y_a), (x_b, y_b)])
+        return (x_a, y_a), (x_b, y_b)
+
     def set_boundary_points(self, points):
         self.boundary = Polygon(points)
         if self.plot_flag:
             self.view.plot_boundary(points)
 
+    def set_shore_lines(self, upper_points, lower_points):
+        self.upper_shore = LineString(upper_points)
+        self.lower_shore = LineString(lower_points)
+
+    def get_shore_balance(self, x, y):
+        ship_point = Point((x,y))
+        #upper means positive sign
+        upper_dist = ship_point.distance(self.upper_shore)
+        lower_dist = ship_point.distance(self.lower_shore)
+        return upper_dist - lower_dist
+
+
+
     def set_ship_geometry(self, points):
         self.ship_polygon = Polygon(points)
 
     def set_goal(self, point, heading, vel_l):
-        factor = 100
+        factor = 300
         self.goal_point = point
         self.g_vel_x, self.g_vel_y, self.g_heading_n_cw = utils.local_to_global(vel_l, 0, heading)
         self.goal_rec = Polygon(((point[0] - factor, point[1] - factor), (point[0] - factor, point[1] + factor), (point[0] + factor, point[1] + factor),
@@ -66,9 +99,21 @@ class RewardMapper(object):
         if self.plot_flag:
             self.view.plot_goal(point, factor)
 
+    def initialize_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta):
+        self.ship_last_vel = [global_vel_x, global_vel_y, global_vel_theta]
+        self.ship_last_pos = [x, y, heading]
+        self.last_ship = affinity.translate(self.ship_polygon, x, y)
+        self.last_ship = affinity.rotate(self.last_ship, heading, 'center')
+        self.ship_pos = self.ship_last_pos
+        self.ship_vel = self.ship_last_vel
+        self.ship = self.last_ship
+        if self.plot_flag:
+            self.view.plot_position(x, y, heading)
+
     def update_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta, angle, rot):
         self.ship_last_pos = self.ship_pos
         self.ship_last_vel = self.ship_vel
+        self.last_ship = self.ship
         self.last_angle_selected = angle
         self.last_rot_selected = rot
         self.ship_vel = [global_vel_x, global_vel_y, global_vel_theta]
@@ -92,7 +137,8 @@ class RewardMapper(object):
         cont = self.goal_rec.contains(self.ship)
         # reached = cont and abs(self.ship_vel[0]) < abs(self.g_vel_x) and abs(self.ship_pos[2] - self.g_heading_n_cw) < 20
         # reached = abs(self.ship_pos[2] - self.g_heading_n_cw) < 20 and cont
-        reached = cont
+        # reached = cont
+        reached = abs(self.ship_vel[0]) < 0.2 or cont
         if reached:
             print('Reached goal!!')
         return reached
@@ -104,46 +150,34 @@ class RewardMapper(object):
         array = np.array((self.ship_pos))
         old_array = np.array((self.ship_last_pos))
         new_dist = np.linalg.norm(array - ref_array)
-        old_dist = np.linalg.norm(array - ref_array)
+        old_dist = np.linalg.norm(old_array - ref_array)
         print('distance_from_goal_state: ', new_dist)
-        shore_dist = self.boundary.exterior.distance(self.ship)
+        # shore_dist = self.boundary.exterior.distance(self.ship)
+        old_guid_dist = self.guid_line.distance(self.last_ship)
+        new_guid_dist = self.guid_line.distance(self.ship)
+        old_shore_dist = self.boundary.boundary.distance(self.last_ship)
+        new_shore_dist = self.boundary.boundary.distance(self.ship)
         reward = -0.1
-        #Distances are always positive so reward varies between 0 and -0.1
-        # if self.reward_mode == 'exp_border_target':
-        #     if dist > 0:
-        #         reward = -0.1 * math.exp(-0.1*shore_dist/dist)
-        #     else:
-        #         reward = 100
         if self.reward_mode == 'cte':
-            reward = - 0.1
-        # elif self.reward_mode == 'potential':
-        #     if dist > 0:
-        #         reward = -0.1 * math.exp(-0.1*shore_dist/dist)
-        #     else:
-        #         reward = 100
-        # elif self.reward_mode == 'exp_border_target_relative':
-        #     dist_list = list()
-        #     weights = (5000, 5000, 180, 5, 5, 1)
-        #     for vars in zip(ref_array, array, weights):
-        #         var_dist = abs((vars[0] - vars[1])/vars[2])
-        #         dist_list.append(var_dist)
-        #     dist = np.average(dist_list)
-        #     if dist > 0:
-        #         reward = -0.1 * math.exp(-0.1 * shore_dist / dist)
-        #     else:
-        #         reward = 100
-        # elif self.reward_mode == 'exp_border_target_rot_angle':
-        #     #TODO finish function prototype
-        #     alignment_factor = 1 - (self.g_heading_n_cw - self.ship_pos[2])/(self.last_angle_selected*180)
-        #
-        #     reward = -0.1 * math.exp(-0.1 * shore_dist / dist)*alignment_factor*(1 - self.last_rot_selected)
-        # reward = -0.1
-        # reward = -0.001*dist/self.boundary.distance(self.ship)
+            reward = -1
+        elif self.reward_mode == 'potential':
+        #goal point field
+            pot_goal = (1/(1+new_dist)) - (1/(1+old_dist))
+            k_goal = 0
+        #guidance_field
+            pot_guid = (1/(1+new_guid_dist)) - (1/(1+old_guid_dist))
+            k_guid = 0
+        # collision repulsion field
+            pot_collision = new_shore_dist - old_shore_dist
+            k_collision = 0.1
+            reward = k_collision*pot_collision
+
         if self.collided():
             reward = -100
+            return reward
         goal = self.reached_goal()
         if goal:
-            reward = 100
+            reward = 0
         return reward
 
 if __name__ == "__main__":
