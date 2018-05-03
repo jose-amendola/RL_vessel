@@ -71,6 +71,29 @@ class Environment(buzz_python.session_subscriber):
                 states.append((comb[0], comb[1], comb[2], comb[3], 0, 0))
         return states
 
+    def create_variants_to_start(self, local_coord_start):
+        start_variants  = list()
+        x = np.linspace(-100, 100, 10)
+        y = np.linspace(-100, 100, 10)
+        theta = np.linspace(-15, +15, 10)
+        vlon = np.linspace(-0.2, +0.2, 3)
+        g = np.meshgrid(x, y, theta, vlon)
+        tmp = np.vstack(map(np.ravel, g))
+        shifts = np.transpose(tmp)
+        for shift in shifts:
+            if self.reward_mapper.is_inbound_coordinate(shift[0]+local_coord_start[0], shift[1]+local_coord_start[1]):
+                vars = [(org+shift) for org, shift in zip(shift, local_coord_start)]
+                start_variants.append(tuple(vars))
+
+
+    def add_states_to_start_list(self, global_coord_state):
+        v_lon, v_drift, = utils.global_to_local(global_coord_state[3],global_coord_state[4], global_coord_state[2])
+        new_start_state = (global_coord_state[0], global_coord_state[1], global_coord_state[2],
+                           v_lon, v_drift, global_coord_state[5])
+        variants_list = self.create_variants_to_start(new_start_state)
+        variants_list.append(new_start_state)
+        #TODO finish
+
     def get_initial_states(self):
         positions_dict = self.reward_mapper.generate_inner_positions()
         init_angle = -100
@@ -225,6 +248,10 @@ class Environment(buzz_python.session_subscriber):
             # statePrime = self.get_state()  # Get next State
         return statePrime, rw
 
+    def bifurcation_mode(self, global_coord_state)
+        #TODO implement
+        pass
+
     def move_to_next_start(self):
         self.init_state = next(self.initial_states_sequence)
         # self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
@@ -245,7 +272,7 @@ class Environment(buzz_python.session_subscriber):
 
     def set_sampling_mode(self, start=0, end=-1):
         states = self.get_sample_states()
-        print('#####TOTAL STARTING STATES AVAILABLE:{}'.format(len(states) ))
+        print('#####TOTAL STARTING STATES AVAILABLE:{}'.format(len(states)))
         start = int(start)
         end = int(end)
         if len(states) > start:
@@ -267,7 +294,7 @@ class Environment(buzz_python.session_subscriber):
         self.vessel.set_linear_velocity([vel_lon, vel_drift, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])
         self.vessel.set_angular_velocity([0.00, 0.00, vel_theta])
-        self.reward_mapper.initialize_ship(x,y,theta,vel_lon,vel_drift,vel_theta)
+        self.reward_mapper.initialize_ship(x, y, theta, vel_lon, vel_drift, vel_theta)
         self.simulation.sync(self.vessel)
 
     def finish(self):

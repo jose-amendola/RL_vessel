@@ -151,15 +151,16 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
 
 def sample_transitions(start_state=0, end_state=-1):
     #TODO Implement
-    action_space_name = 'cte_rotation'
+    action_space_name = 'stable'
     action_space = actions.BaseAction(action_space_name)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
     # env.set_sampling_mode(start_state, end_state)
-    env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
+    # env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
+    env.bifurcation_mode([9000, 4819.10098, -103.5, 3, 0, 0])
     transitions_list = list()
-    for episode in range(1):
+    for episode in range(50000):
         print('### NEW STARTING STATE ###',episode)
         #TODO fix onconsistency in order of methods from Environment
         env.move_to_next_start()
@@ -171,12 +172,15 @@ def sample_transitions(start_state=0, end_state=-1):
                 state = env.get_state()
                 angle = action[0]
                 rot = action[1]
-                # state_prime, rw = env.step(angle, rot)
-                state_prime, rw = env.step(0, -0.5)
+                if episode == 0:
+                    angle = 0.0
+                state_prime, rw = env.step(angle, rot)
                 print('Reward:', rw)
                 final_flag = env.is_final()
                 # New format
                 transition = (state, (angle, rot), state_prime, rw, final_flag)
+                if i % 10 == 0 and episode == 0:
+                    env.add_states_to_start_list(state_prime)
                 transitions_list.append(transition)
                 if final_flag != 0:
                     break
