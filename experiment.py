@@ -1,7 +1,5 @@
 import argparse
 import sys
-import scipy.io as io
-import blabla
 import os
 import qlearning
 import environment
@@ -154,13 +152,15 @@ def sample_transitions(start_state=0, end_state=-1):
     action_space_name = 'stable'
     action_space = actions.BaseAction(action_space_name)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
     env.set_up()
     # env.set_sampling_mode(start_state, end_state)
     # env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
-    env.bifurcation_mode([9000, 4819.10098, -103.5, 3, 0, 0])
+    env.set_single_start_pos_mode([13000, 5777.706, -103.5, 3, 0, 0])
     transitions_list = list()
-    for episode in range(50000):
+    for episode in range(5000000):
+        if episode >= 1:
+            env.start_bifurcation_mode()
         print('### NEW STARTING STATE ###',episode)
         #TODO fix onconsistency in order of methods from Environment
         env.move_to_next_start()
@@ -168,7 +168,7 @@ def sample_transitions(start_state=0, end_state=-1):
         for action in action_space.action_combinations:
             # env.set_up()
             env.reset_to_start()
-            for i in range(50000):
+            for i in range(5000):
                 state = env.get_state()
                 angle = action[0]
                 rot = action[1]
@@ -179,7 +179,7 @@ def sample_transitions(start_state=0, end_state=-1):
                 final_flag = env.is_final()
                 # New format
                 transition = (state, (angle, rot), state_prime, rw, final_flag)
-                if i % 10 == 0 and episode == 0:
+                if i % 50 == 0 and episode == 0:
                     env.add_states_to_start_list(state_prime)
                 transitions_list.append(transition)
                 if final_flag != 0:
@@ -290,9 +290,9 @@ if __name__ == '__main__':
         end = args.e
 
     # main()
-    # sample_transitions(start, end)
+    sample_transitions(start, end)
     # ag = load_agent('agent_20180429174542Sequential_r_potentialit2')
-    evaluate_agent('agents/agent_20180502012219Sequential_r_potentialit50.h5')
+    # evaluate_agent('agents/agent_20180502012219Sequential_r_potentialit50.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')

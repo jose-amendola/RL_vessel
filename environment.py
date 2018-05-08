@@ -12,6 +12,8 @@ import numpy as np
 import subprocess
 import os
 from simulation_settings import *
+import pickle
+
 
 class Environment(buzz_python.session_subscriber):
     def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _g_heading, _g_vel_l, _plot):
@@ -52,6 +54,7 @@ class Environment(buzz_python.session_subscriber):
         self.reward_mapper.set_shore_lines(upper_shore, lower_shore)
         os.chdir('./dyna')
         self.dyna_proc = None
+        self.accumulated_starts = list()
 
     def get_sample_states(self):
         #TODO implement
@@ -73,9 +76,9 @@ class Environment(buzz_python.session_subscriber):
 
     def create_variants_to_start(self, local_coord_start):
         start_variants  = list()
-        x = np.linspace(-100, 100, 10)
-        y = np.linspace(-100, 100, 10)
-        theta = np.linspace(-15, +15, 10)
+        x = np.linspace(-100, 100, 5)
+        y = np.linspace(-100, 100, 5)
+        theta = np.linspace(-15, +15, 3)
         vlon = np.linspace(-0.2, +0.2, 3)
         g = np.meshgrid(x, y, theta, vlon)
         tmp = np.vstack(map(np.ravel, g))
@@ -84,15 +87,18 @@ class Environment(buzz_python.session_subscriber):
             if self.reward_mapper.is_inbound_coordinate(shift[0]+local_coord_start[0], shift[1]+local_coord_start[1]):
                 vars = [(org+shift) for org, shift in zip(shift, local_coord_start)]
                 start_variants.append(tuple(vars))
+        return start_variants
 
 
     def add_states_to_start_list(self, global_coord_state):
-        v_lon, v_drift, = utils.global_to_local(global_coord_state[3],global_coord_state[4], global_coord_state[2])
+        print("Adding states to start list.")
+        v_lon, v_drift, not_used = utils.global_to_local(global_coord_state[3],global_coord_state[4], global_coord_state[2])
         new_start_state = (global_coord_state[0], global_coord_state[1], global_coord_state[2],
                            v_lon, v_drift, global_coord_state[5])
         variants_list = self.create_variants_to_start(new_start_state)
         variants_list.append(new_start_state)
-        #TODO finish
+        self.accumulated_starts.append(self.init_state)
+        self.accumulated_starts = self.accumulated_starts + variants_list
 
     def get_initial_states(self):
         positions_dict = self.reward_mapper.generate_inner_positions()
@@ -248,9 +254,11 @@ class Environment(buzz_python.session_subscriber):
             # statePrime = self.get_state()  # Get next State
         return statePrime, rw
 
-    def bifurcation_mode(self, global_coord_state)
-        #TODO implement
-        pass
+    def start_bifurcation_mode(self):
+        self.initial_states_sequence = itertools.cycle(self.accumulated_starts)
+        print('Total of {} starting points generated.'.format(len(self.accumulated_starts)))
+        with open('samples/starting_points_global_coord','wb') as starts_file:
+            pickle.dump(self.accumulated_starts,starts_file)
 
     def move_to_next_start(self):
         self.init_state = next(self.initial_states_sequence)
@@ -261,9 +269,9 @@ class Environment(buzz_python.session_subscriber):
         if not init_state:
             org_state = self.get_state()
             vel_l, vel_drift, theta = utils.global_to_local(org_state[3],org_state[4],org_state[2])
-            self.init_state = [org_state[0], org_state[1], org_state[2], vel_l, vel_drift, 0]
+            self.init_state = (org_state[0], org_state[1], org_state[2], vel_l, vel_drift, 0)
         else:
-            self.init_state = [init_state[0], init_state[1], init_state[2], init_state[3], init_state[4], init_state[5]]
+            self.init_state = (init_state[0], init_state[1], init_state[2], init_state[3], init_state[4], init_state[5])
         self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
                                     self.init_state[4], self.init_state[5])
         dummy_list = list()

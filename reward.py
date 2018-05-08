@@ -7,6 +7,7 @@ from math import sin, cos, radians
 import numpy as np
 import math
 import utils
+from simulation_settings import *
 
 
 class RewardMapper(object):
@@ -181,14 +182,17 @@ class RewardMapper(object):
         return reward
 
 if __name__ == "__main__":
-    reward_map = RewardMapper(True)
-    reward_map.update_ship(20, 20, 30, 0, 0, 0, 0, )
-    print(reward_map.collided())
-    # reward_map.update_ship_position(200, 200, 50)
-    # reward_map.set_goal((100, 1000))
-    for i in range(500):
-        reward_map.update_ship(i, i, i, 0, 0, 0, 0, )
-        ret = reward_map.collided()
-        if ret:
-            print(ret)
-
+    reward_map = RewardMapper(False)
+    # reward_map.update_ship(20, 20, 30, 0, 0, 0, 0, )
+    # print(reward_map.collided())
+    # # reward_map.update_ship_position(200, 200, 50)
+    # # reward_map.set_goal((100, 1000))
+    # for i in range(500):
+    #     reward_map.update_ship(i, i, i, 0, 0, 0, 0, )
+    #     ret = reward_map.collided()
+    #     if ret:
+    #         print(ret)
+    reward_map.set_boundary_points(buoys)
+    reward_map.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
+    reward_map.get_guidance_line()
+    print("Stop")
