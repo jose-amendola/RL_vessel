@@ -38,8 +38,6 @@ def mirror_velocity(vel_x, vel_y, heading_n_cw, new_heading):
     new_v_x, new_v_y, not_used = utils.local_to_global(v_lon, - v_drift, 90-new_heading)
     return new_v_x, new_v_y
 
-
-
 def reflect_state_across_line(point_a, point_b, state):
     line_angle = - 103.5
     x = tuple[0][0]
@@ -64,7 +62,6 @@ def reflect_tuple_on_line(point_a, point_b, tuple):
 
 
 if __name__ == '__main__':
-
     dir_name = './dyna/samples'
     files = os.listdir(dir_name)
     transitions = list()
@@ -74,6 +71,7 @@ if __name__ == '__main__':
             print('Loading file:',file)
             try:
                 while True:
+                    #TODO rever
                     transitions = pickle.load(infile)
             except EOFError as e:
                 pass

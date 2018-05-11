@@ -13,6 +13,8 @@ import subprocess
 import os
 from simulation_settings import *
 import pickle
+import random
+
 
 
 class Environment(buzz_python.session_subscriber):
@@ -47,7 +49,7 @@ class Environment(buzz_python.session_subscriber):
         self.reward_mapper = reward.RewardMapper(_plot, r_mode_='potential')
         self.init_state = list()
         self._final_flag = False
-        self.initial_states_sequence = list()
+        self.initial_states_sequence = None
         self.reward_mapper.set_boundary_points(self.buoys)
         self.reward_mapper.set_goal(self.goal, self.g_heading, self.g_vel_l)
         self.reward_mapper.get_guidance_line()
@@ -80,15 +82,16 @@ class Environment(buzz_python.session_subscriber):
         y = np.linspace(-100, 100, 5)
         theta = np.linspace(-15, +15, 3)
         vlon = np.linspace(-0.2, +0.2, 3)
-        g = np.meshgrid(x, y, theta, vlon)
+        vdrift = np.linspace(-0.1, +0.1, 3)
+        theta_p = np.linspace(-0.1, +0.1, 3)
+        g = np.meshgrid(x, y, theta, vlon, vdrift, theta_p)
         tmp = np.vstack(map(np.ravel, g))
         shifts = np.transpose(tmp)
         for shift in shifts:
             if self.reward_mapper.is_inbound_coordinate(shift[0]+local_coord_start[0], shift[1]+local_coord_start[1]):
-                vars = [(org+shift) for org, shift in zip(shift, local_coord_start)]
-                start_variants.append(tuple(vars))
+                gl_vars = [(org+shift) for org, shift in zip(shift, local_coord_start)]
+                start_variants.append(tuple(gl_vars))
         return start_variants
-
 
     def add_states_to_start_list(self, global_coord_state):
         print("Adding states to start list.")
@@ -97,7 +100,7 @@ class Environment(buzz_python.session_subscriber):
                            v_lon, v_drift, global_coord_state[5])
         variants_list = self.create_variants_to_start(new_start_state)
         variants_list.append(new_start_state)
-        self.accumulated_starts.append(self.init_state)
+        self.accumulated_starts.append(new_start_state)
         self.accumulated_starts = self.accumulated_starts + variants_list
 
     def get_initial_states(self):
@@ -255,15 +258,30 @@ class Environment(buzz_python.session_subscriber):
         return statePrime, rw
 
     def start_bifurcation_mode(self):
+        random.shuffle(self.accumulated_starts)
         self.initial_states_sequence = itertools.cycle(self.accumulated_starts)
         print('Total of {} starting points generated.'.format(len(self.accumulated_starts)))
-        with open('samples/starting_points_global_coord','wb') as starts_file:
-            pickle.dump(self.accumulated_starts,starts_file)
+        with open('samples/starting_points_global_coord'+timestamp,'wb') as starts_file:
+            pickle.dump(self.accumulated_starts, starts_file)
 
     def move_to_next_start(self):
         self.init_state = next(self.initial_states_sequence)
         # self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
         #                             self.init_state[4], self.init_state[5])
+
+    def starts_from_file_mode(self, file_name):
+        start_list = list()
+        with open(file_name, 'rb') as infile:
+            print('Loading file:', file_name)
+            try:
+                while True:
+                    start = pickle.load(infile)
+            except EOFError as e:
+                pass
+        print('Number of transitions added : ', len(start))
+        start_list.append(start)
+        random.shuffle(start_list)
+        self.initial_states_sequence = itertools.cycle(start_list)
 
     def set_single_start_pos_mode(self, init_state=None):
         if not init_state:
@@ -288,8 +306,6 @@ class Environment(buzz_python.session_subscriber):
                 states = states[start:end]
             else:
                 states = states[start:]
-
-
         self.initial_states_sequence = itertools.cycle(states)
 
     def reset_to_start(self):

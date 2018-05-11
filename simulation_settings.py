@@ -1,6 +1,8 @@
 import utils
 import datetime
 
+timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 sample_file = "samples/samples" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')

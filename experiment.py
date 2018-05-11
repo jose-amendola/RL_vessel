@@ -156,7 +156,8 @@ def sample_transitions(start_state=0, end_state=-1):
     env.set_up()
     # env.set_sampling_mode(start_state, end_state)
     # env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
-    env.set_single_start_pos_mode([13000, 5777.706, -103.5, 3, 0, 0])
+    # env.set_single_start_pos_mode([13000, 5777.706, -103.5, 3, 0, 0])
+    # env.starts_from_file_mode('starting_points_global_coord')
     transitions_list = list()
     for episode in range(5000000):
         if episode >= 1:
@@ -168,7 +169,7 @@ def sample_transitions(start_state=0, end_state=-1):
         for action in action_space.action_combinations:
             # env.set_up()
             env.reset_to_start()
-            for i in range(5000):
+            for i in range(2):
                 state = env.get_state()
                 angle = action[0]
                 rot = action[1]
@@ -249,9 +250,10 @@ def evaluate_agent(ag_obj):
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
     # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
-    env.set_single_start_pos_mode([12000, 5500, -90, 3, 0, 0])
+    # env.set_single_start_pos_mode([12000, 5500, -90, 3, 0, 0])
     # env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
-    env.move_to_next_start()
+    # env.starts_from_file_mode('starting_points_global_coord')
+    # env.move_to_next_start()
     final_flag = 0
     with open('debug.txt', 'w') as outfile:
         for step in range(evaluation_steps):
@@ -269,10 +271,6 @@ def evaluate_agent(ag_obj):
             if final_flag != 0:
                 break
 
-
-
-    
-    
 
 if __name__ == '__main__':
     # main()
