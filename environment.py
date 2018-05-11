@@ -266,8 +266,6 @@ class Environment(buzz_python.session_subscriber):
 
     def move_to_next_start(self):
         self.init_state = next(self.initial_states_sequence)
-        # self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
-        #                             self.init_state[4], self.init_state[5])
 
     def starts_from_file_mode(self, file_name):
         start_list = list()
@@ -275,11 +273,10 @@ class Environment(buzz_python.session_subscriber):
             print('Loading file:', file_name)
             try:
                 while True:
-                    start = pickle.load(infile)
+                    start_list = pickle.load(infile)
             except EOFError as e:
                 pass
-        print('Number of transitions added : ', len(start))
-        start_list.append(start)
+        print('Number of transitions added : ', len(start_list))
         random.shuffle(start_list)
         self.initial_states_sequence = itertools.cycle(start_list)
 

@@ -47,14 +47,14 @@ def merge_sample_files_into_one(dir_name):
                 pass
             trajectory = trajectory + transitions
         print('Number of transitions added : ', len(transitions))
-    batch_list = batch_list + transitions
+        batch_list = batch_list + transitions
     with open(dir_name + '/samples_bundle', 'wb') as bundle_file:
         pickle.dump(batch_list, bundle_file)
 
 
 
 if __name__ == "__main__":
-    merge_sample_files_into_one('C:\\Users\\jose_amendola\\RL_vessel\\samples')
+    merge_sample_files_into_one('C:\\Users\\SMH1\\PycharmProjects\\RL_vessel\\samples')
     # print(global_to_local(-2.91453, -0.6997167, -103.5))
     # print(global_to_local(-1,-1,-135))
     # print(local_to_global(1.41, 0, 225))
