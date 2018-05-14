@@ -19,7 +19,7 @@ class RewardMapper(object):
         self.plot_flag = plot_flag
         if self.plot_flag:
             self.view = Viewer()
-        self.set_ship_geometry(((0,0),(10,10),(0,20)))
+        self.set_ship_geometry(((-21,-125),(-21,125),(21,125),(21,-125)))
         self.ship_vel = list()
         self.ship_last_vel = list()
         self.ship_pos = list()

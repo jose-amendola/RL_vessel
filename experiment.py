@@ -157,10 +157,10 @@ def sample_transitions(start_state=0, end_state=-1):
     # env.set_sampling_mode(start_state, end_state)
     # env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
     env.set_single_start_pos_mode([13000, 5777.706, -103.5, 3, 0, 0])
-    # env.starts_from_file_mode('starting_points_global_coord')
+    # env.starts_from_file_mode('samples/starting_points_global_coord20180512195730')
     transitions_list = list()
     for episode in range(5000000):
-        if episode >= 1:
+        if episode == 1:
             env.start_bifurcation_mode()
         print('### NEW STARTING STATE ###',episode)
         #TODO fix onconsistency in order of methods from Environment
@@ -169,7 +169,7 @@ def sample_transitions(start_state=0, end_state=-1):
         for action in action_space.action_combinations:
             # env.set_up()
             env.reset_to_start()
-            for i in range(50000):
+            for i in range(500000):
                 state = env.get_state()
                 angle = action[0]
                 rot = action[1]
@@ -212,7 +212,7 @@ def main():
         final_flag = 0
         env.move_to_next_start()
         env.reset_to_start()
-        for step in range(500):
+        for step in range(5000):
             state = env.get_state()
             print('Yaw:', state[2])
             angle, rot = agent.select_action(state)
@@ -280,7 +280,7 @@ if __name__ == '__main__':
         end = args.e
 
     # main()
-    sample_transitions(start, end)
+    # sample_transitions(start, end)
     # ag = load_agent('agent_20180429174542Sequential_r_potentialit2')
     # evaluate_agent('agents/agent_20180502012219Sequential_r_potentialit50.h5')
     #
@@ -288,13 +288,13 @@ if __name__ == '__main__':
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')
     # train_from_single_episode(ep_list, loaded_vars, 1)
     # files_list = ['experiment_a__', 'experiment_b__',  'experiment_c__', 'experiment_d__', 'experiment_e__']
-    # files_list = ['experiment_full_action_a', 'experiment_full_action_b', 'experiment_full_action_c']
-    # ep = list()
-    # for file in files_list:
-    #     loaded_vars, ep_list = load_pickle_file(file)
-    #     ep = ep + ep_list
+    files_list = ['dyna/samples/samples20180512231902action_stable_s0_253']
+    ep = list()
+    for file in files_list:
+        ep_list = load_pickle_file(file)
+        ep = ep + ep_list[0]
     # train_from_batch(ep, loaded_vars)
-    # replay_trajectory(ep)
+    replay_trajectory(ep)
     # train_from_batch(ep_list, loaded_vars)
     # train_from_samples(['samples20180419231035_s_0_100','samples20180419231035_s_0_200','samples20180419231035_s_0_300',
     #                     'samples20180419231035_s_0_400'])

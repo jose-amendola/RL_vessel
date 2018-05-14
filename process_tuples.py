@@ -22,6 +22,7 @@ def plot_sequence(tuples):
     view.plot_goal(goal, goal_factor)
     for tuple in tuples:
         state = tuple[0]
+        print('Action: ',tuple[1])
         view.plot_position(state[0], state[1], state[2])
     view.freeze_screen()
 
@@ -62,22 +63,26 @@ def reflect_tuple_on_line(point_a, point_b, tuple):
 
 
 if __name__ == '__main__':
-    dir_name = './dyna/samples'
-    files = os.listdir(dir_name)
-    transitions = list()
-    batch_list = list()
-    for file in files:
-        with open(os.path.join(dir_name, file), 'rb') as infile:
-            print('Loading file:',file)
-            try:
-                while True:
-                    #TODO rever
-                    transitions = pickle.load(infile)
-            except EOFError as e:
-                pass
-        print('Number of transitions added : ', len(transitions))
-        batch_list = batch_list + transitions
-    tuples = [tuple for tuple in batch_list if (tuple[1][0] < 0 and tuple[0][2] < -80 and tuple[0][3]< 0)]
+    # dir_name = './samples'
+    # files = os.listdir(dir_name)
+    # transitions = list()
+    # batch_list = list()
+    # for file in files:
+    #     with open(os.path.join(dir_name, file), 'rb') as infile:
+    #         print('Loading file:',file)
+    #         try:
+    #             while True:
+    #                 #TODO rever
+    #                 transitions = pickle.load(infile)
+    #         except EOFError as e:
+    #             pass
+    #     print('Number of transitions added : ', len(transitions))
+    #     batch_list = batch_list + transitions
+    # tuples = [tuple for tuple in batch_list if (tuple[1][0] < 0 and tuple[0][2] < -80 and tuple[0][3]< 0)]
+    # transitions = list()
+    # with open('samples/samples_bundle', 'rb') as infile:
+    #     transitions = pickle.load(infile)
+    # plot_sequence(transitions)
     # trajectories = list()
     # tmp = list()
     # for tuple in tuples:
@@ -121,31 +126,31 @@ if __name__ == '__main__':
     #     correct_tuples.append(correct_tuple)
 
 
-
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='potential')
-    replace_reward.set_boundary_points(buoys)
-    replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
-    point_a, point_b = replace_reward.get_guidance_line()
-    replace_reward.set_shore_lines(upper_shore, lower_shore)
     #
-    reflected_tuples = list()
-    for tuple in tuples:
-        reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
-        if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
-            reflected_tuples.append(reflect_tuple)
-
-
-
-
-    batch_learner = learner.Learner(r_m_=replace_reward, nn_=True)
-    new_list = batch_learner.replace_reward(reflected_tuples+tuples)
-
-    simple_state_tuples = list()
-    for tuple in new_list:
-        new_state = convert_state_space(tuple[0],replace_reward)
-        new_state_p = convert_state_space(tuple[2], replace_reward)
-        new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
-        simple_state_tuples.append(new_tuple)
+    # replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='potential')
+    # replace_reward.set_boundary_points(buoys)
+    # replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
+    # point_a, point_b = replace_reward.get_guidance_line()
+    # replace_reward.set_shore_lines(upper_shore, lower_shore)
+    # #
+    # reflected_tuples = list()
+    # for tuple in tuples:
+    #     reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
+    #     if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
+    #         reflected_tuples.append(reflect_tuple)
+    #
+    #
+    #
+    #
+    # batch_learner = learner.Learner(r_m_=replace_reward, nn_=True)
+    # new_list = batch_learner.replace_reward(reflected_tuples+tuples)
+    #
+    # simple_state_tuples = list()
+    # for tuple in new_list:
+    #     new_state = convert_state_space(tuple[0],replace_reward)
+    #     new_state_p = convert_state_space(tuple[2], replace_reward)
+    #     new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
+    #     simple_state_tuples.append(new_tuple)
 
     # view = Viewer()
     # view.plot_boundary(buoys)
@@ -155,7 +160,7 @@ if __name__ == '__main__':
     #     view.plot_position(state[0], state[1], state[2])
     # view.freeze_screen()
 
-    batch_learner.add_tuples(simple_state_tuples)
-    batch_learner.set_up_agent()
-    batch_learner.fqi_step(2000000)
-    print('Finished')
+    # batch_learner.add_tuples(simple_state_tuples)
+    # batch_learner.set_up_agent()
+    # batch_learner.fqi_step(2000000)
+    # print('Finished')
