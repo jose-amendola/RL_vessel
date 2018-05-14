@@ -125,22 +125,31 @@ if __name__ == '__main__':
     #     correct_tuple = (tuple[0],(0.0,-0.5),tuple[2],tuple[3],tuple[4])
     #     correct_tuples.append(correct_tuple)
 
+    tuples = list()
+    bundle_name = 'samples/samples_bundle_rot02_t10'
+    with open(bundle_name,'rb') as file:
+        tuples = pickle.load(file)
 
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='potential')
+    replace_reward.set_boundary_points(buoys)
+    replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
+    point_a, point_b = replace_reward.get_guidance_line()
+    replace_reward.set_shore_lines(upper_shore, lower_shore)
     #
-    # replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='potential')
-    # replace_reward.set_boundary_points(buoys)
-    # replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
-    # point_a, point_b = replace_reward.get_guidance_line()
-    # replace_reward.set_shore_lines(upper_shore, lower_shore)
-    # #
-    # reflected_tuples = list()
-    # for tuple in tuples:
-    #     reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
-    #     if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
-    #         reflected_tuples.append(reflect_tuple)
-    #
-    #
-    #
+    tuples_with_reflection = list()
+    for tuple in tuples:
+        tuples_with_reflection.append(tuple)
+        reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
+        if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
+            tuples_with_reflection.append(reflect_tuple)
+
+    with open(bundle_name+'reflected',
+              'wb') as outfile:
+        pickle.dump(tuples_with_reflection, outfile)
+    plot_sequence(tuples_with_reflection)
+
+
+
     #
     # batch_learner = learner.Learner(r_m_=replace_reward, nn_=True)
     # new_list = batch_learner.replace_reward(reflected_tuples+tuples)
