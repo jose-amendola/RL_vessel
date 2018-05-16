@@ -241,7 +241,8 @@ def evaluate_agent(ag_obj):
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
-    env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+    env.set_single_start_pos_mode([8000, 4600, -90, 3, 0, 0])
+    # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
     # env.set_single_start_pos_mode([12000, 5500, -90, 3, 0, 0])
     # env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
     # env.starts_from_file_mode('starting_points_global_coord')
@@ -283,7 +284,7 @@ if __name__ == '__main__':
     # sample_transitions(start, end)
     # ag = load_agent('./agents/agent_20180515081507AdaBoostRegressor_r_potentialit1980qdiff1.0')
     # evaluate_agent(ag)
-    evaluate_agent('agents/agent_20180515151118Sequential_r_potentialit40.h5')
+    evaluate_agent('agents/agent_20180516154431Sequential_r_potentialit160.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')

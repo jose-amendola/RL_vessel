@@ -150,12 +150,14 @@ if __name__ == '__main__':
     # with open(bundle_name,'rb') as file:
     #     tuples = pickle.load(file)
     #
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='cte')
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='potential')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     point_a, point_b = replace_reward.get_guidance_line()
     replace_reward.set_shore_lines(upper_shore, lower_shore)
-    # #
+    #
+    # tuples = [tup for tup in tuples if tup[0][2]+103.5 < 20 and tup[0][0] < 10000]
+    #
     # tuples_with_reflection = list()
     # for tuple in tuples:
     #     tuples_with_reflection.append(tuple)
@@ -163,24 +165,24 @@ if __name__ == '__main__':
     #     if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
     #         tuples_with_reflection.append(reflect_tuple)
     #
-    # with open(bundle_name+'reflected',
+    # with open(bundle_name+'_filter_reflected',
     #           'wb') as outfile:
     #     pickle.dump(tuples_with_reflection, outfile)
     # plot_sequence(tuples_with_reflection)
 
     tuples = list()
-    with open('samples/samples_bundle_rot02_t10_short_front_alphacrucis_pcreflected','rb') as file:
+    with open('samples/samples_bundle_rot02_t10_short_front_alphacrucis_pc_filter_reflected','rb') as file:
         tuples = pickle.load(file)
 
-    success_trajectories = get_success_trajectories(tuples)
-    filtered = [tup for tup in tuples if tup[0][2]+103.5 < 20]
+    tuples = [tup for tup in tuples if tup[0][2] + 103.5 < 20 and tup[0][0] < 10000]
+    # tuples = get_success_trajectories(tuples)
+    selected_tuples = tuples
 
-    selected_tuples = filtered
-    # selected_tuples = tuples
     batch_learner = learner.Learner(r_m_=replace_reward, nn_=True)
     new_list = batch_learner.replace_reward(selected_tuples)
-    #
+    # new_list = get_success_trajectories(selected_tuples)
     simple_state_tuples = list()
+
     for tuple in new_list:
         new_state = convert_state_space(tuple[0],replace_reward)
         new_state_p = convert_state_space(tuple[2], replace_reward)

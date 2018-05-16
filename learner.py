@@ -72,7 +72,7 @@ class Learner(object):
                 # self.learner = tree.DecisionTreeRegressor(max_depth=10)
                 self.learner = AdaBoostRegressor()
         self.end_states = dict()
-        self.discount_factor = 1.0
+        self.discount_factor = 0.5
         self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
         self.action_space = actions.BaseAction(action_space_name)
         self.states = list()
@@ -80,7 +80,7 @@ class Learner(object):
         self.rewards = list()
         self.states_p = list()
         self.q_target = list()
-        self.q_diff = list()
+        self.loss_history = list()
         r_mode = '__'
         self.file = None
         if self.rw_mp:
@@ -164,7 +164,7 @@ class Learner(object):
         for it in range(max_iterations):
             self.current_step = it
             print("FQI_iteration: ", it)
-            self.learner.fit(self.samples, self.q_target, batch_size=10000, verbose=2, nb_epoch=50)
+            self.learner.fit(self.samples, self.q_target, batch_size=10000, verbose=2, nb_epoch=500)
             # self.learner.fit(self.samples, self.q_target)
             maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
             self.q_target = self.rewards + self.discount_factor*maxq_prediction

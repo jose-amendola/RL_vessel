@@ -19,7 +19,7 @@ class RewardMapper(object):
         self.plot_flag = plot_flag
         if self.plot_flag:
             self.view = Viewer()
-        self.set_ship_geometry(((-21,-125),(-21,125),(21,125),(21,-125)))
+        self.set_ship_geometry(((0, 0), (0, 10), (20, 0)))
         self.ship_vel = list()
         self.ship_last_vel = list()
         self.ship_pos = list()
@@ -84,7 +84,7 @@ class RewardMapper(object):
         #upper means positive sign
         upper_dist = ship_point.distance(self.upper_shore)
         lower_dist = ship_point.distance(self.lower_shore)
-        return (upper_dist - lower_dist)/(upper_dist + lower_dist)
+        return (upper_dist - lower_dist)
 
 
 
@@ -138,8 +138,8 @@ class RewardMapper(object):
         cont = self.goal_rec.contains(self.ship)
         # reached = cont and abs(self.ship_vel[0]) < abs(self.g_vel_x) and abs(self.ship_pos[2] - self.g_heading_n_cw) < 20
         # reached = abs(self.ship_pos[2] - self.g_heading_n_cw) < 20 and cont
-        # reached = cont
-        reached = abs(self.ship_vel[0]) < 0.2 or cont
+        reached = cont
+        # reached = abs(self.ship_vel[0]) < 0.2 or cont
         if reached:
             print('Reached goal!!')
         return reached
@@ -150,9 +150,11 @@ class RewardMapper(object):
         ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw))
         array = np.array((self.ship_pos))
         old_array = np.array((self.ship_last_pos))
-        new_dist = np.linalg.norm(array - ref_array)
-        old_dist = np.linalg.norm(old_array - ref_array)
-        print('distance_from_goal_state: ', new_dist)
+        # new_dist = np.linalg.norm(array - ref_array)
+        # old_dist = np.linalg.norm(old_array - ref_array)
+        new_align = array[2] - ref_array[2]
+        old_align = old_array[2] - ref_array[2]
+        # print('distance_from_goal_state: ', new_dist)
         # shore_dist = self.boundary.exterior.distance(self.ship)
         old_guid_dist = self.guid_line.distance(self.last_ship)
         new_guid_dist = self.guid_line.distance(self.ship)
@@ -162,19 +164,28 @@ class RewardMapper(object):
         if self.reward_mode == 'cte':
             reward = -0.1
         elif self.reward_mode == 'potential':
-        #goal point field
-            pot_goal = (1/(1+new_dist)) - (1/(1+old_dist))
-            k_goal = 0
-        #guidance_field
-            pot_guid = (1/(1+new_guid_dist)) - (1/(1+old_guid_dist))
-            k_guid = 0
-        # collision repulsion field
+        # #goal point field
+        #     pot_goal = (1/(1+new_dist)) - (1/(1+old_dist))
+        #     k_goal = 0
+        # #guidance_field
+        #     pot_guid = (1/(1+new_guid_dist)) - (1/(1+old_guid_dist))
+        #     k_guid = 0
+        # #alignment
+        #     pot_align = (1/(1+new_align)) - (1/(1+old_align))
+        #     k_align = 0.1
+        # # collision repulsion field
+            pot_collision = new_shore_dist - old_shore_dist
+            k_collision = 0.1
+        #     # reward = k_guid*pot_guid + k_align*pot_align
+        #     if new_guid_dist < 10 and abs(new_align) < 3:
+        #         reward = 100
+        #     else:
+        #         reward = -0.1*new_align - new_guid_dist
             pot_collision = new_shore_dist - old_shore_dist
             k_collision = 0.1
             reward = k_collision*pot_collision
-
         if self.collided():
-            reward = -100
+            reward = 0
             return reward
         goal = self.reached_goal()
         if goal:
