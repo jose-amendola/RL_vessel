@@ -237,11 +237,11 @@ def main():
 
 
 def evaluate_agent(ag_obj):
-    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='cte_rotation', nn_=True)
+    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='stable', nn_=True)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
-    # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+    env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
     # env.set_single_start_pos_mode([12000, 5500, -90, 3, 0, 0])
     # env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
     # env.starts_from_file_mode('starting_points_global_coord')
@@ -281,20 +281,21 @@ if __name__ == '__main__':
 
     # main()
     # sample_transitions(start, end)
-    # ag = load_agent('agent_20180429174542Sequential_r_potentialit2')
-    # evaluate_agent('agents/agent_20180502012219Sequential_r_potentialit50.h5')
+    # ag = load_agent('./agents/agent_20180515081507AdaBoostRegressor_r_potentialit1980qdiff1.0')
+    # evaluate_agent(ag)
+    evaluate_agent('agents/agent_20180515151118Sequential_r_potentialit40.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')
     # train_from_single_episode(ep_list, loaded_vars, 1)
     # files_list = ['experiment_a__', 'experiment_b__',  'experiment_c__', 'experiment_d__', 'experiment_e__']
-    files_list = ['dyna/samples/samples20180512231902action_stable_s0_253']
-    ep = list()
-    for file in files_list:
-        ep_list = load_pickle_file(file)
-        ep = ep + ep_list[0]
+    # files_list = ['dyna/samples/samples20180512231902action_stable_s0_253']
+    # ep = list()
+    # for file in files_list:
+    #     ep_list = load_pickle_file(file)
+        # ep = ep + ep_list[0]
     # train_from_batch(ep, loaded_vars)
-    replay_trajectory(ep)
+    # replay_trajectory(ep)
     # train_from_batch(ep_list, loaded_vars)
     # train_from_samples(['samples20180419231035_s_0_100','samples20180419231035_s_0_200','samples20180419231035_s_0_300',
     #                     'samples20180419231035_s_0_400'])

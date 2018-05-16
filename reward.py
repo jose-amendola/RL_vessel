@@ -84,7 +84,7 @@ class RewardMapper(object):
         #upper means positive sign
         upper_dist = ship_point.distance(self.upper_shore)
         lower_dist = ship_point.distance(self.lower_shore)
-        return upper_dist - lower_dist
+        return (upper_dist - lower_dist)/(upper_dist + lower_dist)
 
 
 
@@ -160,7 +160,7 @@ class RewardMapper(object):
         new_shore_dist = self.boundary.boundary.distance(self.ship)
         reward = -0.1
         if self.reward_mode == 'cte':
-            reward = -1
+            reward = -0.1
         elif self.reward_mode == 'potential':
         #goal point field
             pot_goal = (1/(1+new_dist)) - (1/(1+old_dist))
@@ -178,7 +178,7 @@ class RewardMapper(object):
             return reward
         goal = self.reached_goal()
         if goal:
-            reward = 0
+            reward = 100
         return reward
 
 if __name__ == "__main__":

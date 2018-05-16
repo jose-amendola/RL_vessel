@@ -10,6 +10,26 @@ from planar import Vec2
 from planar.line import Line, LineSegment
 import utils
 import random
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+
+# def plot_simple_state_tuples(tuples):
+#     state = [tuple[0] for tuple in tuples]
+
+
+def get_success_trajectories(tuples):
+    trajs = list()
+    tmp = list()
+    for tup in tuples:
+        if tup[4] == 0:
+            tmp.append(tup)
+        elif tup[4] == 1:
+            tmp.append(tup)
+            trajs = trajs + tmp
+            tmp = list()
+        elif tup[4] == -1:
+            tmp = list()
+    return trajs
 
 def convert_state_space(state,rw_mapper):
     v_lon, v_drift, n_used = utils.global_to_local(state[3],state[4],state[2])
@@ -125,41 +145,47 @@ if __name__ == '__main__':
     #     correct_tuple = (tuple[0],(0.0,-0.5),tuple[2],tuple[3],tuple[4])
     #     correct_tuples.append(correct_tuple)
 
-    tuples = list()
-    bundle_name = 'samples/samples_bundle_rot02_t10'
-    with open(bundle_name,'rb') as file:
-        tuples = pickle.load(file)
-
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='potential')
+    # tuples = list()
+    # bundle_name = 'samples/samples_bundle_rot02_t10_short_front_alphacrucis_pc'
+    # with open(bundle_name,'rb') as file:
+    #     tuples = pickle.load(file)
+    #
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='cte')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     point_a, point_b = replace_reward.get_guidance_line()
     replace_reward.set_shore_lines(upper_shore, lower_shore)
+    # #
+    # tuples_with_reflection = list()
+    # for tuple in tuples:
+    #     tuples_with_reflection.append(tuple)
+    #     reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
+    #     if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
+    #         tuples_with_reflection.append(reflect_tuple)
     #
-    tuples_with_reflection = list()
-    for tuple in tuples:
-        tuples_with_reflection.append(tuple)
-        reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
-        if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
-            tuples_with_reflection.append(reflect_tuple)
+    # with open(bundle_name+'reflected',
+    #           'wb') as outfile:
+    #     pickle.dump(tuples_with_reflection, outfile)
+    # plot_sequence(tuples_with_reflection)
 
-    with open(bundle_name+'reflected',
-              'wb') as outfile:
-        pickle.dump(tuples_with_reflection, outfile)
-    plot_sequence(tuples_with_reflection)
+    tuples = list()
+    with open('samples/samples_bundle_rot02_t10_short_front_alphacrucis_pcreflected','rb') as file:
+        tuples = pickle.load(file)
 
+    success_trajectories = get_success_trajectories(tuples)
+    filtered = [tup for tup in tuples if tup[0][2]+103.5 < 20]
 
-
+    selected_tuples = filtered
+    # selected_tuples = tuples
+    batch_learner = learner.Learner(r_m_=replace_reward, nn_=True)
+    new_list = batch_learner.replace_reward(selected_tuples)
     #
-    # batch_learner = learner.Learner(r_m_=replace_reward, nn_=True)
-    # new_list = batch_learner.replace_reward(reflected_tuples+tuples)
-    #
-    # simple_state_tuples = list()
-    # for tuple in new_list:
-    #     new_state = convert_state_space(tuple[0],replace_reward)
-    #     new_state_p = convert_state_space(tuple[2], replace_reward)
-    #     new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
-    #     simple_state_tuples.append(new_tuple)
+    simple_state_tuples = list()
+    for tuple in new_list:
+        new_state = convert_state_space(tuple[0],replace_reward)
+        new_state_p = convert_state_space(tuple[2], replace_reward)
+        new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
+        simple_state_tuples.append(new_tuple)
 
     # view = Viewer()
     # view.plot_boundary(buoys)
@@ -169,7 +195,7 @@ if __name__ == '__main__':
     #     view.plot_position(state[0], state[1], state[2])
     # view.freeze_screen()
 
-    # batch_learner.add_tuples(simple_state_tuples)
-    # batch_learner.set_up_agent()
-    # batch_learner.fqi_step(2000000)
+    batch_learner.add_tuples(simple_state_tuples)
+    batch_learner.set_up_agent()
+    batch_learner.fqi_step(2000)
     # print('Finished')

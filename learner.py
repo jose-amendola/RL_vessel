@@ -1,6 +1,6 @@
 from sklearn.svm import SVR
 from sklearn import tree
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
 from sklearn import neighbors
 import numpy as np
 import actions
@@ -54,28 +54,23 @@ class Learner(object):
     exploring = None
 
     def __init__(self, file_to_save='agents/agent_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S'), load_saved_regression=False,
-                 action_space_name='cte_rotation',
+                 action_space_name='stable',
                  r_m_=None, nn_=False):
         self.rw_mp = r_m_
         self.debug  = True
         self.current_step = 0
-        self.debug_file = open('agents/debug_fqi_step' + datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.txt','w')
         self.batch_list = list()
         self.nn_flag = nn_
         if self.nn_flag:
             self.learner = get_nn(load_saved_regression)
         else:
-            pass
-            # if load_saved_regression:
-            #     self.learner = load_saved_regression
-            # else:
-            #     pass
-            #     # self.learner = neighbors.KNeighborsRegressor(2, weights='distance', metric=custom_metric)
-            #
-            #     # self.nn_flag = True
-            #     # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
-            #     # self.learner = RandomForestRegressor()
-            #     # self.learner = tree.DecisionTreeRegressor()
+            if load_saved_regression:
+                self.learner = load_saved_regression
+            else:
+                # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
+                # self.learner = RandomForestRegressor(n_estimators=20)
+                # self.learner = tree.DecisionTreeRegressor(max_depth=10)
+                self.learner = AdaBoostRegressor()
         self.end_states = dict()
         self.discount_factor = 1.0
         self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
@@ -85,6 +80,7 @@ class Learner(object):
         self.rewards = list()
         self.states_p = list()
         self.q_target = list()
+        self.q_diff = list()
         r_mode = '__'
         self.file = None
         if self.rw_mp:
@@ -149,32 +145,39 @@ class Learner(object):
         self.states_p = [list(k[2]) for k in self.batch_list]
         self.end_states = [(x[4]) for x in self.batch_list]
         self.q_target = self.rewards
+        print('Debug final state :',self.q_target[-1])
         self.states = np.array(self.states)
         self.act = np.array(self.act)
         self.samples = np.column_stack((self.states, self.act))
 
+    # def find_max_q_diff(self):
+    #     for sample in self.samples:
+    #         current_q = self.learner.predict(self.samples)
+    #
+    #     relative = np.divide(diff_array, np.abs(current))
+    #     max_diff = np.nanmax(relative)
+    #     self.q_diff.append(max_diff)
+    #     print("Max difference between current Q and target Q: ", max_diff)
+
     def fqi_step(self, max_iterations, debug=False):
+        stop_flag = False
         for it in range(max_iterations):
             self.current_step = it
             print("FQI_iteration: ", it)
-            self.learner.fit(self.samples, self.q_target, batch_size=1000, verbose=2, nb_epoch=50)
-            layer_a = self.learner.layers[0].get_weights()
-            layer_b = self.learner.layers[1].get_weights()
-            layer_c = self.learner.layers[2].get_weights()
+            self.learner.fit(self.samples, self.q_target, batch_size=10000, verbose=2, nb_epoch=50)
+            # self.learner.fit(self.samples, self.q_target)
             maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
             self.q_target = self.rewards + self.discount_factor*maxq_prediction
-            if it % 10 == 0 and it != 0:
+            print("Last rewards: ", self.rewards[-3:])
+            if (it % 10 == 0 and it != 0) or stop_flag:
                 if self.nn_flag:
                     self.learner.save(self.file+'it'+str(it)+'.h5')
                 else:
-                    with open(self.file, 'wb') as outfile:
+                    with open(self.file+'it'+str(it), 'wb') as outfile:
                         pickle.dump(self.learner, outfile)
-                if self.debug:
-                    print(maxq_prediction, file=self.debug_file)
-                    print(self.q_target,file=self.debug_file)
-                    print('\n\n', file=self.debug_file)
+            if stop_flag:
+                break
         self.current_step = 0
-
 
 
     def find_max_q(self, i, state_p):
@@ -191,6 +194,7 @@ class Learner(object):
                 else:
                     state_action = np.append(state_p, action)
                 state_action = np.reshape(state_action, (1, -1))
+                # qpred = self.learner.predict(state_action)[0]
                 qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
                 # if self.current_step % 1 == 0 and self.current_step != 0 and self.debug:
                 #     print(action, file=self.debug_file)
@@ -226,12 +230,6 @@ class Learner(object):
         print(selected_action[0])
         print(selected_action[1])
         return selected_action
-
-    def __del__(self):
-        if self.debug:
-            self.debug_file.close()
-        with open(self.file, 'wb') as outfile:
-            pickle.dump(self.learner, outfile)
 
 if __name__ == '__main__':
     with open('agent20180408200244', 'rb') as infile:
