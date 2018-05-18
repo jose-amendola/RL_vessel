@@ -13,6 +13,7 @@ from keras import optimizers
 from keras.layers import Dense
 import keras.models
 from keras.utils import plot_model
+from keras.callbacks import CSVLogger
 
 import random
 
@@ -72,7 +73,7 @@ class Learner(object):
                 # self.learner = tree.DecisionTreeRegressor(max_depth=10)
                 self.learner = AdaBoostRegressor()
         self.end_states = dict()
-        self.discount_factor = 0.5
+        self.discount_factor = 0.99
         self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
         self.action_space = actions.BaseAction(action_space_name)
         self.states = list()
@@ -80,12 +81,13 @@ class Learner(object):
         self.rewards = list()
         self.states_p = list()
         self.q_target = list()
-        self.loss_history = list()
         r_mode = '__'
         self.file = None
         if self.rw_mp:
             r_mode = self.rw_mp.reward_mode
         self.file = file_to_save + self.learner.__class__.__name__ + '_r_' + r_mode
+        self.logger = CSVLogger(self.file + 'log', separator=';', append=True)
+
 
     def replace_reward(self, transition_list):
         new_list = list()
@@ -164,10 +166,13 @@ class Learner(object):
         for it in range(max_iterations):
             self.current_step = it
             print("FQI_iteration: ", it)
-            self.learner.fit(self.samples, self.q_target, batch_size=10000, verbose=2, nb_epoch=500)
+            np.max(self.learner.predict(self.samples))
+            self.learner.fit(self.samples, self.q_target, batch_size=10000, verbose=2, nb_epoch=1000, callbacks=[self.logger])
             # self.learner.fit(self.samples, self.q_target)
             maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
             self.q_target = self.rewards + self.discount_factor*maxq_prediction
+            max_qdiff = np.max(self.learner.predict(self.samples)-self.q_target)
+            print('Max q diff :',max_qdiff)
             print("Last rewards: ", self.rewards[-3:])
             if (it % 10 == 0 and it != 0) or stop_flag:
                 if self.nn_flag:

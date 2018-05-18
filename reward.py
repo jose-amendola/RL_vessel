@@ -181,15 +181,15 @@ class RewardMapper(object):
         #         reward = 100
         #     else:
         #         reward = -0.1*new_align - new_guid_dist
-            pot_collision = new_shore_dist - old_shore_dist
-            k_collision = 0.1
-            reward = k_collision*pot_collision
+        #     pot_collision = new_shore_dist - old_shore_dist
+        #     k_collision = 0.1
+        #     reward = k_collision*pot_collision
         if self.collided():
-            reward = 0
+            reward = -1
             return reward
         goal = self.reached_goal()
         if goal:
-            reward = 100
+            reward = 0
         return reward
 
 if __name__ == "__main__":

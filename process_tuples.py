@@ -150,7 +150,7 @@ if __name__ == '__main__':
     # with open(bundle_name,'rb') as file:
     #     tuples = pickle.load(file)
     #
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='potential')
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='cte')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     point_a, point_b = replace_reward.get_guidance_line()
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     # plot_sequence(tuples_with_reflection)
 
     tuples = list()
-    with open('samples/samples_bundle_rot02_t10_short_front_alphacrucis_pc_filter_reflected','rb') as file:
+    with open('samples/samples_bundle_rot02_t10_short_front_alphacrucis_pcreflected','rb') as file:
         tuples = pickle.load(file)
 
     tuples = [tup for tup in tuples if tup[0][2] + 103.5 < 20 and tup[0][0] < 10000]
