@@ -80,6 +80,16 @@ def reflect_tuple_on_line(point_a, point_b, tuple):
     reflected_action = (-tuple[1][0], tuple[1][1])
     return (reflected_state, reflected_action, reflected_state_p, tuple[3], tuple[4])
 
+def get_strictly_simetric_set(org_tuples, mapper, point_a, point_b):
+    tuples = [tup for tup in org_tuples if tup[0][2]+103.5 < 20 and tup[0][0] < 11500]
+    print('Number of tuples to be considered:', len(tuples))
+    tuples_with_reflection = list()
+    for tuple in tuples:
+        reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
+        if mapper.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
+            tuples_with_reflection.append(tuple)
+            tuples_with_reflection.append(reflect_tuple)
+    print('Number of tuples after reflection:', len(tuples_with_reflection))
 
 
 if __name__ == '__main__':
@@ -146,35 +156,38 @@ if __name__ == '__main__':
     #     correct_tuples.append(correct_tuple)
 
     # tuples = list()
-    # bundle_name = 'samples/samples_bundle_rot02_t10_short_front_alphacrucis_pc'
+    # bundle_name = 'samples/samples_bundle_rot02_t10_short_front_official'
     # with open(bundle_name,'rb') as file:
     #     tuples = pickle.load(file)
-    #
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='cte')
+    # #
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='punish_align')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     point_a, point_b = replace_reward.get_guidance_line()
     replace_reward.set_shore_lines(upper_shore, lower_shore)
-    #
-    # tuples = [tup for tup in tuples if tup[0][2]+103.5 < 20 and tup[0][0] < 10000]
-    #
+    # #
+    # tuples = [tup for tup in tuples if tup[0][2]+103.5 < 20 and tup[0][0] < 11500]
+    # print('Number of tuples to be considered:', len(tuples))
     # tuples_with_reflection = list()
     # for tuple in tuples:
-    #     tuples_with_reflection.append(tuple)
+    #
     #     reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
     #     if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
+    #         tuples_with_reflection.append(tuple)
     #         tuples_with_reflection.append(reflect_tuple)
-    #
-    # with open(bundle_name+'_filter_reflected',
+    # print('Number of tuples after reflection:', len(tuples_with_reflection))
+    # with open(bundle_name+'_filter_reflected_sim',
     #           'wb') as outfile:
     #     pickle.dump(tuples_with_reflection, outfile)
     # plot_sequence(tuples_with_reflection)
 
+
+
     tuples = list()
-    with open('samples/samples_bundle_rot02_t10_short_front_alphacrucis_pcreflected','rb') as file:
+    with open('samples/samples_bundle_rot02_t10_short_front_official_filter_reflected_sim', 'rb') as file:
         tuples = pickle.load(file)
 
-    tuples = [tup for tup in tuples if tup[0][2] + 103.5 < 20 and tup[0][0] < 10000]
+    # tuples = [tup for tup in tuples if tup[0][2] + 103.5 < 20 and tup[0][0] < 10000]
     # tuples = get_success_trajectories(tuples)
     selected_tuples = tuples
 
@@ -188,6 +201,7 @@ if __name__ == '__main__':
         new_state_p = convert_state_space(tuple[2], replace_reward)
         new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
         simple_state_tuples.append(new_tuple)
+
 
     # view = Viewer()
     # view.plot_boundary(buoys)

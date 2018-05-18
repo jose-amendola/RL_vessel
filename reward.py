@@ -152,8 +152,8 @@ class RewardMapper(object):
         old_array = np.array((self.ship_last_pos))
         # new_dist = np.linalg.norm(array - ref_array)
         # old_dist = np.linalg.norm(old_array - ref_array)
-        new_align = array[2] - ref_array[2]
-        old_align = old_array[2] - ref_array[2]
+        new_misalign = abs(array[2] - ref_array[2])
+        old_misalign = abs(old_array[2] - ref_array[2])
         # print('distance_from_goal_state: ', new_dist)
         # shore_dist = self.boundary.exterior.distance(self.ship)
         old_guid_dist = self.guid_line.distance(self.last_ship)
@@ -184,10 +184,15 @@ class RewardMapper(object):
         #     pot_collision = new_shore_dist - old_shore_dist
         #     k_collision = 0.1
         #     reward = k_collision*pot_collision
+        elif self.reward_mode == 'punish_align':
+            if new_misalign < 2 and new_guid_dist < 1:
+                reward = 100
+            else:
+                reward = -(new_misalign**2)
         if self.collided():
-            reward = -1
+            reward = -100
             return reward
-        goal = self.reached_goal()
+        goal = self.reached_goal() #
         if goal:
             reward = 0
         return reward
