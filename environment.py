@@ -81,9 +81,9 @@ class Environment(buzz_python.session_subscriber):
 
     def create_variants_to_start(self, local_coord_start):
         start_variants  = list()
-        x = np.linspace(-100, 100, 5)
-        y = np.linspace(-100, 100, 5)
-        theta = np.linspace(-15, +15, 3)
+        x = np.linspace(-20, 20, 5)
+        y = np.linspace(-20, 20, 5)
+        theta = np.linspace(-5, +5, 3)
         vlon = np.linspace(-0.2, +0.2, 3)
         vdrift = np.linspace(-0.1, +0.1, 3)
         theta_p = np.linspace(-0.1, +0.1, 3)

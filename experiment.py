@@ -13,6 +13,8 @@ import reward
 import json
 import argparse
 import numpy as np
+import csv
+import random
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -150,14 +152,14 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
 
 def sample_transitions(start_state=0, end_state=-1):
     #TODO Implement
-    action_space_name = 'stable'
+    action_space_name = 'complete_angle'
     action_space = actions.BaseAction(action_space_name)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
     env.set_up()
     # env.set_sampling_mode(start_state, end_state)
-    # env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
-    env.set_single_start_pos_mode([13000, 5777.706, -103.5, 3, 0, 0])
+    env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
+    # env.set_single_start_pos_mode([13000, 5777.706, -103.5, 3, 0, 0])
     # env.starts_from_file_mode('samples/starting_points_global_coord20180512195730')
     transitions_list = list()
     for episode in range(5000000):
@@ -171,9 +173,14 @@ def sample_transitions(start_state=0, end_state=-1):
             # env.set_up()
             env.reset_to_start()
             for i in range(500000):
+                rand_act = random.choice(action_space.action_combinations)
+                if random.random() < 0.2:
+                    act = rand_act
+                else:
+                    act = action
                 state = env.get_state()
-                angle = action[0]
-                rot = action[1]
+                angle = act[0]
+                rot = act[1]
                 if episode == 0:
                     angle = 0.0
                 state_prime, rw = env.step(angle, rot)
@@ -184,7 +191,7 @@ def sample_transitions(start_state=0, end_state=-1):
                 if i % 50 == 0 and episode == 0:
                     env.add_states_to_start_list(state_prime)
                 transitions_list.append(transition)
-                if final_flag != 0:
+                if final_flag != 0 or state[0] < 7000:
                     break
             with open(sample_file + 'action_' + action_space_name + '_s' + str(start) + '_' + str(episode),
                       'wb') as outfile:
@@ -239,12 +246,12 @@ def main():
 
 def evaluate_agent(ag_obj):
 
-    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='smooth', nn_=True)
+    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='stable', nn_=True)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
 
-    starting_points = [[8000, 4600, -90, 3, 0, 0],
+    starting_points = [[11000, 5340, -103, 2.5, 0, 0],
                        [11000, 5300, -101, 3, 0, 0],
                        [11000, 5230, -103, 3, 0, 0],
                        [11000, 5380, -108, 3, 0, 0],
@@ -281,7 +288,13 @@ def evaluate_agent(ag_obj):
         num_steps.append(total_steps)
         with open('trajectory_'+agent.learner.__class__.__name__+'it'+str(total_steps)+'end'+str(final_flag), 'wb') as outfile:
             pickle.dump(transitions_list, outfile)
-    with open('results'+agent.learner.__class__.__name__,'wb') as outfile:
+        with open('trajectory_'+agent.learner.__class__.__name__+'it'+str(total_steps)+'end'+str(final_flag)+'.csv', 'wt') as out:
+            csv_out = csv.writer(out)
+            csv_out.writerow(['x', 'y', 'heading', 'rudder_lvl'])
+            for tr in transitions_list:
+                pos = (tr[0][0], tr[0][1], tr[0][2], tr[1][0])
+                csv_out.writerow(pos)
+    with open('results'+agent.learner.__class__.__name__, 'wb') as outfile:
             pickle.dump(num_steps, outfile)
             pickle.dump(results, outfile)
 
@@ -304,7 +317,7 @@ if __name__ == '__main__':
     # sample_transitions(start, end)
     # ag = load_agent('agents/agent_20180519195648DecisionTreeRegressor_r_rule_disc_0 .0it1')
     # evaluate_agent(ag)
-    evaluate_agent('agents/agent_20180520153900Sequential_r_align_disc_0.9it100.h5')
+    evaluate_agent('agents/agent_20180520073454Sequential_r_dist_disc_0.9it123.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')
