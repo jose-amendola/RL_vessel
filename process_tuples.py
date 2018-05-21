@@ -155,18 +155,20 @@ if __name__ == '__main__':
     #     correct_tuple = (tuple[0],(0.0,-0.5),tuple[2],tuple[3],tuple[4])
     #     correct_tuples.append(correct_tuple)
 
-    # tuples = list()
-    # bundle_name = 'samples/samples_bundle_rot02_t10_short_front_official'
-    # with open(bundle_name,'rb') as file:
-    #     tuples = pickle.load(file)
-    # #
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='punish_align')
+
+
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='align')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     point_a, point_b = replace_reward.get_guidance_line()
     replace_reward.set_shore_lines(upper_shore, lower_shore)
-    # #
-    # tuples = [tup for tup in tuples if tup[0][2]+103.5 < 20 and tup[0][0] < 11500]
+
+    # tuples = list()
+    # bundle_name = 'samples/samples_bundle_rot02_t10_short_front_official'
+    # with open(bundle_name,'rb') as file:
+    #     tuples = pickle.load(file)
+    #
+    # tuples = [tup for tup in tuples if tup[0][2]+103.5 < 20 and 7000 < tup[0][0] < 11500 and tup[0][3]<0]
     # print('Number of tuples to be considered:', len(tuples))
     # tuples_with_reflection = list()
     # for tuple in tuples:
@@ -187,13 +189,11 @@ if __name__ == '__main__':
     with open('samples/samples_bundle_rot02_t10_short_front_official_filter_reflected_sim', 'rb') as file:
         tuples = pickle.load(file)
 
-    # tuples = [tup for tup in tuples if tup[0][2] + 103.5 < 20 and tup[0][0] < 10000]
-    # tuples = get_success_trajectories(tuples)
     selected_tuples = tuples
 
     batch_learner = learner.Learner(r_m_=replace_reward, nn_=True)
     new_list = batch_learner.replace_reward(selected_tuples)
-    # new_list = get_success_trajectories(selected_tuples)
+
     simple_state_tuples = list()
 
     for tuple in new_list:
@@ -202,16 +202,10 @@ if __name__ == '__main__':
         new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
         simple_state_tuples.append(new_tuple)
 
+    final = [tpl for tpl in simple_state_tuples if tpl[0][0] > 0]
 
-    # view = Viewer()
-    # view.plot_boundary(buoys)
-    # view.plot_goal(goal, goal_factor)
-    # for transition in new_list:
-    #     state = transition[0]
-    #     view.plot_position(state[0], state[1], state[2])
-    # view.freeze_screen()
-
-    batch_learner.add_tuples(simple_state_tuples)
+    random.shuffle(final)
+    batch_learner.add_tuples(final)
     batch_learner.set_up_agent()
     batch_learner.fqi_step(2000)
     # print('Finished')

@@ -41,11 +41,12 @@ def get_nn(obj):
         else:
             model.add(Dense(20, input_shape=(7,), activation='relu'))
         model.add(Dense(20, activation='relu'))
+        # model.add(Dense(20, activation='relu'))
         model.add(Dense(1, activation='linear'))
         # Compile model
         # sgd = optimizers.SGD(lr=1, decay=0, momentum=0.9, nesterov=True)
-        # rmsprop = optimizers.RMSprop(lr=1)
-        model.compile(loss='mean_squared_error', optimizer='rmsprop')
+        # rmsprop = optimizers.RMSprop(lr=0.001)
+        model.compile(loss='mean_squared_error', optimizer='adam')
         # plot_model(model, to_file='model.png')
     return model
 
@@ -70,10 +71,10 @@ class Learner(object):
             else:
                 # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
                 # self.learner = RandomForestRegressor(n_estimators=20)
-                # self.learner = tree.DecisionTreeRegressor(max_depth=10)
+                # self.learner = tree.DecisionTreeRegressor(max_depth=4)
                 self.learner = AdaBoostRegressor()
         self.end_states = dict()
-        self.discount_factor = 0.0
+        self.discount_factor = 0.9
         self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
         self.action_space = actions.BaseAction(action_space_name)
         self.states = list()
@@ -146,10 +147,11 @@ class Learner(object):
         self.states_p = [list(k[2]) for k in self.batch_list]
         self.end_states = [(x[4]) for x in self.batch_list]
         self.q_target = self.rewards
-        print('Debug final state :',self.q_target[-1])
+        # print('Debug final state :',self.q_target[-1])
         self.states = np.array(self.states)
         self.act = np.array(self.act)
         self.samples = np.column_stack((self.states, self.act))
+        # self.samples = self.normalize_state_action(self.samples)
 
     # def find_max_q_diff(self):
     #     for sample in self.samples:
@@ -165,11 +167,16 @@ class Learner(object):
         for it in range(max_iterations):
             self.current_step = it
             print("FQI_iteration: ", it)
-            np.max(self.learner.predict(self.samples))
-            self.learner.fit(self.samples, self.q_target, batch_size=100, verbose=2, nb_epoch=100, callbacks=[self.logger])
-            # self.learner.fit(self.samples, self.q_target)
-            maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
-            self.q_target = self.rewards + self.discount_factor*maxq_prediction
+            self.learner.fit(self.samples, self.q_target, batch_size=1000, verbose=1, nb_epoch=500, callbacks=[self.logger])
+            self.learner.fit(self.samples, self.q_target)
+            if not self.nn_flag:
+                sc = self.learner.score(self.samples, self.q_target)
+                print("Score: ",sc)
+            if self.discount_factor > 0:
+                maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
+                self.q_target = self.rewards + self.discount_factor*maxq_prediction
+            else:
+                self.q_target = self.rewards
             print("Last rewards: ", self.rewards[-3:])
             if (it % 1 == 0 and it != 0) or stop_flag:
                 if self.nn_flag:
@@ -181,6 +188,11 @@ class Learner(object):
                 break
         self.current_step = 0
 
+    def normalize_state_action(self,state_action):
+        state_a = [state/3 for state in state_action[:,0]]
+        state_b = [state/180 for state in state_action[:,1]]
+        state_c = [state / 200 for state in state_action[:, 2]]
+        return np.column_stack((state_a, state_b, state_c,  state_action[:,3]))
 
     def find_max_q(self, i, state_p):
         print('  >>>Finding max_q for : ',i)
@@ -196,8 +208,8 @@ class Learner(object):
                 else:
                     state_action = np.append(state_p, action)
                 state_action = np.reshape(state_action, (1, -1))
-                # qpred = self.learner.predict(state_action)[0]
-                qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
+                qpred = self.learner.predict(state_action)[0]
+                # qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
                 # if self.current_step % 1 == 0 and self.current_step != 0 and self.debug:
                 #     print(action, file=self.debug_file)
                 #     print(qpred, file=self.debug_file)
@@ -218,7 +230,8 @@ class Learner(object):
             else:
                 state_action = np.append(state, action)
             state_action = np.reshape(state_action, (1, -1))
-            qpred = self.learner.predict(state_action)
+            # qpred = self.learner.predict(state_action)
+            qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
             print("Qpred an state_action",qpred,state_action)
             if qpred > qmax:
                 qmax = qpred

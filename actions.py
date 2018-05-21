@@ -13,6 +13,14 @@ spaces = {'simple_action_space': {
             'rudder_lvls': [-0.5, 0.0, 0.5],
             'thruster_lvls': [0.2]
         },
+        'smooth': {
+            'rudder_lvls': [-0.2, 0.0, 0.2],
+            'thruster_lvls': [0.2]
+        },
+        'complete_angle': {
+            'rudder_lvls': [-1.0, -0.5, -0.2, 0.0, 0.2, 0.5,1.0],
+            'thruster_lvls': [0.2]
+        },
         'large_action_space':{
             'rudder_lvls':[-0.5, 0.0, 0.5],
             'thruster_lvls':[-0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6]

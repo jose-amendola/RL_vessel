@@ -12,6 +12,7 @@ import utils
 import reward
 import json
 import argparse
+import numpy as np
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -238,34 +239,51 @@ def main():
 
 def evaluate_agent(ag_obj):
 
-    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='stable', nn_=True)
+    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='smooth', nn_=True)
     env = environment.Environment(buoys, steps_between_actions, vessel_id,
                                   rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
     env.set_up()
-    env.set_single_start_pos_mode([11000, 5380.10098, -103, 3, 0, 0])
+
+    starting_points = [[8000, 4600, -90, 3, 0, 0],
+                       [11000, 5300, -101, 3, 0, 0],
+                       [11000, 5230, -103, 3, 0, 0],
+                       [11000, 5380, -108, 3, 0, 0],
+                       [11000, 5300, -103, 3, 0, 0],
+                       [11000, 5200, -90, 3, 0, 0]]
+
+    # env.set_single_start_pos_mode([11000, 5380.10098, -103, 3, 0, 0])
     # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
     # env.set_single_start_pos_mode([12000, 5500, -90, 3, 0, 0])
     # env.set_single_start_pos_mode([6600, 4200, -102, 3, 0, 0])
     # env.starts_from_file_mode('starting_points_global_coord')
     # env.move_to_next_start()
-    final_flag = 0
-    transitions_list = list()
-    total_steps = 0
-    for step in range(evaluation_steps):
-        state = env.get_state(state_mode='simple_state')
-        state = env.convert_to_simple_state(state)
-        action = agent.select_action(state)
-        state_prime, reward = env.step(action[0], action[1])
-        transition = (state, (action[0], action[1]), state_prime, reward)
-        final_flag = env.is_final()
-        print("***Evaluation step " + str(step + 1) + " Completed")
-        transitions_list.append(transition)
-        total_steps = step
-        if final_flag != 0:
-            break
-    with open('trajectory_'+agent.learner.__class__.__name__+'it'+str(total_steps)+'end'+str(final_flag), 'wb') as outfile:
-        pickle.dump(transitions_list, outfile)
-
+    results = list()
+    num_steps = list()
+    for start_pos in starting_points:
+        final_flag = 0
+        transitions_list = list()
+        total_steps = 0
+        env.set_single_start_pos_mode(start_pos)
+        env.move_to_next_start()
+        for step in range(evaluation_steps):
+            state = env.get_state(state_mode='simple_state')
+            state = env.convert_to_simple_state(state)
+            action = agent.select_action(state)
+            state_prime, reward = env.step(action[0], action[1])
+            transition = (state, (action[0], action[1]), state_prime, reward)
+            final_flag = env.is_final()
+            print("***Evaluation step " + str(step + 1) + " Completed")
+            transitions_list.append(transition)
+            total_steps = step
+            if final_flag != 0:
+                break
+        results.append(final_flag)
+        num_steps.append(total_steps)
+        with open('trajectory_'+agent.learner.__class__.__name__+'it'+str(total_steps)+'end'+str(final_flag), 'wb') as outfile:
+            pickle.dump(transitions_list, outfile)
+    with open('results'+agent.learner.__class__.__name__,'wb') as outfile:
+            pickle.dump(num_steps, outfile)
+            pickle.dump(results, outfile)
 
 if __name__ == '__main__':
     # main()
@@ -284,9 +302,9 @@ if __name__ == '__main__':
 
     # main()
     # sample_transitions(start, end)
-    # ag = load_agent('./agents/agent_20180515081507AdaBoostRegressor_r_potentialit1980qdiff1.0')
+    # ag = load_agent('agents/agent_20180519195648DecisionTreeRegressor_r_rule_disc_0 .0it1')
     # evaluate_agent(ag)
-    evaluate_agent('agents/agent_20180518180542Sequential_r_punish_dist_align_disc_0.0it1.h5')
+    evaluate_agent('agents/agent_20180520153900Sequential_r_align_disc_0.9it100.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')

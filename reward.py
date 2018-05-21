@@ -152,50 +152,49 @@ class RewardMapper(object):
         old_array = np.array((self.ship_last_pos))
         # new_dist = np.linalg.norm(array - ref_array)
         # old_dist = np.linalg.norm(old_array - ref_array)
-        new_misalign = abs(array[2] - ref_array[2])
-        old_misalign = abs(old_array[2] - ref_array[2])
+        # new_misalign = abs(array[2] - ref_array[2])
+        old_u_misalign = abs(old_array[2] - ref_array[2])
         # print('distance_from_goal_state: ', new_dist)
         # shore_dist = self.boundary.exterior.distance(self.ship)
-        old_guid_dist = self.guid_line.distance(self.last_ship)
-        new_guid_dist = self.guid_line.distance(self.ship)
-        old_shore_dist = self.boundary.boundary.distance(self.last_ship)
-        new_shore_dist = self.boundary.boundary.distance(self.ship)
+        # old_guid_dist = self.guid_line.distance(self.last_ship)
+        # new_guid_dist = self.guid_line.distance(self.ship)
+        # old_shore_dist = self.boundary.boundary.distance(self.last_ship)
+        # new_shore_dist = self.boundary.boundary.distance(self.ship)
+        # new_u_balance = abs(self.get_shore_balance(array[0],array[1]))
+        old_u_balance = abs(self.get_shore_balance(old_array[0], old_array[1]))
+        # old_balance = self.get_shore_balance(old_array[0], old_array[1])
+        # old_misalign = old_array[2] - ref_array[2]
         reward = -0.1
         if self.reward_mode == 'cte':
             reward = -0.1
         elif self.reward_mode == 'potential':
-        # #goal point field
-        #     pot_goal = (1/(1+new_dist)) - (1/(1+old_dist))
-        #     k_goal = 0
-        # #guidance_field
-        #     pot_guid = (1/(1+new_guid_dist)) - (1/(1+old_guid_dist))
-        #     k_guid = 0
-        # #alignment
-        #     pot_align = (1/(1+new_align)) - (1/(1+old_align))
-        #     k_align = 0.1
-        # # collision repulsion field
-            pot_collision = new_shore_dist - old_shore_dist
-            k_collision = 0.1
-        #     # reward = k_guid*pot_guid + k_align*pot_align
-        #     if new_guid_dist < 10 and abs(new_align) < 3:
-        #         reward = 100
-        #     else:
-        #         reward = -0.1*new_align - new_guid_dist
-        #     pot_collision = new_shore_dist - old_shore_dist
-        #     k_collision = 0.1
-        #     reward = k_collision*pot_collision
-        elif self.reward_mode == 'punish_align':
-            if new_misalign < 2 and new_guid_dist < 1:
-                reward = 100
-            else:
-                reward = -(new_misalign**2)
+            pass
+        elif self.reward_mode == 'rule':
+            pass
+            # if (old_balance < 0 and old_misalign > 0 and self.last_angle_selected != - 0.5) or \
+            #         (old_balance > 0 and old_misalign < 0 and self.last_angle_selected != 0.5):
+            #     reward = -100
+            # elif (old_balance == 0 and old_misalign == 0 and self.last_angle_selected == - 0.5):
+            #     reward = -100
+            # else:
+            #     reward = 100
+        elif self.reward_mode == 'dist':
+            reward = 100*math.exp(-0.000001*old_u_balance-0.000001*old_u_misalign)
+        elif self.reward_mode == 'align':
+            reward = 100*math.exp(-0.000001*old_u_misalign)
         if self.collided():
             reward = -100
             return reward
-        goal = self.reached_goal() #
-        if goal:
-            reward = 0
         return reward
+        # elif self.reward_mode == 'punish_align_balance':
+        # new_field = -new_u_balance
+        # old_field = 100*math.exp(-0.000001*old_u_balance-0.000001*old_misalign)
+        # old_field = -(old_u_balance**2)
+        # reward = new_field
+
+        # goal = self.reached_goal() #
+        # if goal:
+        #     reward = 0
 
 if __name__ == "__main__":
     reward_map = RewardMapper(False)
@@ -211,4 +210,7 @@ if __name__ == "__main__":
     reward_map.set_boundary_points(buoys)
     reward_map.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     reward_map.get_guidance_line()
+    reward_map.set_shore_lines(upper_shore, lower_shore)
+    bal = reward_map.get_shore_balance(8000,4570)
+    print(bal)
     print("Stop")
