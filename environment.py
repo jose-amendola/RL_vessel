@@ -18,8 +18,10 @@ import random
 
 
 class Environment(buzz_python.session_subscriber):
-    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _g_heading, _g_vel_l, _plot):
+    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _g_heading, _g_vel_l, _plot,
+                 _increment=0.1):
         super(Environment, self).__init__()
+        self.step_increment = _increment
         self.buoys = _buoys_list
         self.goal = _goal
         self.g_heading = _g_heading
@@ -57,6 +59,7 @@ class Environment(buzz_python.session_subscriber):
         os.chdir('./dyna')
         self.dyna_proc = None
         self.accumulated_starts = list()
+
 
     def get_sample_states(self):
         #TODO implement
@@ -134,6 +137,7 @@ class Environment(buzz_python.session_subscriber):
     def on_time_advanced(self, time):
         step = self.simulation.get_current_time_step()
 
+
     def on_time_advance_requested(self, process):
         if process.get_id() == self.dyna_ctrl_id:
             self.allow_advance_ev.set()
@@ -154,7 +158,7 @@ class Environment(buzz_python.session_subscriber):
         self.own = self.simulation.get_runtime_component(self.control_id)
 
         self.simulation.build()
-        self.simulation.set_current_time_increment(0.1)
+        self.simulation.set_current_time_increment(self.step_increment)
         self.start()
         self.vessel = self.simulation.get_vessel(self.vessel_id)
 
