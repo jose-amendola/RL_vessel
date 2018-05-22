@@ -224,7 +224,8 @@ class Environment(buzz_python.session_subscriber):
     def convert_to_simple_state(self, state):
         v_lon, v_drift, n_used = utils.global_to_local(state[3], state[4], state[2])
         bl = self.reward_mapper.get_shore_balance(state[0], state[1])
-        return (v_lon, state[2], bl)
+        misalign = state[2] + 103.5
+        return (v_lon, misalign, bl)
 
 
     def advance(self):
