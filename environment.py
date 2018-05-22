@@ -238,15 +238,17 @@ class Environment(buzz_python.session_subscriber):
             :param rot_level:
             :param angle_level:
         """
-        cycle = 0
-        for cycle in range(self.steps_between_actions):
-            self.advance()
+
         print('Rotation level: ', rot_level)
         print('Angle level: ', angle_level)
         self.thruster.set_demanded_rotation(rot_level*self.max_rot)
         self.simulation.update(self.thruster)
         self.rudder.set_demanded_angle(angle_level*self.max_angle)
         self.simulation.update(self.rudder)
+
+        cycle = 0
+        for cycle in range(self.steps_between_actions):
+            self.advance()
         statePrime = self.get_state() #Get next State
         print('statePrime: ', statePrime)
         self.reward_mapper.update_ship(statePrime[0], statePrime[1], statePrime[2], statePrime[3], statePrime[4],
