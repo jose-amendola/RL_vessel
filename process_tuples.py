@@ -10,6 +10,8 @@ from planar import Vec2
 from planar.line import Line, LineSegment
 import utils
 import random
+import experiment
+import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
@@ -34,7 +36,8 @@ def get_success_trajectories(tuples):
 def convert_state_space(state,rw_mapper):
     v_lon, v_drift, n_used = utils.global_to_local(state[3],state[4],state[2])
     bl = rw_mapper.get_shore_balance(state[0],state[1])
-    return (v_lon, state[2], bl)
+    misalign = state[2] + 103.5 #guidance angle
+    return (v_lon, misalign, bl)
 
 def plot_sequence(tuples):
     view = Viewer()
@@ -42,6 +45,8 @@ def plot_sequence(tuples):
     view.plot_goal(goal, goal_factor)
     for tuple in tuples:
         state = tuple[0]
+        print('Position: ', state[0], state[1], state[2])
+        print('Velocities: ', state[3], state[4], state[5])
         print('Action: ',tuple[1])
         view.plot_position(state[0], state[1], state[2])
     view.freeze_screen()
@@ -155,44 +160,41 @@ if __name__ == '__main__':
     #     correct_tuple = (tuple[0],(0.0,-0.5),tuple[2],tuple[3],tuple[4])
     #     correct_tuples.append(correct_tuple)
 
-
-
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='align')
+    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='step')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     point_a, point_b = replace_reward.get_guidance_line()
     replace_reward.set_shore_lines(upper_shore, lower_shore)
-
-    # tuples = list()
-    # bundle_name = 'samples/samples_bundle_rot02_t10_short_front_official'
-    # with open(bundle_name,'rb') as file:
-    #     tuples = pickle.load(file)
     #
+    tuples = list()
+    bundle_name = 'samples/samples_bundle_complete_action_b'
+    with open(bundle_name,'rb') as file:
+        tuples = pickle.load(file)
     # tuples = [tup for tup in tuples if tup[0][2]+103.5 < 20 and 7000 < tup[0][0] < 11500 and tup[0][3]<0]
     # print('Number of tuples to be considered:', len(tuples))
-    # tuples_with_reflection = list()
-    # for tuple in tuples:
-    #
-    #     reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
-    #     if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
-    #         tuples_with_reflection.append(tuple)
-    #         tuples_with_reflection.append(reflect_tuple)
-    # print('Number of tuples after reflection:', len(tuples_with_reflection))
-    # with open(bundle_name+'_filter_reflected_sim',
-    #           'wb') as outfile:
-    #     pickle.dump(tuples_with_reflection, outfile)
-    # plot_sequence(tuples_with_reflection)
+    random.shuffle(tuples)
+    reduct_batch = tuples[:50000]
+    tuples_with_reflection = list()
+    for tuple in reduct_batch:
 
+        reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
+        if replace_reward.is_inbound_coordinate(reflect_tuple[0][0], reflect_tuple[0][1]):
+            tuples_with_reflection.append(tuple)
+            tuples_with_reflection.append(reflect_tuple)
+    print('Number of tuples after reflection:', len(tuples_with_reflection))
+    with open(bundle_name+'_filter_reflected_sim',
+              'wb') as outfile:
+        pickle.dump(tuples_with_reflection, outfile)
+    # org_tuples = list()
+    # with open('samples/samples_bundle_two_angles', 'rb') as file:
+    #     org_tuples = pickle.load(file)
 
-
-    tuples = list()
-    with open('samples/samples_bundle_rot02_t10_short_front_official_filter_reflected_sim', 'rb') as file:
-        tuples = pickle.load(file)
-
-    selected_tuples = tuples
+    # new_angle_tup = [tup for tup in tuples if tup[0][4] > -0.2]
+    # selected_tuples = random.sample(org_tuples, 10000)
+    # plot_sequence(selected_tuples)
 
     batch_learner = learner.Learner(r_m_=replace_reward, nn_=True)
-    new_list = batch_learner.replace_reward(selected_tuples)
+    new_list = batch_learner.replace_reward(tuples_with_reflection)
 
     simple_state_tuples = list()
 
@@ -204,8 +206,22 @@ if __name__ == '__main__':
 
     final = [tpl for tpl in simple_state_tuples if tpl[0][0] > 0]
 
-    random.shuffle(final)
+
     batch_learner.add_tuples(final)
     batch_learner.set_up_agent()
-    batch_learner.fqi_step(2000)
-    # print('Finished')
+    batch_learner.fqi_step(5)
+
+    for i in range(100):
+        additional_tuples = experiment.run_episodes(batch_learner)
+        converted_new_tuples = list()
+        for tup in additional_tuples:
+            new_state = convert_state_space(tup[0], replace_reward)
+            new_state_p = convert_state_space(tup[2], replace_reward)
+            new_tuple = (new_state, tup[1], new_state_p, tup[3], tup[4])
+            converted_new_tuples.append(new_tuple)
+            #repeat it so it gets more weight in learning
+        for i in range(10):
+            batch_learner.add_tuples(converted_new_tuples)
+        batch_learner.set_up_agent()
+        batch_learner.fqi_step(1)
+    print('Finished')

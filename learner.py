@@ -56,7 +56,7 @@ class Learner(object):
     exploring = None
 
     def __init__(self, file_to_save='agents/agent_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S'), load_saved_regression=False,
-                 action_space_name='stable',
+                 action_space_name='complete_angle',
                  r_m_=None, nn_=False):
         self.rw_mp = r_m_
         self.debug  = True
@@ -74,7 +74,7 @@ class Learner(object):
                 # self.learner = tree.DecisionTreeRegressor(max_depth=4)
                 self.learner = AdaBoostRegressor()
         self.end_states = dict()
-        self.discount_factor = 0.9
+        self.discount_factor = 0.8
         self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
         self.action_space = actions.BaseAction(action_space_name)
         self.states = list()
@@ -151,6 +151,7 @@ class Learner(object):
         self.states = np.array(self.states)
         self.act = np.array(self.act)
         self.samples = np.column_stack((self.states, self.act))
+        print("Current batch size: ", len(self.samples))
         # self.samples = self.normalize_state_action(self.samples)
 
     # def find_max_q_diff(self):
@@ -167,8 +168,8 @@ class Learner(object):
         for it in range(max_iterations):
             self.current_step = it
             print("FQI_iteration: ", it)
-            self.learner.fit(self.samples, self.q_target, batch_size=1000, verbose=1, nb_epoch=500, callbacks=[self.logger])
-            self.learner.fit(self.samples, self.q_target)
+            self.learner.fit(self.samples, self.q_target, batch_size=1000, verbose=1, nb_epoch=300, callbacks=[self.logger])
+            # self.learner.fit(self.samples, self.q_target)
             if not self.nn_flag:
                 sc = self.learner.score(self.samples, self.q_target)
                 print("Score: ",sc)
@@ -208,8 +209,8 @@ class Learner(object):
                 else:
                     state_action = np.append(state_p, action)
                 state_action = np.reshape(state_action, (1, -1))
-                qpred = self.learner.predict(state_action)[0]
-                # qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
+                # qpred = self.learner.predict(state_action)[0]
+                qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
                 # if self.current_step % 1 == 0 and self.current_step != 0 and self.debug:
                 #     print(action, file=self.debug_file)
                 #     print(qpred, file=self.debug_file)

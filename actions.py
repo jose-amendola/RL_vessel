@@ -18,7 +18,7 @@ spaces = {'simple_action_space': {
             'thruster_lvls': [0.2]
         },
         'complete_angle': {
-            'rudder_lvls': [-1.0, -0.5, -0.2, 0.0, 0.2, 0.5,1.0],
+            'rudder_lvls': [-0.5, -0.2, 0.0, 0.2, 0.5],
             'thruster_lvls': [0.2]
         },
         'large_action_space':{

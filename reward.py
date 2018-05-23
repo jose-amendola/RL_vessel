@@ -183,12 +183,12 @@ class RewardMapper(object):
         elif self.reward_mode == 'align':
             reward = 100*math.exp(-0.000001*old_u_misalign)
         elif self.reward_mode == 'step':
-            if new_u_balance < 40 and new_u_misalign < 1:
-                reward = 100
+            if new_u_balance < 50 and new_u_misalign < 2:
+                reward = 1
             else:
-                reward = 0
+                reward = -0.1
         if self.collided():
-            reward = -100
+            reward = -1
             return reward
         return reward
         # elif self.reward_mode == 'punish_align_balance':

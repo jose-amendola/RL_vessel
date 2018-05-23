@@ -48,7 +48,7 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(_plot, r_mode_='potential')
+        self.reward_mapper = reward.RewardMapper(_plot, r_mode_='step')
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = None
