@@ -246,22 +246,18 @@ def main():
 
 def evaluate_agent(ag_obj):
 
-    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='smooth', nn_=True)
+    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='complete_angle', nn_=True)
     env = environment.Environment(buoys, 20, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True, _increment=0.5)
+                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False, _increment=0.5)
     env.set_up()
 
     starting_points = [
-                       [11000, 5200, -98, 3, 0, 0],
-                       [11000, 5320, -103, 3, 0, 0],
-                       [11000, 5300, -101, 3, 0, 0],
-                       [11000, 5230, -103, 3, 0, 0],
-                       [11000, 5380, -108, 3, 0, 0],
-                       [11000, 5300, -103, 3, 0, 0],
-                       [11000, 5200, -90, 3, 0, 0],
-                       [11000, 5380.10098, -103.5, 3, 0, 0],
-                       [11000, 5330.10098, -103.5, 3, 0, 0],
-                       [11000, 5330.10098, -103.5, 3, 0, 0]]
+                        [11000, 5250, -101, 3, 0, 0],
+                        [11000, 5300, -104, 3, 0, 0],
+                        [11000, 5280, -103.5, 3, 0, 0],
+                        [11000, 5320, -103.5, 3, 0, 0],
+                        [11000, 5320, -103.5, 3, 0, 0]]
+
     ret_tuples = list()
     # env.set_single_start_pos_mode([11000, 5380.10098, -103, 3, 0, 0])
     # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
@@ -271,18 +267,22 @@ def evaluate_agent(ag_obj):
     # env.move_to_next_start()
     results = list()
     num_steps = list()
+    steps_inside_goal_region = list()
     for start_pos in starting_points:
         final_flag = 0
         transitions_list = list()
         total_steps = 0
         env.set_single_start_pos_mode(start_pos)
         env.move_to_next_start()
+        steps_inside = 0
         for step in range(evaluation_steps):
             state = env.get_state(state_mode='simple_state')
             state_r = env.convert_to_simple_state(state)
             action = agent.select_action(state_r)
-            state_prime, reward = env.step(action[0], action[1])
+            state_prime, reward = env.step(action[0], 0.6)
             transition = (state, (action[0], action[1]), state_prime, reward)
+            if abs(state_r[2]) < 50:
+                steps_inside+=1
             final_flag = env.is_final()
             print("***Evaluation step " + str(step + 1) + " Completed")
             transitions_list.append(transition)
@@ -292,6 +292,7 @@ def evaluate_agent(ag_obj):
                 break
         results.append(final_flag)
         num_steps.append(total_steps)
+        steps_inside_goal_region.append(steps_inside)
         with open('trajectory_'+agent.learner.__class__.__name__+'it'+str(total_steps)+'end'+str(final_flag), 'wb') as outfile:
             pickle.dump(transitions_list, outfile)
         with open('trajectory_'+agent.learner.__class__.__name__+'it'+str(total_steps)+'end'+str(final_flag)+'.csv', 'wt') as out:
@@ -300,9 +301,10 @@ def evaluate_agent(ag_obj):
             for tr in transitions_list:
                 pos = (tr[0][0], tr[0][1], tr[0][2], tr[1][0])
                 csv_out.writerow(pos)
-    with open('results'+agent.learner.__class__.__name__, 'wb') as outfile:
+    with open('results'+agent.learner.__class__.__name__+datetime.datetime.now().strftime('%Y%m%d%H%M%S'), 'wb') as outfile:
             pickle.dump(num_steps, outfile)
             pickle.dump(results, outfile)
+            pickle.dump(steps_inside_goal_region, outfile)
     return ret_tuples
 
 
@@ -312,18 +314,18 @@ def run_episodes(agent):
     env.set_up()
 
     starting_points = [
-                       [11000, 5400, -100, 3, 0, 0],
-                       [11000, 5360,-106, 3, 0, 0],
-                       [11000, 5400, -100, 2.5, 0, 0],
-                        [11000, 5360,-106, 2.5, 0, 0],
-                        [11000, 5400, -100, 2.0, 0, 0],
-                        [11000, 5360,-106, 2.0, 0, 0],
-                       [11000, 5400, -100, 1.5, 0, 0],
-                        [11000, 5360, -106, 1.5, 0, 0],
-                       [11000, 5400, -100, 1.0, 0, 0],
-                        [11000, 5360,-106, 1.0, 0, 0],
-                       [11000, 5400, -100, 0.5, 0, 0],
-                        [11000, 5360,-106, 0.5, 0, 0]]
+                       [11000, 5360, -106, 3, 0, 0],
+                       [11000, 5240,-100, 3, 0, 0],
+                       [11000, 5360, -106, 2.5, 0, 0],
+                        [11000, 5240,-100, 2.5, 0, 0],
+                        [11000, 5360, -106, 2.0, 0, 0],
+                        [11000, 5240,-100, 2.0, 0, 0],
+                       [11000, 5360, -106, 1.5, 0, 0],
+                        [11000, 5240, -100, 1.5, 0, 0],
+                       [11000, 5360, -106, 1.0, 0, 0],
+                        [11000, 5240,-100, 1.0, 0, 0],
+                       [11000, 5360, -106, 0.5, 0, 0],
+                        [11000, 5240,-100, 0.5, 0, 0]]
     ret_tuples = list()
     # env.set_single_start_pos_mode([11000, 5380.10098, -103, 3, 0, 0])
     # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
@@ -339,7 +341,7 @@ def run_episodes(agent):
         total_steps = 0
         env.set_single_start_pos_mode(start_pos)
         env.move_to_next_start()
-        for step in 10:
+        for step in range(50):
             state = env.get_state(state_mode='simple_state')
             state_r = env.convert_to_simple_state(state)
             action = None
@@ -390,7 +392,7 @@ if __name__ == '__main__':
     # sample_transitions(start, end)
     # ag = load_agent('agents/agent_20180519195648DecisionTreeRegressor_r_rule_disc_0 .0it1')
     # evaluate_agent(ag)
-    evaluate_agent('dyna/agents/agent_20180523133905Sequential_r_step_disc_0.8it1.h5')
+    evaluate_agent('agents/agent_20180524154344Sequential_r_linear_with_rudder_punish_disc_0.8it5.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')

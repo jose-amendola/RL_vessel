@@ -187,6 +187,20 @@ class RewardMapper(object):
                 reward = 1
             else:
                 reward = -0.1
+        elif self.reward_mode == 'step_with_rudder_punish':
+            if new_u_balance < 50 and new_u_misalign < 2:
+                reward = 1
+            else:
+                reward = -0.1
+            if abs(self.last_angle_selected) == 0.5:
+                reward = reward - 0.2
+        elif self.reward_mode == 'linear_with_rudder_punish':
+            if new_u_balance < 30 and new_u_misalign < 2:
+                reward = 1
+            else:
+                reward = -0.1 - 0.00001*new_u_balance
+            if abs(self.last_angle_selected) == 0.5:
+                reward = reward - 0.2
         if self.collided():
             reward = -1
             return reward

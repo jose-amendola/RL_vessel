@@ -166,7 +166,7 @@ class Learner(object):
     def fqi_step(self, max_iterations, debug=False):
         stop_flag = False
         for it in range(max_iterations):
-            self.current_step = it
+            self.current_step += 1
             print("FQI_iteration: ", it)
             self.learner.fit(self.samples, self.q_target, batch_size=1000, verbose=1, nb_epoch=300, callbacks=[self.logger])
             # self.learner.fit(self.samples, self.q_target)
@@ -178,16 +178,16 @@ class Learner(object):
                 self.q_target = self.rewards + self.discount_factor*maxq_prediction
             else:
                 self.q_target = self.rewards
-            print("Last rewards: ", self.rewards[-3:])
-            if (it % 1 == 0 and it != 0) or stop_flag:
-                if self.nn_flag:
-                    self.learner.save(self.file+'it'+str(it)+'.h5')
-                else:
-                    with open(self.file+'it'+str(it), 'wb') as outfile:
-                        pickle.dump(self.learner, outfile)
+            # print("Last rewards: ", self.rewards[-3:])
+            # if (it % 1 == 0 and it != 0) or stop_flag:
+            if self.nn_flag:
+                self.learner.save(self.file+'it'+str(self.current_step)+'.h5')
+            else:
+                with open(self.file+'it'+str(it), 'wb') as outfile:
+                    pickle.dump(self.learner, outfile)
             if stop_flag:
                 break
-        self.current_step = 0
+
 
     def normalize_state_action(self,state_action):
         state_a = [state/3 for state in state_action[:,0]]
