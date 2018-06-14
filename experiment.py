@@ -79,7 +79,7 @@ def replay_trajectory(episodes):
     view.freeze_screen()
 
 def train_from_samples(sample_files):
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='cte')
+    replace_reward = reward.RewardMapper(r_mode_='cte')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(r_m_=replace_reward)
@@ -89,7 +89,7 @@ def train_from_samples(sample_files):
     batch_learner.fqi_step(50)
 
 def train_from_batch(episodes, pickle_vars):
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='exp_border_target_rot_angle')
+    replace_reward = reward.RewardMapper(r_mode_='exp_border_target_rot_angle')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
@@ -107,11 +107,10 @@ def train_from_batch(episodes, pickle_vars):
     batch_learner.fqi_step(max_fit_iterations)
 
 def train_from_single_episode(episodes, pickle_vars, ep_number):
-    env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon,
-                                  False)
+    env = environment.Environment(buoys, steps_between_actions, vessel_id, rudder_id, thruster_id, scenario, goal,
+                                  goal_heading_e_ccw, goal_vel_lon)
 
-    replace_reward = reward.RewardMapper(plot_flag=False, r_mode_='exp_border_target_rot_angle')
+    replace_reward = reward.RewardMapper(r_mode_='exp_border_target_rot_angle')
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
@@ -150,12 +149,12 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
         #     print('For FQI iteration: ',it,' Total reward: ', total_reward, ' and result: ', final_flag)
 
 
-def sample_transitions(start_state=0, end_state=-1):
+def sample_transitions(start_state=0, end_state=-1) -> object:
     #TODO Implement
     action_space_name = 'complete_angle'
     action_space = actions.BaseAction(action_space_name)
-    env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
+    env = environment.Environment(buoys, steps_between_actions, vessel_id, rudder_id, thruster_id, scenario, goal,
+                                  goal_heading_e_ccw, goal_vel_lon)
     env.set_up()
     # env.set_sampling_mode(start_state, end_state)
     env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
@@ -204,8 +203,8 @@ def main():
     action_space_name = 'cte_rotation'
     action_space = actions.BaseAction(action_space_name)
     agent = qlearning.QLearning(q_file, epsilon=0.1, action_space=action_space, gamma=1.0)
-    env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
+    env = environment.Environment(buoys, steps_between_actions, vessel_id, rudder_id, thruster_id, scenario, goal,
+                                  goal_heading_e_ccw, goal_vel_lon)
     # with open(variables_file, 'wb') as outfile:
     pickle_vars = dict()
     pickle_vars['action_space'] = action_space_name
@@ -243,12 +242,11 @@ def main():
     with open(learner_file, 'wb') as outfile:
         pickle.dump(agent, outfile)
 
-
 def evaluate_agent(ag_obj):
 
     agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='complete_angle', nn_=True)
-    env = environment.Environment(buoys, 20, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False, _increment=0.5)
+    env = environment.Environment(buoys, 20, vessel_id, rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw,
+                                  goal_vel_lon, _increment=0.5)
     env.set_up()
 
     starting_points = [
@@ -309,8 +307,8 @@ def evaluate_agent(ag_obj):
 
 
 def run_episodes(agent):
-    env = environment.Environment(buoys, 20, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False, _increment=0.5)
+    env = environment.Environment(buoys, 20, vessel_id, rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw,
+                                  goal_vel_lon, _increment=0.5)
     env.set_up()
 
     starting_points = [
@@ -389,10 +387,10 @@ if __name__ == '__main__':
         end = args.e
 
     # main()
-    # sample_transitions(start, end)
+    sample_transitions(start, end)
     # ag = load_agent('agents/agent_20180519195648DecisionTreeRegressor_r_rule_disc_0 .0it1')
     # evaluate_agent(ag)
-    evaluate_agent('agents/agent_20180524154344Sequential_r_linear_with_rudder_punish_disc_0.8it5.h5')
+    # evaluate_agent('agents/agent_20180524154344Sequential_r_linear_with_rudder_punish_disc_0.8it5.h5')
     #
     #
     # loaded_vars, ep_list = load_pickle_file('experiment_b__')

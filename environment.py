@@ -18,7 +18,7 @@ import random
 
 
 class Environment(buzz_python.session_subscriber):
-    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _g_heading, _g_vel_l, _plot,
+    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _g_heading, _g_vel_l,
                  _increment=0.1):
         super(Environment, self).__init__()
         self.step_increment = _increment
@@ -48,7 +48,7 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(_plot, r_mode_='step')
+        self.reward_mapper = reward.RewardMapper(r_mode_='step')
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = None

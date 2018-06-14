@@ -2,7 +2,6 @@ import numpy as np
 from itertools import product
 from shapely.geometry import Polygon, LineString, Point
 from shapely import affinity
-from viewer import Viewer
 from math import sin, cos, radians
 import numpy as np
 import math
@@ -11,14 +10,11 @@ from simulation_settings import *
 
 
 class RewardMapper(object):
-    def __init__(self, plot_flag=True, r_mode_='cte'):
+    def __init__(self, r_mode_='cte'):
         self.boundary = None
         self.goal_rec = None
         self.ship_polygon = None
         self.ship = None
-        self.plot_flag = plot_flag
-        if self.plot_flag:
-            self.view = Viewer()
         self.set_ship_geometry(((0, 0), (0, 10), (20, 0)))
         self.ship_vel = list()
         self.ship_last_vel = list()
@@ -64,7 +60,7 @@ class RewardMapper(object):
         y_temp_b = self.get_middle_y(9000)
         x_a = 3600
         x_b = 14000
-        m,b = np.polyfit([8000,9000],[y_temp_a,y_temp_b],1)
+        m, b = np.polyfit([8000,9000],[y_temp_a,y_temp_b],1)
         y_a = m*x_a+b
         y_b = m*x_b+b
         self.guid_line = LineString([(x_a, y_a), (x_b, y_b)])
@@ -72,8 +68,6 @@ class RewardMapper(object):
 
     def set_boundary_points(self, points):
         self.boundary = Polygon(points)
-        if self.plot_flag:
-            self.view.plot_boundary(points)
 
     def set_shore_lines(self, upper_points, lower_points):
         self.upper_shore = LineString(upper_points)
@@ -97,8 +91,6 @@ class RewardMapper(object):
         self.g_vel_x, self.g_vel_y, self.g_heading_n_cw = utils.local_to_global(vel_l, 0, heading)
         self.goal_rec = Polygon(((point[0] - factor, point[1] - factor), (point[0] - factor, point[1] + factor), (point[0] + factor, point[1] + factor),
                             (point[0] + factor, point[1] - factor)))
-        if self.plot_flag:
-            self.view.plot_goal(point, factor)
 
     def initialize_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta):
         self.ship_last_vel = [global_vel_x, global_vel_y, global_vel_theta]
@@ -108,8 +100,6 @@ class RewardMapper(object):
         self.ship_pos = self.ship_last_pos
         self.ship_vel = self.ship_last_vel
         self.ship = self.last_ship
-        if self.plot_flag:
-            self.view.plot_position(x, y, heading)
 
     def update_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta, angle, rot):
         self.ship_last_pos = self.ship_pos
@@ -121,8 +111,6 @@ class RewardMapper(object):
         self.ship_pos = [x,y,heading]
         self.ship = affinity.translate(self.ship_polygon, x, y)
         self.ship = affinity.rotate(self.ship, heading, 'center')
-        if self.plot_flag:
-            self.view.plot_position(x, y, heading)
 
     def get_shortest_distance_from_boundary(self):
         a = self.ship.distance(self.boundary)
@@ -216,7 +204,7 @@ class RewardMapper(object):
         #     reward = 0
 
 if __name__ == "__main__":
-    reward_map = RewardMapper(False)
+    reward_map = RewardMapper()
     # reward_map.update_ship(20, 20, 30, 0, 0, 0, 0, )
     # print(reward_map.collided())
     # # reward_map.update_ship_position(200, 200, 50)
