@@ -1,21 +1,12 @@
 import numpy as np
-from itertools import product
-from shapely.geometry import Polygon, LineString, Point
-from shapely import affinity
-from math import sin, cos, radians
-import numpy as np
 import math
-import utils
+from geometry_helper import GeometryHelper
 from simulation_settings import *
 
 
 class RewardMapper(object):
     def __init__(self, r_mode_='cte'):
-        self.boundary = None
-        self.goal_rec = None
-        self.ship_polygon = None
         self.ship = None
-        self.set_ship_geometry(((0, 0), (0, 10), (20, 0)))
         self.ship_vel = list()
         self.ship_last_vel = list()
         self.ship_pos = list()
@@ -28,75 +19,16 @@ class RewardMapper(object):
         self.reward_mode = r_mode_
         self.last_angle_selected = None
         self.last_rot_selected = None
-        self.guid_line = None
-        self.upper_shore = None
-        self.lower_shore = None
-
-    def is_inbound_coordinate(self, x, y):
-        return self.boundary.buffer(-20).contains(Point(x, y))
-
-    def generate_inner_positions(self):
-        points_dict = dict()
-        for line_x in range(int(self.goal_point[0]+5000), int(self.goal_point[0] + 6000), 500):
-            line = LineString([(line_x, 0), (line_x, 15000)])
-            intersect = self.boundary.intersection(line)
-            if intersect.geom_type == 'LineString':
-                middle_point = (line_x, (intersect.bounds[1]+intersect.bounds[3]) / 2)
-                upper_point = (line_x, (middle_point[1] + intersect.bounds[3]) / 2)
-                lower_point = (line_x, (middle_point[1] + intersect.bounds[1]) / 2)
-                dist = Point(self.goal_point).distance(Point(middle_point))
-                points_dict[middle_point] = dist
-                points_dict[upper_point] = dist
-                points_dict[lower_point] = dist
-        return points_dict
-
-    def get_middle_y(self, x):
-        line = LineString([(x, 0), (x, 15000)])
-        intersect = self.boundary.intersection(line)
-        return (intersect.bounds[1] + intersect.bounds[3]) / 2
-
-    def get_guidance_line(self):
-        y_temp_a = self.get_middle_y(8000)
-        y_temp_b = self.get_middle_y(9000)
-        x_a = 3600
-        x_b = 14000
-        m, b = np.polyfit([8000,9000],[y_temp_a,y_temp_b],1)
-        y_a = m*x_a+b
-        y_b = m*x_b+b
-        self.guid_line = LineString([(x_a, y_a), (x_b, y_b)])
-        return (x_a, y_a), (x_b, y_b)
-
-    def set_boundary_points(self, points):
-        self.boundary = Polygon(points)
-
-    def set_shore_lines(self, upper_points, lower_points):
-        self.upper_shore = LineString(upper_points)
-        self.lower_shore = LineString(lower_points)
-
-    def get_shore_balance(self, x, y):
-        ship_point = Point((x,y))
-        #upper means positive sign
-        upper_dist = ship_point.distance(self.upper_shore)
-        lower_dist = ship_point.distance(self.lower_shore)
-        return (upper_dist - lower_dist)
-
-
-
-    def set_ship_geometry(self, points):
-        self.ship_polygon = Polygon(points)
+        self.ship_polygon = None
+        self.geometry = GeometryHelper()
 
     def set_goal(self, point, heading, vel_l):
-        factor = 300
         self.goal_point = point
         self.g_vel_x, self.g_vel_y, self.g_heading_n_cw = utils.local_to_global(vel_l, 0, heading)
-        self.goal_rec = Polygon(((point[0] - factor, point[1] - factor), (point[0] - factor, point[1] + factor), (point[0] + factor, point[1] + factor),
-                            (point[0] + factor, point[1] - factor)))
 
     def initialize_ship(self, x, y, heading, global_vel_x, global_vel_y, global_vel_theta):
         self.ship_last_vel = [global_vel_x, global_vel_y, global_vel_theta]
         self.ship_last_pos = [x, y, heading]
-        self.last_ship = affinity.translate(self.ship_polygon, x, y)
-        self.last_ship = affinity.rotate(self.last_ship, heading, 'center')
         self.ship_pos = self.ship_last_pos
         self.ship_vel = self.ship_last_vel
         self.ship = self.last_ship
@@ -109,28 +41,7 @@ class RewardMapper(object):
         self.last_rot_selected = rot
         self.ship_vel = [global_vel_x, global_vel_y, global_vel_theta]
         self.ship_pos = [x,y,heading]
-        self.ship = affinity.translate(self.ship_polygon, x, y)
-        self.ship = affinity.rotate(self.ship, heading, 'center')
 
-    def get_shortest_distance_from_boundary(self):
-        a = self.ship.distance(self.boundary)
-        return a
-
-    def collided(self):
-        collided = (not self.boundary.contains(self.ship))
-        if collided:
-            print('Collided!!')
-        return collided
-
-    def reached_goal(self):
-        cont = self.goal_rec.contains(self.ship)
-        # reached = cont and abs(self.ship_vel[0]) < abs(self.g_vel_x) and abs(self.ship_pos[2] - self.g_heading_n_cw) < 20
-        # reached = abs(self.ship_pos[2] - self.g_heading_n_cw) < 20 and cont
-        reached = cont
-        # reached = abs(self.ship_vel[0]) < 0.2 or cont
-        if reached:
-            print('Reached goal!!')
-        return reached
 
     def get_reward(self):
         # ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw, self.g_vel_x, self.g_vel_y, 0))
@@ -189,19 +100,10 @@ class RewardMapper(object):
                 reward = -0.1 - 0.00001*new_u_balance
             if abs(self.last_angle_selected) == 0.5:
                 reward = reward - 0.2
-        if self.collided():
+        if self.self.geometry.ship_collided():
             reward = -1
             return reward
         return reward
-        # elif self.reward_mode == 'punish_align_balance':
-        # new_field = -new_u_balance
-        # old_field = 100*math.exp(-0.000001*old_u_balance-0.000001*old_misalign)
-        # old_field = -(old_u_balance**2)
-        # reward = new_field
-
-        # goal = self.reached_goal() #
-        # if goal:
-        #     reward = 0
 
 if __name__ == "__main__":
     reward_map = RewardMapper()
@@ -218,6 +120,6 @@ if __name__ == "__main__":
     reward_map.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     reward_map.get_guidance_line()
     reward_map.set_shore_lines(upper_shore, lower_shore)
-    bal = reward_map.get_shore_balance(8000,4570)
+    bal = reward_map.get_shore_balance(8000, 4570)
     print(bal)
     print("Stop")
