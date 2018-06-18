@@ -1,6 +1,7 @@
 from shapely.geometry import Polygon, LineString, Point
 from shapely import affinity
-from math import sin, cos, radians
+import numpy as np
+
 
 
 class GeometryHelper(object):
@@ -12,6 +13,7 @@ class GeometryHelper(object):
         self.guid_line = None
         self.upper_shore = None
         self.lower_shore = None
+        self.ship = None
 
     def set_ship_geometry(self, points):
         self.ship_polygon = Polygon(points)
@@ -23,8 +25,8 @@ class GeometryHelper(object):
                                  (center_x + self.goal_margin, center_y - self.goal_margin)))
 
     def set_polygon_position(self, x, y, heading):
-        self.ship_polygon = affinity.translate(self.ship_polygon, x, y)
-        self.ship_polygon = affinity.rotate(self.ship_polygon, heading, 'center')
+        self.ship = affinity.translate(self.ship_polygon, x, y)
+        self.ship = affinity.rotate(self.ship, heading, 'center')
 
     def set_boundary_points(self, points):
         self.boundary = Polygon(points)
@@ -44,16 +46,22 @@ class GeometryHelper(object):
         a = self.ship.distance(self.boundary)
         return a
 
-    def get_guidance_line(self):
+    def set_guidance_line(self):
         y_temp_a = get_middle_y(self.boundary, 8000)
         y_temp_b = get_middle_y(self.boundary, 9000)
         x_a = 3600
         x_b = 14000
-        m, b = np.polyfit([8000,9000],[y_temp_a,y_temp_b],1)
+        m, b = np.polyfit([8000, 9000], [y_temp_a,y_temp_b], 1)
         y_a = m*x_a+b
         y_b = m*x_b+b
         self.guid_line = LineString([(x_a, y_a), (x_b, y_b)])
-        return (x_a, y_a), (x_b, y_b)
+
+    def ship_collided(self):
+        contains = self.boundary.contains(self.ship)
+        return not contains
+
+    def reached_goal(self):
+        return self.goal_rec.contains(self.ship)
 
 
 def get_middle_y(boundary, x):

@@ -1,6 +1,7 @@
 import utils
 import datetime
-
+from geometry_helper import GeometryHelper
+from viewer import Viewer
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -36,3 +37,13 @@ goal = ((N07[0]+Final[0])/2, (N07[1]+Final[1])/2)
 goal_factor = 100
 upper_shore = [funnel_start, N01, N03, N05, N07]
 lower_shore = [N06, N04, N02, funnel_end]
+
+geom_helper = GeometryHelper()
+geom_helper.set_ship_geometry(((0, 0), (0, 10), (10, 0)))
+geom_helper.set_boundary_points(buoys)
+geom_helper.set_goal_rec(goal[0], goal[1])
+geom_helper.set_shore_lines(upper_shore, lower_shore)
+geom_helper.set_guidance_line()
+viewer = Viewer()
+viewer.plot_boundary(buoys)
+viewer.plot_goal(goal, 100)

@@ -51,6 +51,8 @@ def get_nn(obj):
     return model
 
 
+
+
 class Learner(object):
 
     exploring = None
@@ -89,34 +91,9 @@ class Learner(object):
         self.file = file_to_save + self.learner.__class__.__name__ + '_r_' + r_mode+'_disc_'+str(self.discount_factor)
         self.logger = CSVLogger(self.file + 'log', separator=';', append=True)
 
-    def replace_reward(self, transition_list):
-        new_list = list()
-        first_state = transition_list[0][0]
-        self.rw_mp.initialize_ship(first_state[0], first_state[1], first_state[2], first_state[3],
-                                   first_state[4], first_state[5])
-        for transition in transition_list:
-            resulting_state = transition[2]
-            action_selected = transition[1]
-            self.rw_mp.update_ship(resulting_state[0], resulting_state[1], resulting_state[2], resulting_state[3],
-                                   resulting_state[4], resulting_state[5], action_selected[0], action_selected[1])
-            new_reward = self.rw_mp.get_reward()
-            ret = 0
-            if self.rw_mp.collided():
-                ret = -1
-            elif self.rw_mp.reached_goal():
-                ret = 1
-            print("Final step:", ret)
-            tmp = list(transition)
-            tmp[3] = new_reward
-            tmp[4] = ret
-            transition = tuple(tmp)
-            new_list.append(transition)
-        print(new_list[-1])
-        return new_list
-
     def add_to_batch(self, transition_list, final_flag):
         if self.rw_mp is not None:
-            transition_list = self.replace_reward(transition_list)
+            transition_list = replace_reward(transition_list)
         self.batch_list = self.batch_list + transition_list
         if final_flag != 0:
             self.end_states[len(self.batch_list)-1] = final_flag
@@ -130,7 +107,7 @@ class Learner(object):
             try:
                 while True:
                     transitions = pickle.load(infile)
-                    transitions = self.replace_reward(transitions)
+                    transitions = replace_reward(transitions)
             except EOFError as e:
                 pass
         self.batch_list = self.batch_list + transitions
@@ -154,15 +131,6 @@ class Learner(object):
         print("Current batch size: ", len(self.samples))
         # self.samples = self.normalize_state_action(self.samples)
 
-    # def find_max_q_diff(self):
-    #     for sample in self.samples:
-    #         current_q = self.learner.predict(self.samples)
-    #
-    #     relative = np.divide(diff_array, np.abs(current))
-    #     max_diff = np.nanmax(relative)
-    #     self.q_diff.append(max_diff)
-    #     print("Max difference between current Q and target Q: ", max_diff)
-
     def fqi_step(self, max_iterations, debug=False):
         stop_flag = False
         for it in range(max_iterations):
@@ -174,7 +142,7 @@ class Learner(object):
                 sc = self.learner.score(self.samples, self.q_target)
                 print("Score: ",sc)
             if self.discount_factor > 0:
-                maxq_prediction = np.asarray([self.find_max_q(i, state_p) for i,state_p in enumerate(self.states_p)])
+                maxq_prediction = np.asarray([self.find_max_q(state_p)[0] for state_p in enumerate(self.states_p)])
                 self.q_target = self.rewards + self.discount_factor*maxq_prediction
             else:
                 self.q_target = self.rewards
@@ -188,17 +156,9 @@ class Learner(object):
             if stop_flag:
                 break
 
-
-    def normalize_state_action(self,state_action):
-        state_a = [state/3 for state in state_action[:,0]]
-        state_b = [state/180 for state in state_action[:,1]]
-        state_c = [state / 200 for state in state_action[:, 2]]
-        return np.column_stack((state_a, state_b, state_c,  state_action[:,3]))
-
-    def find_max_q(self, i, state_p):
-        print('  >>>Finding max_q for : ',i)
+    def find_max_q(self, state_p):
         qmax = -float('Inf')
-        # final = self.end_states.get(i)
+        choice_list = list()
         if self.end_states[i] !=0:
             print('final')
             qmax = 0
@@ -209,39 +169,19 @@ class Learner(object):
                 else:
                     state_action = np.append(state_p, action)
                 state_action = np.reshape(state_action, (1, -1))
-                # qpred = self.learner.predict(state_action)[0]
                 qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
-                # if self.current_step % 1 == 0 and self.current_step != 0 and self.debug:
-                #     print(action, file=self.debug_file)
-                #     print(qpred, file=self.debug_file)
-                print('Q value and respective action: ',qpred,action)
+                print('Q value and respective action: ', qpred, action)
                 if qpred > qmax:
                     qmax = qpred
-        print('Returning Qmax value: ',qmax)
-        return qmax
+                    choice_list = [action]
+                elif qpred == qmax:
+                    choice_list.append(action)
+        print('Returning Qmax value: ', qmax)
+        return qmax, choice_list
 
     def select_action(self, state):
-        selected_action = None
-        qmax = -float('Inf')
-        print('Select action')
-        choice_list = list()
-        for action in self.action_space.action_combinations:
-            if self.mode == 'angle_only':
-                state_action = np.append(state, action[0])
-            else:
-                state_action = np.append(state, action)
-            state_action = np.reshape(state_action, (1, -1))
-            # qpred = self.learner.predict(state_action)
-            qpred = self.learner.predict(state_action, batch_size=1, verbose=1)[0][0]
-            print("Qpred an state_action",qpred,state_action)
-            if qpred > qmax:
-                qmax = qpred
-                # selected_action = action
-                choice_list = [action]
-            elif qpred == qmax:
-                choice_list.append(action)
+        qmax, choice_list = find_max_q(state)
         selected_action = random.choice(choice_list)
-            #TODO Implement random choice for equal q value cases
         print("Max",qmax)
         print(selected_action[0])
         print(selected_action[1])

@@ -11,10 +11,11 @@ import time
 import numpy as np
 import subprocess
 import os
+from geometry_helper import is_inbound_coordinate
+import reward
 from simulation_settings import *
 import pickle
 import random
-
 
 
 class Environment(buzz_python.session_subscriber):
@@ -52,35 +53,31 @@ class Environment(buzz_python.session_subscriber):
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = None
-        self.reward_mapper.set_boundary_points(self.buoys)
         self.reward_mapper.set_goal(self.goal, self.g_heading, self.g_vel_l)
-        self.reward_mapper.get_guidance_line()
-        self.reward_mapper.set_shore_lines(upper_shore, lower_shore)
         os.chdir('./dyna')
         self.dyna_proc = None
         self.accumulated_starts = list()
 
-
     def get_sample_states(self):
-        #TODO implement
+        # TODO implement
         x = np.linspace(5000, 13000, 16)
         y = np.linspace(3000, 8000, 100)
         # theta = np.linspace(-90, -120, 4)
         # theta = np.append(theta, -103)
-        vel_decay = 4/13000
+        vel_decay = 4 / 13000
         theta = -103
-        # vlon = np.linspace(1.5, 3.0, 4)
+        vlon = np.linspace(1.5, 3.0, 4)
         g = np.meshgrid(x, y, theta, vlon)
         tmp = np.vstack(map(np.ravel, g))
         combinations = np.transpose(tmp)
         states = list()
         for comb in combinations:
-            if self.reward_mapper.is_inbound_coordinate(comb[0], comb[1]):
+            if is_inbound_coordinate(self.reward_mapper.boundary, comb[0], comb[1]):
                 states.append((comb[0], comb[1], comb[2], comb[3], 0, 0))
         return states
 
     def create_variants_to_start(self, local_coord_start):
-        start_variants  = list()
+        start_variants = list()
         x = np.linspace(-20, 20, 5)
         y = np.linspace(-20, 20, 5)
         theta = np.linspace(-5, +5, 3)
@@ -91,40 +88,42 @@ class Environment(buzz_python.session_subscriber):
         tmp = np.vstack(map(np.ravel, g))
         shifts = np.transpose(tmp)
         for shift in shifts:
-            if self.reward_mapper.is_inbound_coordinate(shift[0]+local_coord_start[0], shift[1]+local_coord_start[1]):
-                gl_vars = [(org+shift) for org, shift in zip(shift, local_coord_start)]
+            if is_inbound_coordinate(geom_helper.boundary, shift[0] + local_coord_start[0],
+                                     shift[1] + local_coord_start[1]):
+                gl_vars = [(org + shift) for org, shift in zip(shift, local_coord_start)]
                 start_variants.append(tuple(gl_vars))
         return start_variants
 
     def add_states_to_start_list(self, global_coord_state):
         print("Adding states to start list.")
-        v_lon, v_drift, not_used = utils.global_to_local(global_coord_state[3],global_coord_state[4], global_coord_state[2])
+        v_lon, v_drift, not_used = utils.global_to_local(global_coord_state[3], global_coord_state[4],
+                                                         global_coord_state[2])
         new_start_state = (global_coord_state[0], global_coord_state[1], global_coord_state[2],
                            v_lon, v_drift, global_coord_state[5])
         variants_list = self.create_variants_to_start(new_start_state)
         variants_list.append(new_start_state)
         self.accumulated_starts.append(new_start_state)
-        self.accumulated_starts = self.accumulated_starts + variants_list
+        self.accumulated_starts += variants_list
 
     def get_initial_states(self):
-        positions_dict = self.reward_mapper.generate_inner_positions()
+        positions_dict = generate_inner_positions(self.reward_mapper.goal_point, self.reward_mapper.boundary)
         init_angle = -100
         states_list = list()
         init_vel_l = 6
         for position in positions_dict:
             for count in range(10):
                 state = (position[0], position[1],
-                         init_angle*random.triangular(0.8, 1.2),
-                         positions_dict[position]/4000*init_vel_l*random.triangular(0.8, 1.2),
+                         init_angle * random.triangular(0.8, 1.2),
+                         positions_dict[position] / 4000 * init_vel_l * random.triangular(0.8, 1.2),
                          0, 0)
                 states_list.append(state)
         return states_list
 
     def is_final(self):
         ret = 0
-        if self.reward_mapper.reached_goal():
+        if geom_helper.reached_goal():
             ret = 1
-        elif self.reward_mapper.collided():
+        elif geom_helper.ship_collided():
             ret = -1
         print("Final step:", ret)
         return ret
@@ -137,13 +136,13 @@ class Environment(buzz_python.session_subscriber):
     def on_time_advanced(self, time):
         step = self.simulation.get_current_time_step()
 
-
     def on_time_advance_requested(self, process):
         if process.get_id() == self.dyna_ctrl_id:
             self.allow_advance_ev.set()
 
     def set_up(self):
-        self.dyna_proc = subprocess.Popen(['Dyna_reset_prop.exe ','--pid', '407', '-f', 'suape-local.json', '-c', '127.0.0.1'])
+        self.dyna_proc = subprocess.Popen(
+            ['Dyna_reset_prop.exe ', '--pid', '407', '-f', 'suape-local.json', '-c', '127.0.0.1'])
         # ds = buzz_python.create_bson_data_source(self.mongo_addr, self.dbname)
         ds = buzz_python.create_bson_data_source('suape-local.json')
         ser = buzz_python.create_bson_serializer(ds)
@@ -218,15 +217,14 @@ class Environment(buzz_python.session_subscriber):
         theta = ang_pos_vec[2]
         xp = lin_vel_vec[0]
         yp = lin_vel_vec[1]
-        thetap = ang_vel_vec[2]
-        return x, y, theta, xp, yp, thetap
+        theta_p = ang_vel_vec[2]
+        return x, y, theta, xp, yp, theta_p
 
     def convert_to_simple_state(self, state):
         v_lon, v_drift, n_used = utils.global_to_local(state[3], state[4], state[2])
-        bl = self.reward_mapper.get_shore_balance(state[0], state[1])
+        bl = geom_helper.get_shore_balance(state[0], state[1])
         misalign = state[2] + 103.5
-        return (v_lon, misalign, bl)
-
+        return v_lon, misalign, bl
 
     def advance(self):
         self.allow_advance_ev.wait()
@@ -242,33 +240,26 @@ class Environment(buzz_python.session_subscriber):
 
         print('Rotation level: ', rot_level)
         print('Angle level: ', angle_level)
-        self.thruster.set_demanded_rotation(rot_level*self.max_rot)
+        self.thruster.set_demanded_rotation(rot_level * self.max_rot)
         self.simulation.update(self.thruster)
-        self.rudder.set_demanded_angle(angle_level*self.max_angle)
+        self.rudder.set_demanded_angle(angle_level * self.max_angle)
         self.simulation.update(self.rudder)
 
         cycle = 0
         for cycle in range(self.steps_between_actions):
             self.advance()
-        statePrime = self.get_state() #Get next State
+        statePrime = self.get_state()  # Get next State
         print('statePrime: ', statePrime)
         self.reward_mapper.update_ship(statePrime[0], statePrime[1], statePrime[2], statePrime[3], statePrime[4],
                                        statePrime[5], angle_level, rot_level)
         rw = self.reward_mapper.get_reward()
-        print(self.reward_mapper.collided())
-        if self.reward_mapper.collided():
-            print("Collided!!!")
-            # self.init_state = next(self.initial_states_sequence)
-            # self.reset_state_localcoord(self.init_state[0], self.init_state[1], self.init_state[2], self.init_state[3],
-            #                             self.init_state[4], self.init_state[5])
-            # statePrime = self.get_state()  # Get next State
         return statePrime, rw
 
     def start_bifurcation_mode(self):
         random.shuffle(self.accumulated_starts)
         self.initial_states_sequence = itertools.cycle(self.accumulated_starts)
         print('Total of {} starting points generated.'.format(len(self.accumulated_starts)))
-        with open('samples/starting_points_global_coord'+timestamp,'wb') as starts_file:
+        with open('samples/starting_points_global_coord' + timestamp, 'wb') as starts_file:
             pickle.dump(self.accumulated_starts, starts_file)
 
     def move_to_next_start(self):
@@ -290,7 +281,7 @@ class Environment(buzz_python.session_subscriber):
     def set_single_start_pos_mode(self, init_state=None):
         if not init_state:
             org_state = self.get_state()
-            vel_l, vel_drift, theta = utils.global_to_local(org_state[3],org_state[4],org_state[2])
+            vel_l, vel_drift, theta = utils.global_to_local(org_state[3], org_state[4], org_state[2])
             self.init_state = (org_state[0], org_state[1], org_state[2], vel_l, vel_drift, 0)
         else:
             self.init_state = (init_state[0], init_state[1], init_state[2], init_state[3], init_state[4], init_state[5])
@@ -317,7 +308,7 @@ class Environment(buzz_python.session_subscriber):
                                     self.init_state[4], self.init_state[5])
 
     def reset_state_localcoord(self, x, y, theta, vel_lon, vel_drift, vel_theta):
-       #Apparently Dyna ADV is using theta n_cw
+        # Apparently Dyna ADV is using theta n_cw
         self.vessel.set_linear_position([x, y, 0.00])
         self.vessel.set_linear_velocity([vel_lon, vel_drift, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])

@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from geometry_helper import GeometryHelper
 from simulation_settings import *
 
 
@@ -19,8 +18,6 @@ class RewardMapper(object):
         self.reward_mode = r_mode_
         self.last_angle_selected = None
         self.last_rot_selected = None
-        self.ship_polygon = None
-        self.geometry = GeometryHelper()
 
     def set_goal(self, point, heading, vel_l):
         self.goal_point = point
@@ -40,7 +37,7 @@ class RewardMapper(object):
         self.last_angle_selected = angle
         self.last_rot_selected = rot
         self.ship_vel = [global_vel_x, global_vel_y, global_vel_theta]
-        self.ship_pos = [x,y,heading]
+        self.ship_pos = [x, y, heading]
 
 
     def get_reward(self):
@@ -59,8 +56,8 @@ class RewardMapper(object):
         # new_guid_dist = self.guid_line.distance(self.ship)
         # old_shore_dist = self.boundary.boundary.distance(self.last_ship)
         # new_shore_dist = self.boundary.boundary.distance(self.ship)
-        new_u_balance = abs(self.get_shore_balance(array[0],array[1]))
-        old_u_balance = abs(self.get_shore_balance(old_array[0], old_array[1]))
+        new_u_balance = abs(geom_helper.get_shore_balance(array[0], array[1]))
+        old_u_balance = abs(geom_helper.get_shore_balance(old_array[0], old_array[1]))
         # old_balance = self.get_shore_balance(old_array[0], old_array[1])
         # old_misalign = old_array[2] - ref_array[2]
         reward = -0.1
@@ -100,7 +97,10 @@ class RewardMapper(object):
                 reward = -0.1 - 0.00001*new_u_balance
             if abs(self.last_angle_selected) == 0.5:
                 reward = reward - 0.2
-        if self.self.geometry.ship_collided():
+        geom_helper.set_polygon_position(array[0], array[1], array[2])
+        viewer.plot_position(array[0], array[1], array[2])
+        if geom_helper.ship_collided():
+            print('SHIP COLLIDED!!!')
             reward = -1
             return reward
         return reward
