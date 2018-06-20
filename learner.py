@@ -1,3 +1,4 @@
+from simulation_settings import *
 import numpy as np
 import actions
 import pickle
@@ -45,8 +46,8 @@ def get_nn(obj):
 class Learner(object):
     exploring = None
 
-    def __init__(self, file_to_save='agents/agent_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S'), load_saved_regression=False,
-                 action_space_name='complete_angle',
+    def __init__(self, file_to_save='agents/agent_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
+                 load_saved_regression=False,
                  r_m_=None, nn_=False):
         self.rw_mp = r_m_
         self.debug = True
@@ -60,7 +61,6 @@ class Learner(object):
         self.end_states = dict()
         self.discount_factor = 0.8
         self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
-        self.action_space = actions.BaseAction(action_space_name)
         self.states = list()
         self.act = list()
         self.rewards = list()
@@ -119,7 +119,7 @@ class Learner(object):
         qmax = -float('Inf')
         choice_list = list()
         if not i in self.end_states or self.end_states[i] == 0:
-            for action in self.action_space.action_combinations:
+            for action in action_space.action_combinations:
                 if self.mode == 'angle_only':
                     state_action = np.append(state_p, action[0])
                 else:
@@ -150,5 +150,4 @@ if __name__ == '__main__':
         agent_obj = pickle.load(infile)
         agent = Learner(load_saved_regression=agent_obj, action_space_name='only_rudder_action_space')
         action = agent.select_action((7977.5731952, 4594.6156251, -103.49968, -2.909885, -0.6988991, 0.0005474))
-
         print(action)

@@ -1,7 +1,7 @@
 import utils
 import datetime
 from geometry_helper import GeometryHelper
-from viewer import Viewer
+import actions
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -44,6 +44,8 @@ geom_helper.set_boundary_points(buoys)
 geom_helper.set_goal_rec(goal[0], goal[1])
 geom_helper.set_shore_lines(upper_shore, lower_shore)
 geom_helper.set_guidance_line()
+
+action_space = actions.BaseAction('complete_angle')
 # viewer = Viewer()
 # viewer.plot_boundary(buoys)
 # viewer.plot_goal(goal, 100)

@@ -1,18 +1,11 @@
-import argparse
-import sys
-import os
 import qlearning
 import environment
-import datetime
-import actions
+from simulation_settings import *
 from viewer import Viewer
 import pickle
 import learner
 import utils
-import reward
-import json
 import argparse
-import numpy as np
 import csv
 import random
 
@@ -78,77 +71,6 @@ def replay_trajectory(episodes):
             view.plot_position(state[0], state[1], state[2])
     view.freeze_screen()
 
-def train_from_samples(sample_files):
-    replace_reward = reward.RewardMapper(r_mode_='cte')
-    replace_reward.set_boundary_points(buoys)
-    replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
-    batch_learner = learner.Learner(r_m_=replace_reward)
-    for file in sample_files:
-        batch_learner.load_sample_file(file)
-    batch_learner.set_up_agent()
-    batch_learner.fqi_step(50)
-
-def train_from_batch(episodes, pickle_vars):
-    replace_reward = reward.RewardMapper(r_mode_='exp_border_target_rot_angle')
-    replace_reward.set_boundary_points(buoys)
-    replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
-    batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
-                                    r_m_=replace_reward)
-    batch_size = 0
-    for episode in episodes:
-        remaining = max_tuples_per_batch - len(episode['transitions_list']) - batch_size
-        if remaining >= 0:
-            batch_learner.add_to_batch(episode['transitions_list'], episode['final_flag'])
-            batch_size += len(episode['transitions_list'])
-        else:
-            batch_learner.add_to_batch(episode['transitions_list'][0:abs(remaining)], 0)
-            break
-    batch_learner.set_up_agent()
-    batch_learner.fqi_step(max_fit_iterations)
-
-def train_from_single_episode(episodes, pickle_vars, ep_number):
-    env = environment.Environment(buoys, steps_between_actions, vessel_id, rudder_id, thruster_id, scenario, goal,
-                                  goal_heading_e_ccw, goal_vel_lon)
-
-    replace_reward = reward.RewardMapper(r_mode_='exp_border_target_rot_angle')
-    replace_reward.set_boundary_points(buoys)
-    replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
-    batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
-                                    r_m_=replace_reward)
-    episode = episodes[ep_number]
-    with open('debug_ep.txt', 'w') as outfile:
-        for transition in episode['transitions_list']:
-            print(transition[0], file=outfile)
-            print(list(transition[1]), file=outfile)
-            print(transition[2], file=outfile)
-            print(transition[3], file=outfile)
-            print('\n', file=outfile)
-    batch_learner.add_to_batch(episode['transitions_list'], episode['final_flag'])
-    batch_learner.set_up_agent()
-    for it in range(max_fit_iterations):
-        if it % 10 == 0:
-            batch_learner.fqi_step(1, debug=True)
-        else:
-            batch_learner.fqi_step(1, debug=False)
-        # if it % 10 == 0:
-        #     env.set_up()
-        #     env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
-        #     env.new_episode()
-        #     final_flag = 0
-        #     total_reward = 0
-        #     for step in range(evaluation_steps):
-        #         state = env.get_state()
-        #         action = batch_learner.select_action(state)
-        #         nxt, rw = env.step(action[0], action[1])
-        #         total_reward += rw
-        #         final_flag = env.is_final()
-        #         print("***Evaluation step " + str(step + 1) + " Completed")
-        #         if final_flag != 0:
-        #             break
-        #     env.finish()
-        #     print('For FQI iteration: ',it,' Total reward: ', total_reward, ' and result: ', final_flag)
-
-
 def sample_transitions(start_state=0, end_state=-1) -> object:
     #TODO Implement
     action_space_name = 'complete_angle'
@@ -198,7 +120,6 @@ def sample_transitions(start_state=0, end_state=-1) -> object:
                 transitions_list = list()
 
 
-
 def main():
     action_space_name = 'cte_rotation'
     action_space = actions.BaseAction(action_space_name)
@@ -244,7 +165,7 @@ def main():
 
 def evaluate_agent(ag_obj):
 
-    agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='complete_angle', nn_=True)
+    agent = learner.Learner(load_saved_regression=ag_obj, nn_=True)
     env = environment.Environment(buoys, 20, vessel_id, rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw,
                                   goal_vel_lon, _increment=0.5)
     env.set_up()
@@ -344,7 +265,7 @@ def run_episodes(agent):
             state_r = env.convert_to_simple_state(state)
             action = None
             if random.random() < 0.1:
-                action = random.choice(agent.action_space.action_combinations)
+                action = random.choice(action_space.action_combinations)
             else:
                 action = agent.select_action(state_r)
             state_prime, reward = env.step(action[0], action[1])
@@ -391,19 +312,5 @@ if __name__ == '__main__':
     # ag = load_agent('agents/agent_20180519195648DecisionTreeRegressor_r_rule_disc_0 .0it1')
     # evaluate_agent(ag)
     # evaluate_agent('agents/agent_20180524154344Sequential_r_linear_with_rudder_punish_disc_0.8it5.h5')
-    #
-    #
-    # loaded_vars, ep_list = load_pickle_file('experiment_b__')
-    # train_from_single_episode(ep_list, loaded_vars, 1)
-    # files_list = ['experiment_a__', 'experiment_b__',  'experiment_c__', 'experiment_d__', 'experiment_e__']
-    # files_list = ['dyna/samples/samples20180512231902action_stable_s0_253']
-    # ep = list()
-    # for file in files_list:
-    #     ep_list = load_pickle_file(file)
-        # ep = ep + ep_list[0]
-    # train_from_batch(ep, loaded_vars)
-    # replay_trajectory(ep)
-    # train_from_batch(ep_list, loaded_vars)
-    # train_from_samples(['samples20180419231035_s_0_100','samples20180419231035_s_0_200','samples20180419231035_s_0_300',
-    #                     'samples20180419231035_s_0_400'])
+
 

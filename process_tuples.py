@@ -1,24 +1,15 @@
 from geometry_helper import is_inbound_coordinate
 from simulation_settings import *
-import matplotlib.pyplot as plt
 import pickle
 import os
 import reward
 import learner
 from viewer import Viewer
-import trace
 from planar import Vec2
 from planar.line import Line, LineSegment
 import utils
 import random
 import experiment
-import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-
-
-# def plot_simple_state_tuples(tuples):
-#     state = [tuple[0] for tuple in tuples]
 
 def replace_reward(transition_list, mp):
     new_list = list()
@@ -141,9 +132,7 @@ if __name__ == '__main__':
 
     random.shuffle(tuples)
     reduct_batch = tuples[:100000]
-    batch_learner = learner
     new_list = replace_reward(reduct_batch, rew)
-
     simple_state_tuples = list()
 
     for tuple in new_list:
