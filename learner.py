@@ -1,20 +1,11 @@
-from sklearn.svm import SVR
-from sklearn import tree
-from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
-from sklearn import neighbors
 import numpy as np
 import actions
 import pickle
 import datetime
-import reward
-import datetime
 from keras.models import Sequential
-from keras import optimizers
 from keras.layers import Dense
 import keras.models
-from keras.utils import plot_model
 from keras.callbacks import CSVLogger
-
 import random
 
 state_mode = 'simple_state'
@@ -51,30 +42,21 @@ def get_nn(obj):
     return model
 
 
-
-
 class Learner(object):
-
     exploring = None
 
     def __init__(self, file_to_save='agents/agent_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S'), load_saved_regression=False,
                  action_space_name='complete_angle',
                  r_m_=None, nn_=False):
         self.rw_mp = r_m_
-        self.debug  = True
+        self.debug = True
         self.current_step = 0
         self.batch_list = list()
         self.nn_flag = nn_
         if self.nn_flag:
             self.learner = get_nn(load_saved_regression)
         else:
-            if load_saved_regression:
-                self.learner = load_saved_regression
-            else:
-                # self.learner = SVR(kernel='rbf', C=1e3, gamma=0.1)
-                # self.learner = RandomForestRegressor(n_estimators=20)
-                # self.learner = tree.DecisionTreeRegressor(max_depth=4)
-                self.learner = AdaBoostRegressor()
+            pass
         self.end_states = dict()
         self.discount_factor = 0.8
         self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
@@ -91,27 +73,8 @@ class Learner(object):
         self.file = file_to_save + self.learner.__class__.__name__ + '_r_' + r_mode+'_disc_'+str(self.discount_factor)
         self.logger = CSVLogger(self.file + 'log', separator=';', append=True)
 
-    def add_to_batch(self, transition_list, final_flag):
-        if self.rw_mp is not None:
-            transition_list = replace_reward(transition_list)
-        self.batch_list = self.batch_list + transition_list
-        if final_flag != 0:
-            self.end_states[len(self.batch_list)-1] = final_flag
-
     def add_tuples(self, tuples_list):
         self.batch_list = self.batch_list + tuples_list
-
-    def load_sample_file(self, file_to_load):
-        transitions = list()
-        with open(file_to_load, 'rb') as infile:
-            try:
-                while True:
-                    transitions = pickle.load(infile)
-                    transitions = replace_reward(transitions)
-            except EOFError as e:
-                pass
-        self.batch_list = self.batch_list + transitions
-
 
     def set_up_agent(self):
         print("Batch size: ", len(self.batch_list))
@@ -124,12 +87,10 @@ class Learner(object):
         self.states_p = [list(k[2]) for k in self.batch_list]
         self.end_states = [(x[4]) for x in self.batch_list]
         self.q_target = self.rewards
-        # print('Debug final state :',self.q_target[-1])
         self.states = np.array(self.states)
         self.act = np.array(self.act)
         self.samples = np.column_stack((self.states, self.act))
         print("Current batch size: ", len(self.samples))
-        # self.samples = self.normalize_state_action(self.samples)
 
     def fqi_step(self, max_iterations, debug=False):
         stop_flag = False
@@ -142,12 +103,10 @@ class Learner(object):
                 sc = self.learner.score(self.samples, self.q_target)
                 print("Score: ",sc)
             if self.discount_factor > 0:
-                maxq_prediction = np.asarray([self.find_max_q(state_p)[0] for state_p in enumerate(self.states_p)])
+                maxq_prediction = np.asarray([self.find_max_q(state_p,i)[0] for i,state_p in enumerate(self.states_p)])
                 self.q_target = self.rewards + self.discount_factor*maxq_prediction
             else:
                 self.q_target = self.rewards
-            # print("Last rewards: ", self.rewards[-3:])
-            # if (it % 1 == 0 and it != 0) or stop_flag:
             if self.nn_flag:
                 self.learner.save(self.file+'it'+str(self.current_step)+'.h5')
             else:
@@ -156,13 +115,10 @@ class Learner(object):
             if stop_flag:
                 break
 
-    def find_max_q(self, state_p):
+    def find_max_q(self, state_p,i):
         qmax = -float('Inf')
         choice_list = list()
-        if self.end_states[i] !=0:
-            print('final')
-            qmax = 0
-        else:
+        if not i in self.end_states or self.end_states[i] == 0:
             for action in self.action_space.action_combinations:
                 if self.mode == 'angle_only':
                     state_action = np.append(state_p, action[0])
@@ -176,11 +132,13 @@ class Learner(object):
                     choice_list = [action]
                 elif qpred == qmax:
                     choice_list.append(action)
-        print('Returning Qmax value: ', qmax)
+        else:
+            print('final')
+            qmax = 0
         return qmax, choice_list
 
     def select_action(self, state):
-        qmax, choice_list = find_max_q(state)
+        qmax, choice_list = self.find_max_q(state,-1)
         selected_action = random.choice(choice_list)
         print("Max",qmax)
         print(selected_action[0])

@@ -2,30 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="294f6bc1-6e88-4b05-9ab4-ef1dddfc8a65" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/agentN500KNN2" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/agentN500KNN2Rew.DGD" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/agent_full_action_N20" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_a__" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_b__" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_c__" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_d__" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_e__" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_f__" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_full_action_a" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_full_action_b" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/experiment_full_action_c" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/samples20180419231035_s_0_100" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/samples20180419231035_s_0_200" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/samples20180419231035_s_0_300" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/samples20180419231035_s_0_400" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/environment.py" afterPath="$PROJECT_DIR$/environment.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/experiment.py" afterPath="$PROJECT_DIR$/experiment.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/learner.py" afterPath="$PROJECT_DIR$/learner.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/process_tuples.py" afterPath="$PROJECT_DIR$/process_tuples.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/reward.py" afterPath="$PROJECT_DIR$/reward.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/simulation_settings.py" afterPath="$PROJECT_DIR$/simulation_settings.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/viewer.py" afterPath="$PROJECT_DIR$/viewer.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -52,7 +29,7 @@
       <file leaf-file-name="environment.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/environment.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1513">
+            <state relative-caret-position="1309">
               <caret line="89" column="35" lean-forward="false" selection-start-line="89" selection-start-column="35" selection-end-line="89" selection-end-column="35" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
@@ -74,7 +51,7 @@
       <file leaf-file-name="learner.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/learner.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="350">
+            <state relative-caret-position="17">
               <caret line="46" column="46" lean-forward="false" selection-start-line="46" selection-start-column="28" selection-end-line="46" selection-end-column="46" />
               <folding>
                 <element signature="e#0#27#0" expanded="true" />
@@ -242,6 +219,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scratches" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -257,7 +235,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -630,7 +607,14 @@
       <option name="project" value="LOCAL" />
       <updated>1524707967225</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="state_space_reduction">
+      <created>1525265725729</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1525265725729</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TodoView">
@@ -644,9 +628,8 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-11" y="0" width="1373" height="733" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23041825" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23346007" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.11163522" sideWeight="0.48535872" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19269103" sideWeight="0.42509505" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17275748" sideWeight="0.5749049" order="2" side_tool="false" content_ui="tabs" />
@@ -709,7 +692,8 @@
     <MESSAGE value="todo&gt;fix_classifier" />
     <MESSAGE value="new_sampling" />
     <MESSAGE value="batch_processing" />
-    <option name="LAST_COMMIT_MESSAGE" value="batch_processing" />
+    <MESSAGE value="state_space_reduction" />
+    <option name="LAST_COMMIT_MESSAGE" value="state_space_reduction" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1109,7 +1093,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/environment.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1513">
+        <state relative-caret-position="1309">
           <caret line="89" column="35" lean-forward="false" selection-start-line="89" selection-start-column="35" selection-end-line="89" selection-end-column="35" />
           <folding>
             <element signature="e#24#37#0" expanded="true" />
@@ -1129,7 +1113,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/learner.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
+        <state relative-caret-position="17">
           <caret line="46" column="46" lean-forward="false" selection-start-line="46" selection-start-column="28" selection-end-line="46" selection-end-column="46" />
           <folding>
             <element signature="e#0#27#0" expanded="true" />

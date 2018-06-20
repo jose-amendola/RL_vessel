@@ -63,7 +63,7 @@ def get_success_trajectories(tuples):
 
 def convert_state_space(state, rw_mapper):
     v_lon, v_drift, n_used = utils.global_to_local(state[3], state[4], state[2])
-    bl = rw_mapper.get_shore_balance(state[0], state[1])
+    bl = geom_helper.get_shore_balance(state[0], state[1])
     misalign = state[2] + 103.5  # guidance angle
     return (v_lon, misalign, bl)
 
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     rew.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     #
     tuples = list()
-    bundle_name = 'samples/samples_bundle_complete_action_b'
+    bundle_name = 'samples/samples_bundle_complete'
     with open(bundle_name, 'rb') as file:
         tuples = pickle.load(file)
 
@@ -153,7 +153,7 @@ if __name__ == '__main__':
         simple_state_tuples.append(new_tuple)
 
     final = [tpl for tpl in simple_state_tuples if tpl[0][0] > 0]
-
+    batch_learner = learner.Learner(nn_=True)
     batch_learner.add_tuples(final)
     # batch_learner.set_up_agent()
     # batch_learner.fqi_step(5)

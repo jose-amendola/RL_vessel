@@ -98,7 +98,6 @@ class RewardMapper(object):
             if abs(self.last_angle_selected) == 0.5:
                 reward = reward - 0.2
         geom_helper.set_polygon_position(array[0], array[1], array[2])
-        viewer.plot_position(array[0], array[1], array[2])
         if geom_helper.ship_collided():
             print('SHIP COLLIDED!!!')
             reward = -1
