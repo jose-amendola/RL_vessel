@@ -120,12 +120,13 @@ if __name__ == '__main__':
     rew.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     #
     tuples = list()
-    bundle_name = 'samples/samples_bundle_complete'
+    bundle_name = 'samples/samples_bundle_new'
     with open(bundle_name, 'rb') as file:
         tuples = pickle.load(file)
 
-    random.shuffle(tuples)
-    reduct_batch = tuples[:10]
+    filtered = [tpl for tpl in tuples if tpl[0][3] < 0]
+    random.shuffle(filtered)
+    reduct_batch = tuples
     new_list = replace_reward(reduct_batch, rew)
     simple_state_tuples = list()
 
@@ -135,13 +136,12 @@ if __name__ == '__main__':
         new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
         simple_state_tuples.append(new_tuple)
 
-    final = [tpl for tpl in simple_state_tuples if tpl[0][0] > 0]
     batch_learner = learner.Learner(nn_=True)
-    batch_learner.add_tuples(final)
+    batch_learner.add_tuples(simple_state_tuples)
     # batch_learner.set_up_agent()
     # batch_learner.fqi_step(5)
 
-    for i in range(100):
+    for i in range(500):
         additional_tuples = experiment.run_episodes(batch_learner)
         os.chdir('..')
         converted_new_tuples = list()
@@ -154,5 +154,5 @@ if __name__ == '__main__':
         for i in range(10):
             batch_learner.add_tuples(converted_new_tuples)
         batch_learner.set_up_agent()
-        batch_learner.fqi_step(5)
+        batch_learner.fqi_step(1)
     print('Finished')

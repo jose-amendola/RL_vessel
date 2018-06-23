@@ -232,7 +232,7 @@ def run_episodes(agent):
             state = env.get_state()
             state_r = utils.convert_to_simple_state(state)
             action = None
-            if random.random() < 0.1:
+            if random.random() < 0.2:
                 action = random.choice(action_space.action_combinations)
             else:
                 action = agent.select_action(state_r)

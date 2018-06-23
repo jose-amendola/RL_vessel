@@ -49,11 +49,11 @@ class RewardMapper(object):
         new_u_misalign = abs(array[2] - ref_array[2])
         # old_u_misalign = abs(old_array[2] - ref_array[2])
         new_u_balance = abs(geom_helper.get_shore_balance(array[0], array[1]))
-        new_u_vel_diff = abs(ref_vel - vel_array)
+        new_u_vel_diff = abs(np.linalg.norm(ref_vel - vel_array))
         # old_u_balance = abs(geom_helper.get_shore_balance(old_array[0], old_array[1]))
         reward = -0.1
         if self.reward_mode == 'quadratic':
-            quadratic = -new_u_misalign**2 - new_u_balance**2 - new_u_vel_diff**2
+            quadratic = -new_u_misalign**2 - new_u_balance**2 - (new_u_vel_diff*10)**2
             reward += quadratic
         punish_rudder = -self.last_angle_selected**2
         reward += punish_rudder

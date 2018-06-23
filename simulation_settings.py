@@ -1,7 +1,15 @@
 import datetime
 from geometry_helper import GeometryHelper
 import actions
+import numpy as np
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
+def channel_angle_e_ccw(point_a, point_b):
+    line = np.array(point_b) - np.array(point_a)
+    support = np.array((point_a[0]+10,point_a[1])) - np.array(point_a)
+    c = np.dot(line, support) / np.linalg.norm(line) / np.linalg.norm(support)  # -> cosine of the angle
+    angle = np.arccos(np.clip(c, -1, 1))
+    return 360 - np.rad2deg(angle)
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -25,8 +33,8 @@ N04 = (9235.8653, 4772.7884)
 N02 = (11770.3259, 5378.4429)
 funnel_end = (14000, 4000)
 plot = False
-# goal_heading_e_ccw = utils.channel_angle_e_ccw(N03, N05)
-goal_heading_e_ccw = -103.4
+goal_heading_e_ccw = channel_angle_e_ccw(N03, N05)
+
 goal_vel_lon = 3
 buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
 vessel_id = '36'

@@ -33,7 +33,7 @@ def get_nn(obj):
         else:
             model.add(Dense(20, input_shape=(7,), activation='relu'))
         model.add(Dense(20, activation='relu'))
-        # model.add(Dense(20, activation='relu'))
+        model.add(Dense(20, activation='relu'))
         model.add(Dense(1, activation='linear'))
         # Compile model
         # sgd = optimizers.SGD(lr=1, decay=0, momentum=0.9, nesterov=True)
