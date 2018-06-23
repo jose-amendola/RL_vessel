@@ -1,8 +1,8 @@
-# from utils import channel_angle_e_ccw
+import utils
 import datetime
 from geometry_helper import GeometryHelper
-timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 import actions
+timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 variables_file = "experiment_" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 learner_file = "agent" + datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -26,8 +26,7 @@ N04 = (9235.8653, 4772.7884)
 N02 = (11770.3259, 5378.4429)
 funnel_end = (14000, 4000)
 plot = False
-# goal_heading_e_ccw = channel_angle_e_ccw(N03, N05)
-goal_heading_e_ccw = -103.4
+goal_heading_e_ccw = utils.channel_angle_e_ccw(N03, N05)
 goal_vel_lon = 1.5
 buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
 vessel_id = '36'
@@ -45,7 +44,8 @@ geom_helper.set_boundary_points(buoys)
 geom_helper.set_goal_rec(goal[0], goal[1])
 geom_helper.set_shore_lines(upper_shore, lower_shore)
 geom_helper.set_guidance_line()
+
+action_space = actions.BaseAction('complete_angle')
 # viewer = Viewer()
 # viewer.plot_boundary(buoys)
 # viewer.plot_goal(goal, 100)
-action_space = actions.BaseAction('complete_angle')
