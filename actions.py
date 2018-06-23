@@ -1,4 +1,3 @@
-import numpy as np
 from itertools import product
 
 spaces = {'simple_action_space': {
@@ -28,6 +27,10 @@ spaces = {'simple_action_space': {
         'only_rudder_action_space':{
             'rudder_lvls':[-0.4, 0.0, 0.4],
             'thruster_lvls':[0.0]
+        },
+        'complete':{
+            'rudder_lvls':[-0.86, -0.71, -0.57, -0.43, -0.29, -0.14, 0.0, 0.14, 0.29, 0.43, 0.57, 0.71, 0.86],
+            'thruster_lvls':[-0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6]
         }
 }
 

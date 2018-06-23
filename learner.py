@@ -29,7 +29,7 @@ def get_nn(obj):
         # create model
         model = Sequential()
         if state_mode == 'simple_state':
-            model.add(Dense(20, input_shape=(4,), activation='relu'))
+            model.add(Dense(20, input_shape=(6,), activation='relu'))
         else:
             model.add(Dense(20, input_shape=(7,), activation='relu'))
         model.add(Dense(20, activation='relu'))
@@ -60,7 +60,7 @@ class Learner(object):
             pass
         self.end_states = dict()
         self.discount_factor = 0.8
-        self.mode = 'angle_only'# self.mode = 'angle_and_rotation'#
+        self.mode = self.mode = 'angle_and_rotation'
         self.states = list()
         self.act = list()
         self.rewards = list()
