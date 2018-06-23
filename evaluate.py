@@ -44,7 +44,7 @@ vessel_id = '36'
 rudder_id = '0'
 thruster_id = '0'
 scenario = 'default'
-goal = ((N07[0]+Final[0])/2, (N07[1]+Final[1])/2)
+goal = ((N07[0] + Final[0]) / 2, (N07[1] + Final[1]) / 2)
 goal_factor = 100
 
 
@@ -60,11 +60,13 @@ def load_pickle_file(file_to_load):
                 break
     return var_list, episodes_list
 
+
 def load_agent(file_to_load):
     agent_obj = None
     with open(file_to_load, 'rb') as infile:
         agent_obj = pickle.load(infile)
     return agent_obj
+
 
 def replay_trajectory(episodes):
     view = Viewer()
@@ -79,7 +81,7 @@ def replay_trajectory(episodes):
 
 
 def train_from_batch(episodes, pickle_vars):
-    replace_reward = reward.RewardMapper(plot_flag=False)
+    replace_reward = reward.RewardMapper()
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
@@ -96,12 +98,12 @@ def train_from_batch(episodes, pickle_vars):
     batch_learner.set_up_agent()
     batch_learner.fqi_step(max_fit_iterations)
 
-def train_from_single_episode(episodes, pickle_vars, ep_number):
-    env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon,
-                                  False)
 
-    replace_reward = reward.RewardMapper(plot_flag=False)
+def train_from_single_episode(episodes, pickle_vars, ep_number):
+    env = environment.Environment(buoys, steps_between_actions, vessel_id, rudder_id, thruster_id, scenario, goal,
+                                  goal_heading_e_ccw, goal_vel_lon)
+
+    replace_reward = reward.RewardMapper()
     replace_reward.set_boundary_points(buoys)
     replace_reward.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
     batch_learner = learner.Learner(file_to_save=learner_file, action_space_name=pickle_vars['action_space'],
@@ -121,33 +123,31 @@ def train_from_single_episode(episodes, pickle_vars, ep_number):
             batch_learner.fqi_step(1, debug=True)
         else:
             batch_learner.fqi_step(1, debug=False)
-        # if it % 10 == 0:
-        #     env.set_up()
-        #     env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
-        #     env.new_episode()
-        #     final_flag = 0
-        #     total_reward = 0
-        #     for step in range(evaluation_steps):
-        #         state = env.get_state()
-        #         action = batch_learner.select_action(state)
-        #         nxt, rw = env.step(action[0], action[1])
-        #         total_reward += rw
-        #         final_flag = env.is_final()
-        #         print("***Evaluation step " + str(step + 1) + " Completed")
-        #         if final_flag != 0:
-        #             break
-        #     env.finish()
-        #     print('For FQI iteration: ',it,' Total reward: ', total_reward, ' and result: ', final_flag)
-
-
+            # if it % 10 == 0:
+            #     env.set_up()
+            #     env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
+            #     env.new_episode()
+            #     final_flag = 0
+            #     total_reward = 0
+            #     for step in range(evaluation_steps):
+            #         state = env.get_state()
+            #         action = batch_learner.select_action(state)
+            #         nxt, rw = env.step(action[0], action[1])
+            #         total_reward += rw
+            #         final_flag = env.is_final()
+            #         print("***Evaluation step " + str(step + 1) + " Completed")
+            #         if final_flag != 0:
+            #             break
+            #     env.finish()
+            #     print('For FQI iteration: ',it,' Total reward: ', total_reward, ' and result: ', final_flag)
 
 
 def main():
     action_space_name = 'large_action_space'
     action_space = actions.BaseAction(action_space_name)
     agent = qlearning.QLearning(q_file, epsilon=1, action_space=action_space)
-    env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, False)
+    env = environment.Environment(buoys, steps_between_actions, vessel_id, rudder_id, thruster_id, scenario, goal,
+                                  goal_heading_e_ccw, goal_vel_lon)
     with open(variables_file, 'wb') as outfile:
         pickle_vars = dict()
         pickle_vars['action_space'] = action_space_name
@@ -173,24 +173,24 @@ def main():
                 transition = (state, (angle, rot), state_prime, reward)
                 final_flag = env.is_final()
                 agent.observe_reward(state, angle, rot, state_prime, reward, final_flag)
-                print("***Training step "+str(step+1)+" Completed")
+                print("***Training step " + str(step + 1) + " Completed")
                 episode_transitions_list.append(transition)
                 if final_flag != 0:
                     break
             episode_dict['episode_number'] = episode
             episode_dict['transitions_list'] = episode_transitions_list
             episode_dict['final_flag'] = final_flag
-            pickle_vars['ep#'+str(episode)] = episode_dict
+            pickle_vars['ep#' + str(episode)] = episode_dict
             pickle.dump(episode_dict, outfile)
             env.finish()
-        #Now that the training has finished, the agent can use his policy without updating it
+            # Now that the training has finished, the agent can use his policy without updating it
     with open(learner_file, 'wb') as outfile:
         pickle.dump(agent, outfile)
 
 
 def evaluate_agent(ag_obj):
-    env = environment.Environment(buoys, steps_between_actions, vessel_id,
-                                  rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw, goal_vel_lon, True)
+    env = environment.Environment(buoys, steps_between_actions, vessel_id, rudder_id, thruster_id, scenario, goal,
+                                  goal_heading_e_ccw, goal_vel_lon)
     env.set_up()
     agent = learner.Learner(load_saved_regression=ag_obj, action_space_name='large_action_space')
     env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
@@ -212,6 +212,7 @@ def evaluate_agent(ag_obj):
             if final_flag != 0:
                 break
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluating agent')
     parser.add_argument('a', type=str, help='Agent pickle file')
@@ -223,8 +224,3 @@ if __name__ == '__main__':
         evaluate_agent(ag)
     else:
         print("No agent provided")
-
-
-
-
-

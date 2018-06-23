@@ -54,31 +54,19 @@ def get_success_trajectories(tuples):
             tmp.append(tup)
         elif tup[4] == 1:
             tmp.append(tup)
-            trajs = trajs + tmp
+            trajs += tmp
             tmp = list()
         elif tup[4] == -1:
             tmp = list()
     return trajs
 
 
-def convert_state_space(state, rw_mapper):
-    v_lon, v_drift, n_used = utils.global_to_local(state[3], state[4], state[2])
-    bl = rw_mapper.get_shore_balance(state[0], state[1])
-    misalign = state[2] + 103.5  # guidance angle
-    return (v_lon, misalign, bl)
-
-
 def plot_sequence(tuples):
-    view = Viewer()
-    view.plot_boundary(buoys)
-    view.plot_goal(goal, goal_factor)
     for tuple in tuples:
         state = tuple[0]
         print('Position: ', state[0], state[1], state[2])
         print('Velocities: ', state[3], state[4], state[5])
         print('Action: ', tuple[1])
-        view.plot_position(state[0], state[1], state[2])
-    view.freeze_screen()
 
 
 def mirror_point(point_a, point_b, point_to_mirror):
@@ -108,7 +96,7 @@ def reflect_state_across_line(point_a, point_b, state):
     new_yaw = line_angle - (yaw - line_angle)
     new_v_x, new_v_y = mirror_velocity(state[3], state[4], yaw, new_yaw)
     new_v_yaw = - v_yaw
-    return (new_x, new_y, new_yaw, new_v_x, new_v_y, new_v_yaw)
+    return new_x, new_y, new_yaw, new_v_x, new_v_y, new_v_yaw
 
 
 def reflect_tuple_on_line(point_a, point_b, tuple):
@@ -140,31 +128,31 @@ if __name__ == '__main__':
         tuples = pickle.load(file)
 
     random.shuffle(tuples)
-    reduct_batch = tuples[:100000]
+    reduct_batch = tuples[:100]
     batch_learner = learner
     new_list = replace_reward(reduct_batch, rew)
 
     simple_state_tuples = list()
 
     for tuple in new_list:
-        new_state = convert_state_space(tuple[0], rew)
-        new_state_p = convert_state_space(tuple[2], rew)
+        new_state = utils.convert_to_simple_state(tuple[0])
+        new_state_p = utils.convert_to_simple_state(tuple[2])
         new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
         simple_state_tuples.append(new_tuple)
 
     final = [tpl for tpl in simple_state_tuples if tpl[0][0] > 0]
-
+    batch_learner = learner.Learner(nn_=True)
     batch_learner.add_tuples(final)
-    # batch_learner.set_up_agent()
-    # batch_learner.fqi_step(5)
+    batch_learner.set_up_agent()
+    batch_learner.fqi_step(5)
 
     for i in range(100):
         additional_tuples = experiment.run_episodes(batch_learner)
         os.chdir('..')
         converted_new_tuples = list()
         for tup in additional_tuples:
-            new_state = convert_state_space(tup[0], rew)
-            new_state_p = convert_state_space(tup[2], rew)
+            new_state = utils.convert_state_space(tup[0])
+            new_state_p = utils.convert_state_space(tup[2])
             new_tuple = (new_state, tup[1], new_state_p, tup[3], tup[4])
             converted_new_tuples.append(new_tuple)
             # repeat it so it gets more weight in learning

@@ -206,7 +206,7 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.update(self.rudder)
         self.max_angle = self.rudder.get_maximum_angle()
 
-    def get_state(self, state_mode=None):
+    def get_state(self):
         self.simulation.sync(self.vessel)
         lin_pos_vec = self.vessel.get_linear_position()
         ang_pos_vec = self.vessel.get_angular_position()
@@ -219,12 +219,6 @@ class Environment(buzz_python.session_subscriber):
         yp = lin_vel_vec[1]
         theta_p = ang_vel_vec[2]
         return x, y, theta, xp, yp, theta_p
-
-    def convert_to_simple_state(self, state):
-        v_lon, v_drift, n_used = utils.global_to_local(state[3], state[4], state[2])
-        bl = geom_helper.get_shore_balance(state[0], state[1])
-        misalign = state[2] + 103.5
-        return v_lon, misalign, bl
 
     def advance(self):
         self.allow_advance_ev.wait()
