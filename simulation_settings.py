@@ -53,7 +53,7 @@ geom_helper.set_goal_rec(goal[0], goal[1])
 geom_helper.set_shore_lines(upper_shore, lower_shore)
 geom_helper.set_guidance_line()
 
-action_space = actions.BaseAction('complete')
+action_space = actions.BaseAction('rudder_complete')
 # viewer = Viewer()
 # viewer.plot_boundary(buoys)
 # viewer.plot_goal(goal, 100)

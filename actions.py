@@ -12,21 +12,9 @@ spaces = {'simple_action_space': {
             'rudder_lvls': [-0.5, 0.0, 0.5],
             'thruster_lvls': [0.2]
         },
-        'smooth': {
-            'rudder_lvls': [-0.2, 0.0, 0.2],
-            'thruster_lvls': [0.2]
-        },
-        'complete_angle': {
-            'rudder_lvls': [-0.5, -0.2, 0.0, 0.2, 0.5],
-            'thruster_lvls': [0.2]
-        },
-        'large_action_space':{
-            'rudder_lvls':[-0.5, 0.0, 0.5],
-            'thruster_lvls':[-0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6]
-        },
-        'only_rudder_action_space':{
-            'rudder_lvls':[-0.4, 0.0, 0.4],
-            'thruster_lvls':[0.0]
+        'rudder_complete':{
+            'rudder_lvls':[-0.86, -0.71, -0.57, -0.43, -0.29, -0.14, 0.0, 0.14, 0.29, 0.43, 0.57, 0.71, 0.86],
+            'thruster_lvls':[0.6]
         },
         'complete':{
             'rudder_lvls':[-0.86, -0.71, -0.57, -0.43, -0.29, -0.14, 0.0, 0.14, 0.29, 0.43, 0.57, 0.71, 0.86],

@@ -137,6 +137,9 @@ def evaluate_agent(ag_obj):
     env = environment.Environment(buoys, 20, vessel_id, rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw,
                                   goal_vel_lon, _increment=0.5)
     env.set_up()
+    viewer = Viewer()
+    viewer.plot_boundary(buoys)
+    viewer.plot_goal(goal, 100)
 
     starting_points = [
                         [11000, 5250, -101, 3, 0, 0],
@@ -163,8 +166,9 @@ def evaluate_agent(ag_obj):
         env.move_to_next_start()
         steps_inside = 0
         for step in range(evaluation_steps):
-            state = env.get_state(state_mode='simple_state')
-            state_r = env.convert_to_simple_state(state)
+            state = env.get_state()
+            viewer.plot_position(state[0], state[1], state[2])
+            state_r = utils.convert_to_simple_state(state)
             action = agent.select_action(state_r)
             state_prime, reward = env.step(action[0], action[1])
             transition = (state, (action[0], action[1]), state_prime, reward)
@@ -199,6 +203,7 @@ def run_episodes(agent):
     env = environment.Environment(buoys, 20, vessel_id, rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw,
                                   goal_vel_lon, _increment=0.5)
     env.set_up()
+
 
     starting_points = [
                        [11000, 5360, -106, 3, 0, 0],
@@ -276,9 +281,9 @@ if __name__ == '__main__':
         end = args.e
 
     # main()
-    sample_transitions(start, end)
+    # sample_transitions(start, end)
     # ag = load_agent('agents/agent_20180519195648DecisionTreeRegressor_r_rule_disc_0 .0it1')
     # evaluate_agent(ag)
-    # evaluate_agent('agents/agent_20180524154344Sequential_r_linear_with_rudder_punish_disc_0.8it5.h5')
+    evaluate_agent('agents/agent_20180625151623Sequential_r____disc_0.8it15.h5')
 
 

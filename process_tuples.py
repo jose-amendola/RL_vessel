@@ -125,8 +125,8 @@ if __name__ == '__main__':
         tuples = pickle.load(file)
 
     filtered = [tpl for tpl in tuples if tpl[0][3] < 0]
-    random.shuffle(filtered)
-    reduct_batch = tuples
+
+    reduct_batch = random.sample(filtered, 1000)
     new_list = replace_reward(reduct_batch, rew)
     simple_state_tuples = list()
 
@@ -138,8 +138,8 @@ if __name__ == '__main__':
 
     batch_learner = learner.Learner(nn_=True)
     batch_learner.add_tuples(simple_state_tuples)
-    # batch_learner.set_up_agent()
-    # batch_learner.fqi_step(5)
+    batch_learner.set_up_agent()
+    batch_learner.fqi_step(5)
 
     for i in range(500):
         additional_tuples = experiment.run_episodes(batch_learner)
@@ -151,8 +151,8 @@ if __name__ == '__main__':
             new_tuple = (new_state, tup[1], new_state_p, tup[3], tup[4])
             converted_new_tuples.append(new_tuple)
             # repeat it so it gets more weight in learning
-        for i in range(10):
-            batch_learner.add_tuples(converted_new_tuples)
+        sampling = random.sample(converted_new_tuples, 100)
+        batch_learner.add_tuples(converted_new_tuples)
         batch_learner.set_up_agent()
-        batch_learner.fqi_step(1)
+        batch_learner.fqi_step(5)
     print('Finished')
