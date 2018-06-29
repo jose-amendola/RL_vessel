@@ -14,6 +14,7 @@ class GeometryHelper(object):
         self.upper_shore = None
         self.lower_shore = None
         self.ship = None
+        self.points = None
 
     def set_ship_geometry(self, points):
         self.ship_polygon = Polygon(points)
@@ -54,7 +55,11 @@ class GeometryHelper(object):
         m, b = np.polyfit([8000, 9000], [y_temp_a,y_temp_b], 1)
         y_a = m*x_a+b
         y_b = m*x_b+b
+        self.points = [(x_a, y_a), (x_b, y_b)]
         self.guid_line = LineString([(x_a, y_a), (x_b, y_b)])
+
+    def get_simmetry_points(self):
+        return self.points
 
     def ship_collided(self):
         contains = self.boundary.contains(self.ship)

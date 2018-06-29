@@ -200,11 +200,8 @@ def evaluate_agent(ag_obj):
 
 
 def run_episodes(agent):
-    env = environment.Environment(buoys, 20, vessel_id, rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw,
-                                  goal_vel_lon, _increment=0.5)
+    env = environment.Environment()
     env.set_up()
-
-
     starting_points = [
                        [11000, 5360, -106, 3, 0, 0],
                        [11000, 5240,-100, 3, 0, 0],

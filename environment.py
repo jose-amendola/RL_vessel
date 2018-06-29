@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
-import blabla
 import threading
-import math
-import reward
 import buzz_python
 import itertools
 import utils
-import random
-import time
-import numpy as np
 import subprocess
 import os
 from geometry_helper import is_inbound_coordinate
@@ -19,24 +13,9 @@ import random
 
 
 class Environment(buzz_python.session_subscriber):
-    def __init__(self, _buoys_list, _step, _vessel_id, _rudder_id, _thr_id, _scn, _goal, _g_heading, _g_vel_l,
-                 _increment=0.1):
+    def __init__(self):
         super(Environment, self).__init__()
-        self.step_increment = _increment
-        self.buoys = _buoys_list
-        self.goal = _goal
-        self.g_heading = _g_heading
-        self.g_vel_l = _g_vel_l
-        self.steps_between_actions = _step
-        # self.vessel_id = '102'
-        self.vessel_id = _vessel_id
-        self.rudder_id = _rudder_id
-        self.thruster_id = _thr_id
-        # self.mongo_addr = 'mongodb://10.1.1.92:27017'
-        # self.dbname = 'test'
         self.simulation_id = 'sim'
-        # self.scenario = 'Santos_Container_L349B45'
-        self.scenario = _scn
         self.control_id = '555'
         self.chat_address = '127.0.0.1'
         self.simulation = []
@@ -49,11 +28,10 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward.RewardMapper(r_mode_='step')
+        self.reward_mapper = reward_mapping
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = None
-        self.reward_mapper.set_goal(self.goal, self.g_heading, self.g_vel_l)
         os.chdir('./dyna')
         self.dyna_proc = None
         self.accumulated_starts = list()
@@ -105,20 +83,6 @@ class Environment(buzz_python.session_subscriber):
         self.accumulated_starts.append(new_start_state)
         self.accumulated_starts += variants_list
 
-    def get_initial_states(self):
-        positions_dict = generate_inner_positions(self.reward_mapper.goal_point, self.reward_mapper.boundary)
-        init_angle = -100
-        states_list = list()
-        init_vel_l = 6
-        for position in positions_dict:
-            for count in range(10):
-                state = (position[0], position[1],
-                         init_angle * random.triangular(0.8, 1.2),
-                         positions_dict[position] / 4000 * init_vel_l * random.triangular(0.8, 1.2),
-                         0, 0)
-                states_list.append(state)
-        return states_list
-
     def is_final(self):
         ret = 0
         if geom_helper.reached_goal():
@@ -157,9 +121,9 @@ class Environment(buzz_python.session_subscriber):
         self.own = self.simulation.get_runtime_component(self.control_id)
 
         self.simulation.build()
-        self.simulation.set_current_time_increment(self.step_increment)
+        self.simulation.set_current_time_increment(step_increment)
         self.start()
-        self.vessel = self.simulation.get_vessel(self.vessel_id)
+        self.vessel = self.simulation.get_vessel(vessel_id)
 
         # self.reset_state(self.init_state[0], self.init_state[1], self.init_state[2],
         #                      self.init_state[3], self.init_state[4], self.init_state[5])
@@ -240,7 +204,7 @@ class Environment(buzz_python.session_subscriber):
         self.simulation.update(self.rudder)
 
         cycle = 0
-        for cycle in range(self.steps_between_actions):
+        for cycle in range(steps):
             self.advance()
         statePrime = self.get_state()  # Get next State
         print('statePrime: ', statePrime)

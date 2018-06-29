@@ -1,6 +1,7 @@
 import datetime
 from geometry_helper import GeometryHelper
 import actions
+import reward
 import numpy as np
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
@@ -35,6 +36,9 @@ funnel_end = (14000, 4000)
 plot = False
 goal_heading_e_ccw = channel_angle_e_ccw(N03, N05)
 
+steps = 20
+step_increment = 0.5
+
 goal_vel_lon = 3
 buoys = (funnel_start, N01, N03, N05, N07, Final, N06, N04, N02, funnel_end)
 vessel_id = '36'
@@ -54,6 +58,8 @@ geom_helper.set_shore_lines(upper_shore, lower_shore)
 geom_helper.set_guidance_line()
 
 action_space = actions.BaseAction('rudder_complete')
+reward_mapping = reward.RewardMapper('quadratic')
+reward_mapping.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
 # viewer = Viewer()
 # viewer.plot_boundary(buoys)
 # viewer.plot_goal(goal, 100)

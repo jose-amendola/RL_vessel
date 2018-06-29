@@ -127,9 +127,11 @@ if __name__ == '__main__':
     filtered = [tpl for tpl in tuples if tpl[0][3] < 0]
 
     reduct_batch = random.sample(filtered, 1000)
+    points = geom_helper.get_simmetry_points()
     new_list = replace_reward(reduct_batch, rew)
+    mirrored_tuples = reflect_tuple_on_line(points[0], points[1], new_list)
+    new_list += mirrored_tuples
     simple_state_tuples = list()
-
     for tuple in new_list:
         new_state = utils.convert_to_simple_state(tuple[0])
         new_state_p = utils.convert_to_simple_state(tuple[2])
@@ -144,6 +146,9 @@ if __name__ == '__main__':
     for i in range(500):
         additional_tuples = experiment.run_episodes(batch_learner)
         os.chdir('..')
+
+        sim_tuples = reflect_tuple_on_line(points[0], points[1], additional_tuples)
+        additional_tuples += sim_tuples
         converted_new_tuples = list()
         for tup in additional_tuples:
             new_state = utils.convert_to_simple_state(tup[0])
