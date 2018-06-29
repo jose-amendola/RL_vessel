@@ -1,7 +1,6 @@
 import datetime
 from geometry_helper import GeometryHelper
 import actions
-import reward
 import numpy as np
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
@@ -58,8 +57,8 @@ geom_helper.set_shore_lines(upper_shore, lower_shore)
 geom_helper.set_guidance_line()
 
 action_space = actions.BaseAction('rudder_complete')
-reward_mapping = reward.RewardMapper('quadratic')
-reward_mapping.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
+
+
 # viewer = Viewer()
 # viewer.plot_boundary(buoys)
 # viewer.plot_goal(goal, 100)

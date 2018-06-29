@@ -6,14 +6,14 @@ import utils
 import subprocess
 import os
 from geometry_helper import is_inbound_coordinate
-import reward
 from simulation_settings import *
 import pickle
 import random
 
 
+
 class Environment(buzz_python.session_subscriber):
-    def __init__(self):
+    def __init__(self, rw_mapper):
         super(Environment, self).__init__()
         self.simulation_id = 'sim'
         self.control_id = '555'
@@ -28,7 +28,7 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = reward_mapping
+        self.reward_mapper = rw_mapper
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = None
@@ -113,7 +113,7 @@ class Environment(buzz_python.session_subscriber):
         self.simulation = buzz_python.create_simco_simulation(self.simulation_id, self.control_id, ser)
         self.simulation.connect(self.chat_address)
         self.init(self.simulation)
-        scn = ser.deserialize_scenario(self.scenario)
+        scn = ser.deserialize_scenario(scenario)
         self.simulation.add(scn)
         factory = self.simulation.get_element_factory()
         r_c = factory.build_runtime_component(self.dyna_ctrl_id)
@@ -154,13 +154,13 @@ class Environment(buzz_python.session_subscriber):
         rdr_ev_taken_tag = buzz_python.rudder_control_taken_event_tag()
         self.simulation.is_publisher(rdr_ev_taken_tag, True)
 
-        self.thruster = self.vessel.get_thruster(self.thruster_id)
+        self.thruster = self.vessel.get_thruster(thruster_id)
         ctrl_ev = buzz_python.create_thruster_control_taken_event(self.thruster)
         ctrl_ev.set_controlled_fields(thr_tag.SMH_DEMANDED_ROTATION)
         ctrl_ev.set_controller(self.own)
         self.simulation.publish_event(ctrl_ev)
 
-        self.rudder = self.vessel.get_rudder(self.rudder_id)
+        self.rudder = self.vessel.get_rudder(rudder_id)
         ctrl_ev_r = buzz_python.create_rudder_control_taken_event(self.rudder)
         ctrl_ev_r.set_controlled_fields(rdr_tag.SMH_DEMANDED_ANGLE)
         ctrl_ev_r.set_controller(self.own)

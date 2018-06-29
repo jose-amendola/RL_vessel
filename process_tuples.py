@@ -1,5 +1,7 @@
 from geometry_helper import is_inbound_coordinate
 from simulation_settings import *
+from simulation_settings import geom_helper
+from simulation_settings import geom_helper
 import pickle
 import os
 import reward
@@ -83,17 +85,17 @@ def mirror_velocity(vel_x, vel_y, heading_n_cw, new_heading):
 
 def reflect_state_across_line(point_a, point_b, state):
     line_angle = - 103.5
-    x = tuple[0][0]
-    y = tuple[0][1]
-    new_x, new_y = mirror_point(point_a, point_b, (state[0], state[1]))
-    yaw = tuple[0][2]
-    v_x = tuple[0][3]
-    v_y = tuple[0][4]
-    v_yaw = tuple[0][5]
+    x = state[0]
+    y = state[1]
+    new_x, new_y = mirror_point(point_a, point_b, (x, y))
+    yaw = state[2]
+    v_x = state[3]
+    v_y = state[4]
+    v_yaw = state[5]
     new_yaw = line_angle - (yaw - line_angle)
     new_v_x, new_v_y = mirror_velocity(state[3], state[4], yaw, new_yaw)
     new_v_yaw = - v_yaw
-    return (new_x, new_y, new_yaw, new_v_x, new_v_y, new_v_yaw)
+    return new_x, new_y, new_yaw, new_v_x, new_v_y, new_v_yaw
 
 
 def reflect_tuple_on_line(point_a, point_b, tuple):
@@ -103,22 +105,23 @@ def reflect_tuple_on_line(point_a, point_b, tuple):
     return reflected_state, reflected_action, reflected_state_p, tuple[3], tuple[4]
 
 
-def get_strictly_simetric_set(org_tuples, mapper, point_a, point_b):
+def get_strictly_simmetric_set(point_a, point_b, org_tuples):
     tuples = [tup for tup in org_tuples if tup[0][2] + 103.5 < 20 and tup[0][0] < 11500]
     print('Number of tuples to be considered:', len(tuples))
     tuples_with_reflection = list()
     for tuple in tuples:
         reflect_tuple = reflect_tuple_on_line(point_a, point_b, tuple)
-        if is_inbound_coordinate(mapper.boundary, reflect_tuple[0][0], reflect_tuple[0][1]):
+        if is_inbound_coordinate(geom_helper.boundary, reflect_tuple[0][0], reflect_tuple[0][1]):
             tuples_with_reflection.append(tuple)
             tuples_with_reflection.append(reflect_tuple)
     print('Number of tuples after reflection:', len(tuples_with_reflection))
+    return tuples_with_reflection
 
 
 if __name__ == '__main__':
-    rew = reward.RewardMapper(r_mode_='quadratic')
-    rew.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
-    #
+    reward_mapping = reward.RewardMapper('quadratic', _g_helper=geom_helper)
+    reward_mapping.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
+
     tuples = list()
     bundle_name = 'samples/samples_bundle_new'
     with open(bundle_name, 'rb') as file:
@@ -128,13 +131,14 @@ if __name__ == '__main__':
 
     reduct_batch = random.sample(filtered, 1000)
     points = geom_helper.get_simmetry_points()
-    new_list = replace_reward(reduct_batch, rew)
-    mirrored_tuples = reflect_tuple_on_line(points[0], points[1], new_list)
-    new_list += mirrored_tuples
+    new_list = replace_reward(reduct_batch, reward_mapping)
+
+    new_list = get_strictly_simmetric_set(points[0], points[1], new_list)
+
     simple_state_tuples = list()
     for tuple in new_list:
-        new_state = utils.convert_to_simple_state(tuple[0])
-        new_state_p = utils.convert_to_simple_state(tuple[2])
+        new_state = utils.convert_to_simple_state(tuple[0], geom_helper)
+        new_state_p = utils.convert_to_simple_state(tuple[2], geom_helper)
         new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
         simple_state_tuples.append(new_tuple)
 
@@ -144,11 +148,10 @@ if __name__ == '__main__':
     batch_learner.fqi_step(5)
 
     for i in range(500):
-        additional_tuples = experiment.run_episodes(batch_learner)
+        additional_tuples = experiment.run_episodes(batch_learner, reward_mapping)
         os.chdir('..')
+        sim_tuples = get_strictly_simmetric_set(points[0], points[1], sim_tuples)
 
-        sim_tuples = reflect_tuple_on_line(points[0], points[1], additional_tuples)
-        additional_tuples += sim_tuples
         converted_new_tuples = list()
         for tup in additional_tuples:
             new_state = utils.convert_to_simple_state(tup[0])

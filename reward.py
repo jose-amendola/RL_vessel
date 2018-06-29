@@ -5,7 +5,7 @@ import utils
 
 
 class RewardMapper(object):
-    def __init__(self, r_mode_='cte'):
+    def __init__(self, r_mode_='cte', _g_helper=None):
         self.ship = None
         self.ship_vel = list()
         self.ship_last_vel = list()
@@ -19,6 +19,7 @@ class RewardMapper(object):
         self.reward_mode = r_mode_
         self.last_angle_selected = None
         self.last_rot_selected = None
+        self.g_helper = _g_helper
 
     def set_goal(self, point, heading, vel_l):
         self.goal_point = point
@@ -48,19 +49,19 @@ class RewardMapper(object):
         # old_array = np.array((self.ship_last_pos))
         new_u_misalign = abs(array[2] - ref_array[2])
         # old_u_misalign = abs(old_array[2] - ref_array[2])
-        new_u_balance = abs(geom_helper.get_shore_balance(array[0], array[1]))
+        new_u_balance = abs(self.g_helper.get_shore_balance(array[0], array[1]))
         new_u_vel_diff = abs(np.linalg.norm(ref_vel - vel_array))
-        # old_u_balance = abs(geom_helper.get_shore_balance(old_array[0], old_array[1]))
+        # old_u_balance = abs(g_helper.get_shore_balance(old_array[0], old_array[1]))
         reward = -0.1
         if self.reward_mode == 'quadratic':
-            quadratic = -new_u_misalign**2
+            quadratic = -new_u_balance**2
             reward += quadratic
-        punish_rudder = -self.last_angle_selected**2
+        punish_rudder = -100*self.last_angle_selected**2
         reward += punish_rudder
-        geom_helper.set_polygon_position(array[0], array[1], array[2])
-        if geom_helper.ship_collided():
+        self.g_helper.set_polygon_position(array[0], array[1], array[2])
+        if self.g_helper.ship_collided():
             print('SHIP COLLIDED!!!')
-            reward = -1000000
+            reward += -100000
             return reward
         return reward
 

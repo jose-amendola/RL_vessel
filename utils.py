@@ -1,7 +1,6 @@
 import numpy as np
 import pickle
 import os
-from simulation_settings import geom_helper
 
 
 def local_to_global(x_local, y_local, heading_e_ccw):
@@ -53,9 +52,9 @@ def merge_sample_files_into_one(dir_name):
         pickle.dump(batch_list, bundle_file)
 
 
-def convert_to_simple_state(state):
+def convert_to_simple_state(state, g_helper):
     v_lon, v_drift, n_used = global_to_local(state[3], state[4], state[2])
-    bl = geom_helper.get_shore_balance(state[0], state[1])
+    bl = g_helper.get_shore_balance(state[0], state[1])
     misalign = state[2] + 103.5
     theta_p = state[5]
     return v_lon, misalign, bl, theta_p
