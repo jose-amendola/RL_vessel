@@ -150,12 +150,12 @@ if __name__ == '__main__':
     for i in range(500):
         additional_tuples = experiment.run_episodes(batch_learner, reward_mapping)
         os.chdir('..')
-        sim_tuples = get_strictly_simmetric_set(points[0], points[1], sim_tuples)
+        additional_tuples = get_strictly_simmetric_set(points[0], points[1], additional_tuples)
 
         converted_new_tuples = list()
         for tup in additional_tuples:
-            new_state = utils.convert_to_simple_state(tup[0])
-            new_state_p = utils.convert_to_simple_state(tup[2])
+            new_state = utils.convert_to_simple_state(tup[0], g_helper=geom_helper)
+            new_state_p = utils.convert_to_simple_state(tup[2], g_helper=geom_helper)
             new_tuple = (new_state, tup[1], new_state_p, tup[3], tup[4])
             converted_new_tuples.append(new_tuple)
             # repeat it so it gets more weight in learning
