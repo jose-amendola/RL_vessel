@@ -53,14 +53,14 @@ class RewardMapper(object):
         # old_u_balance = abs(geom_helper.get_shore_balance(old_array[0], old_array[1]))
         reward = -0.1
         if self.reward_mode == 'quadratic':
-            quadratic = -new_u_misalign**2
+            quadratic = -new_u_balance**2
             reward += quadratic
-        punish_rudder = -self.last_angle_selected**2
+        punish_rudder = -100*self.last_angle_selected**2
         reward += punish_rudder
         geom_helper.set_polygon_position(array[0], array[1], array[2])
         if geom_helper.ship_collided():
             print('SHIP COLLIDED!!!')
-            reward = -1000000
+            reward += -100000
             return reward
         return reward
 

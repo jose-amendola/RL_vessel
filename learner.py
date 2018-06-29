@@ -29,10 +29,9 @@ def get_nn(obj):
         # create model
         model = Sequential()
         if state_mode == 'simple_state':
-            model.add(Dense(20, input_shape=(6,), activation='relu'))
+            model.add(Dense(20, input_shape=(5,), activation='relu'))
         else:
             model.add(Dense(20, input_shape=(7,), activation='relu'))
-        model.add(Dense(20, activation='relu'))
         model.add(Dense(20, activation='relu'))
         model.add(Dense(1, activation='linear'))
         # Compile model
@@ -60,7 +59,7 @@ class Learner(object):
             pass
         self.end_states = dict()
         self.discount_factor = 0.8
-        self.mode = self.mode = 'angle_and_rotation'
+        self.mode = self.mode = 'angle_only'
         self.states = list()
         self.act = list()
         self.rewards = list()
@@ -97,8 +96,8 @@ class Learner(object):
         for it in range(max_iterations):
             self.current_step += 1
             print("FQI_iteration: ", it)
-            self.learner.fit(self.samples, self.q_target, batch_size=1000, verbose=1, nb_epoch=300, callbacks=[self.logger])
-            # self.learner.fit(self.samples, self.q_target)
+            self.learner.fit(self.samples, self.q_target, batch_size=300, verbose=1, nb_epoch=300,
+                             callbacks=[self.logger])
             if not self.nn_flag:
                 sc = self.learner.score(self.samples, self.q_target)
                 print("Score: ",sc)

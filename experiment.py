@@ -40,17 +40,14 @@ def replay_trajectory(episodes):
     view.freeze_screen()
 
 def sample_transitions(start_state=0, end_state=-1) -> object:
-    #TODO Implement
-    action_space_name = 'complete_angle'
-    action_space = actions.BaseAction(action_space_name)
-    env = environment.Environment(buoys, steps_between_actions, vessel_id, rudder_id, thruster_id, scenario, goal,
-                                  goal_heading_e_ccw, goal_vel_lon)
+    env = environment.Environment()
     env.set_up()
     # env.set_sampling_mode(start_state, end_state)
     env.set_single_start_pos_mode([9000, 4819.10098, -103.5, 3, 0, 0])
     # env.set_single_start_pos_mode([13000, 5777.706, -103.5, 3, 0, 0])
     # env.starts_from_file_mode('samples/starting_points_global_coord20180512195730')
     transitions_list = list()
+    policy_mode = "controller"
     for episode in range(5000000):
         if episode == 1:
             env.start_bifurcation_mode()
@@ -62,12 +59,18 @@ def sample_transitions(start_state=0, end_state=-1) -> object:
             # env.set_up()
             env.reset_to_start()
             for i in range(500000):
-                rand_act = random.choice(action_space.action_combinations)
-                if random.random() < 0.2:
-                    act = rand_act
-                else:
-                    act = action
                 state = env.get_state()
+                if policy_mode == 'controller':
+                    #TODO implement
+                    # converted_state = utils.convert_to_simple_state(state)
+                    # act[0]=
+                    # act[1]=0.6
+                else:
+                    rand_act = random.choice(action_space.action_combinations)
+                    if random.random() < 0.2:
+                        act = rand_act
+                    else:
+                        act = action
                 angle = act[0]
                 rot = act[1]
                 if episode == 0:
@@ -82,7 +85,7 @@ def sample_transitions(start_state=0, end_state=-1) -> object:
                 transitions_list.append(transition)
                 if final_flag != 0 or state[0] < 7000:
                     break
-            with open(sample_file + 'action_' + action_space_name + '_s' + str(start) + '_' + str(episode),
+            with open(sample_file + 'action_' + action_space.action_space + '_s' + str(start) + '_' + str(episode),
                       'wb') as outfile:
                 pickle.dump(transitions_list, outfile)
                 transitions_list = list()
@@ -134,8 +137,7 @@ def main():
 
 def evaluate_agent(ag_obj):
     agent = learner.Learner(load_saved_regression=ag_obj, nn_=True)
-    env = environment.Environment(buoys, 20, vessel_id, rudder_id, thruster_id, scenario, goal, goal_heading_e_ccw,
-                                  goal_vel_lon, _increment=0.5)
+    env = environment.Environment()
     env.set_up()
     viewer = Viewer()
     viewer.plot_boundary(buoys)
@@ -281,6 +283,6 @@ if __name__ == '__main__':
     # sample_transitions(start, end)
     # ag = load_agent('agents/agent_20180519195648DecisionTreeRegressor_r_rule_disc_0 .0it1')
     # evaluate_agent(ag)
-    evaluate_agent('agents/agent_20180625151623Sequential_r____disc_0.8it15.h5')
+    evaluate_agent('agents/agent_20180628191031Sequential_r____disc_0.8it20.h5')
 
 
