@@ -20,6 +20,7 @@ class RewardMapper(object):
         self.last_angle_selected = None
         self.last_rot_selected = None
         self.g_helper = _g_helper
+        self.last_state_reward = 0
 
     def set_goal(self, point, heading, vel_l):
         self.goal_point = point
@@ -41,10 +42,10 @@ class RewardMapper(object):
         self.ship_vel = [global_vel_x, global_vel_y, global_vel_theta]
         self.ship_pos = [x, y, heading]
 
-    def get_reward(self):
+    def get_state_reward(self, ship_pos, ship_vel):
         ref_array = np.array((self.goal_point[0], self.goal_point[1], self.g_heading_n_cw))
-        array = np.array((self.ship_pos))
-        vel_array = np.array((self.ship_vel[0], self.ship_vel[1]))
+        array = np.array((ship_pos))
+        vel_array = np.array((ship_vel[0], ship_vel[1]))
         ref_vel = np.array((self.g_vel_x, self.g_vel_y))
         # old_array = np.array((self.ship_last_pos))
         new_u_misalign = abs(array[2] - ref_array[2])
@@ -54,14 +55,22 @@ class RewardMapper(object):
         # old_u_balance = abs(g_helper.get_shore_balance(old_array[0], old_array[1]))
         reward = -0.1
         if self.reward_mode == 'quadratic':
-            quadratic = -new_u_balance**2
+            quadratic = -new_u_balance ** 2
             reward += quadratic
-        punish_rudder = -100*self.last_angle_selected**2
+        return reward
+
+    def get_reward(self):
+        reward = 0
+        state_reward = self.get_state_reward(self.ship_pos, self.ship_vel)
+        last_state_reward = self.get_state_reward(self.ship_last_pos, self.ship_last_vel)
+        shaping = 0.8*state_reward - last_state_reward
+        punish_rudder = -1000*self.last_angle_selected**2
         reward += punish_rudder
-        self.g_helper.set_polygon_position(array[0], array[1], array[2])
+        reward += shaping
+        self.g_helper.set_polygon_position(self.ship_pos[0], self.ship_pos[1], self.ship_pos[2])
         if self.g_helper.ship_collided():
             print('SHIP COLLIDED!!!')
-            reward += -100000
+            reward += -1000
             return reward
         return reward
 
