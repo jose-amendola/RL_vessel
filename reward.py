@@ -55,22 +55,23 @@ class RewardMapper(object):
         # old_u_balance = abs(g_helper.get_shore_balance(old_array[0], old_array[1]))
         reward = -0.1
         if self.reward_mode == 'quadratic':
-            quadratic = -new_u_balance ** 2
+            quadratic = -0.00001*new_u_balance ** 2 - 0.001*new_u_misalign ** 2 - 0.1*ship_vel[2] ** 2
             reward += quadratic
         return reward
 
     def get_reward(self):
         reward = 0
         state_reward = self.get_state_reward(self.ship_pos, self.ship_vel)
-        last_state_reward = self.get_state_reward(self.ship_last_pos, self.ship_last_vel)
-        shaping = 0.8*state_reward - last_state_reward
-        punish_rudder = -1000*self.last_angle_selected**2
+        reward += state_reward
+        # last_state_reward = self.get_state_reward(self.ship_last_pos, self.ship_last_vel)
+        # shaping = 0.8*state_reward - last_state_reward
+        punish_rudder = -1*self.last_angle_selected**2
         reward += punish_rudder
-        reward += shaping
+        # reward += shaping
         self.g_helper.set_polygon_position(self.ship_pos[0], self.ship_pos[1], self.ship_pos[2])
         if self.g_helper.ship_collided():
             print('SHIP COLLIDED!!!')
-            reward += -1000
+            reward += -10
             return reward
         return reward
 

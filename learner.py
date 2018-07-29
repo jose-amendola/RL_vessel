@@ -8,6 +8,7 @@ from keras.layers import Dense
 import keras.models
 from keras.callbacks import CSVLogger
 import random
+import pickle
 
 state_mode = 'simple_state'
 
@@ -32,6 +33,7 @@ def get_nn(obj):
             model.add(Dense(20, input_shape=(5,), activation='relu'))
         else:
             model.add(Dense(20, input_shape=(7,), activation='relu'))
+        model.add(Dense(20, activation='relu'))
         model.add(Dense(20, activation='relu'))
         model.add(Dense(1, activation='linear'))
         # Compile model
@@ -67,6 +69,7 @@ class Learner(object):
         self.q_target = list()
         r_mode = '__'
         self.file = None
+        self.samples = None
         if self.rw_mp:
             r_mode = self.rw_mp.reward_mode
         self.file = file_to_save + self.learner.__class__.__name__ + '_r_' + r_mode+'_disc_'+str(self.discount_factor)
@@ -91,12 +94,17 @@ class Learner(object):
         self.samples = np.column_stack((self.states, self.act))
         print("Current batch size: ", len(self.samples))
 
+    def save_batch(self):
+        with open(self.file + '_batch',
+                  'wb') as outfile:
+            pickle.dump(self.batch_list, outfile)
+
     def fqi_step(self, max_iterations, debug=False):
         stop_flag = False
         for it in range(max_iterations):
             self.current_step += 1
             print("FQI_iteration: ", it)
-            self.learner.fit(self.samples, self.q_target, batch_size=300, verbose=1, nb_epoch=300,
+            self.learner.fit(self.samples, self.q_target, batch_size=300, verbose=1, epochs=1000,
                              callbacks=[self.logger])
             if not self.nn_flag:
                 sc = self.learner.score(self.samples, self.q_target)
@@ -114,7 +122,7 @@ class Learner(object):
             if stop_flag:
                 break
 
-    def find_max_q(self, state_p,i):
+    def find_max_q(self, state_p, i):
         qmax = -float('Inf')
         choice_list = list()
         if not i in self.end_states or self.end_states[i] == 0:
@@ -134,6 +142,7 @@ class Learner(object):
         else:
             print('final')
             qmax = 0
+            choice_list = action_space.action_combinations
         return qmax, choice_list
 
     def select_action(self, state):

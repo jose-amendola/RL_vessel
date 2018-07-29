@@ -50,7 +50,7 @@ upper_shore = [funnel_start, N01, N03, N05, N07]
 lower_shore = [N06, N04, N02, funnel_end]
 
 geom_helper = GeometryHelper()
-geom_helper.set_ship_geometry(((0, 0), (0, 10), (10, 0)))
+geom_helper.set_ship_geometry(((-5, 0), (0, 10), (5, 0)))
 geom_helper.set_boundary_points(buoys)
 geom_helper.set_goal_rec(goal[0], goal[1])
 geom_helper.set_shore_lines(upper_shore, lower_shore)

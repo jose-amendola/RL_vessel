@@ -19,9 +19,9 @@ def collect_trajectories():
         viewer.plot_boundary(buoys)
         viewer.plot_goal(goal, 1000)
 
-        agents = ['agents/agent_20180705153048Sequential_r____disc_0.8it11.h5']
+        agents = ['agents/agent_20180727160449Sequential_r____disc_0.8it20.h5']
         starting_points = [
-            [11000, 5240, -100.5, 3, 0, 0],
+            [11000, 5320, -105.5, 3, 0, 0],
             [11000, 5320, -104.5, 3, 0, 0],
             [11000, 5320, -105.5, 3, 0, 0],
             [11000, 5300, -103.5, 3, 0, 0],
@@ -51,6 +51,7 @@ def collect_trajectories():
                     state_r = utils.convert_to_simple_state(state, geom_helper)
                     compact_state_list.append(state_r)
                     print('Value for yaw_p :', state_r[3])
+                    print('Value for vlon:', state_r[0])
                     action = agent.select_action(state_r)
                     state_prime, reward = env.step(action[0], action[1])
                     transition = (state, (action[0], action[1]), state_prime, reward)

@@ -122,35 +122,52 @@ if __name__ == '__main__':
     reward_mapping = reward.RewardMapper('quadratic', _g_helper=geom_helper)
     reward_mapping.set_goal(goal, goal_heading_e_ccw, goal_vel_lon)
 
-    tuples = list()
-    bundle_name = 'samples/samples_bundle_new'
+    # tuples = list()
+    # bundle_name = 'samples/samples_bundle_new'
+    # with open(bundle_name, 'rb') as file:
+    #     tuples = pickle.load(file)
+    #
+    # filtered = [tpl for tpl in tuples if tpl[0][3] < 0]
+    #
+    # reduct_batch = random.sample(filtered, 200)
+    # points = geom_helper.get_simmetry_points()
+    # new_list = replace_reward(reduct_batch, reward_mapping)
+    #
+    # # new_list = get_strictly_simmetric_set(points[0], points[1], new_list)
+    #
+    #
+    # simple_state_tuples = list()
+    # for new_tup in new_list:
+    #     new_state = utils.convert_to_simple_state(new_tup[0], geom_helper)
+    #     new_state_p = utils.convert_to_simple_state(new_tup[2], geom_helper)
+    #     new_tuple = (new_state, new_tup[1], new_state_p, new_tup[3], new_tup[4])
+    #     simple_state_tuples.append(new_tuple)
+    #
+    # mirror_list = list()
+    # for new_tup in simple_state_tuples:
+    #     mirror_state = (new_tup[0][0], -new_tup[0][1], -new_tup[0][2], -new_tup[0][3])
+    #     mirror_action = (-new_tup[1][0], new_tup[1][1])
+    #     mirror_state_p = (new_tup[2][0], -new_tup[2][1], -new_tup[2][2], -new_tup[2][3])
+    #     mirror_tuple = (mirror_state, mirror_action, mirror_state_p, new_tup[3], new_tup[4])
+    #     mirror_list.append(mirror_tuple)
+    # simple_state_tuples += mirror_list
+
+    batch_learner = learner.Learner(nn_=True,
+                                    load_saved_regression='agents/agent_20180727160449Sequential_r____disc_0.8it20.h5')
+    bundle_name = 'agents/agent_20180727160449Sequential_r____disc_0.8_batch'
     with open(bundle_name, 'rb') as file:
-        tuples = pickle.load(file)
+        simple_state_tuples = pickle.load(file)
 
-    filtered = [tpl for tpl in tuples if tpl[0][3] < 0]
-
-    reduct_batch = random.sample(filtered, 1000)
-    points = geom_helper.get_simmetry_points()
-    new_list = replace_reward(reduct_batch, reward_mapping)
-
-    new_list = get_strictly_simmetric_set(points[0], points[1], new_list)
-
-    simple_state_tuples = list()
-    for tuple in new_list:
-        new_state = utils.convert_to_simple_state(tuple[0], geom_helper)
-        new_state_p = utils.convert_to_simple_state(tuple[2], geom_helper)
-        new_tuple = (new_state, tuple[1], new_state_p, tuple[3], tuple[4])
-        simple_state_tuples.append(new_tuple)
-
-    batch_learner = learner.Learner(nn_=True)
     batch_learner.add_tuples(simple_state_tuples)
     batch_learner.set_up_agent()
-    batch_learner.fqi_step(5)
+    batch_learner.fqi_step(0)
 
     for i in range(500):
         additional_tuples = experiment.run_episodes(batch_learner, reward_mapping)
         os.chdir('..')
-        additional_tuples = get_strictly_simmetric_set(points[0], points[1], additional_tuples)
+        # additional_tuples = get_strictly_simmetric_set(points[0], points[1], additional_tuples)
+        # additional_tuples = [tpl for tpl in additional_tuples if tpl[0][3] < 0 and tpl[0][0] > 6000]
+        # additional_tuples = random.sample(additional_tuples, 1000)
 
         converted_new_tuples = list()
         for tup in additional_tuples:
@@ -158,9 +175,19 @@ if __name__ == '__main__':
             new_state_p = utils.convert_to_simple_state(tup[2], g_helper=geom_helper)
             new_tuple = (new_state, tup[1], new_state_p, tup[3], tup[4])
             converted_new_tuples.append(new_tuple)
-            # repeat it so it gets more weight in learning
-        sampling = random.sample(converted_new_tuples, 100)
+
+        mirror_list = list()
+        for new_tup in converted_new_tuples:
+            mirror_state = (new_tup[0][0], -new_tup[0][1], -new_tup[0][2], -new_tup[0][3])
+            mirror_action = (-new_tup[1][0], new_tup[1][1])
+            mirror_state_p = (new_tup[2][0], -new_tup[2][1], -new_tup[2][2], -new_tup[2][3])
+            mirror_tuple = (mirror_state, mirror_action, mirror_state_p, new_tup[3], new_tup[4])
+            mirror_list.append(mirror_tuple)
+        converted_new_tuples += mirror_list
+        # repeat it so it gets more weight in learning
+        # sampling = random.sample(converted_new_tuples, 50)
         batch_learner.add_tuples(converted_new_tuples)
+        batch_learner.save_batch()
         batch_learner.set_up_agent()
-        batch_learner.fqi_step(5)
+        batch_learner.fqi_step(20)
     print('Finished')

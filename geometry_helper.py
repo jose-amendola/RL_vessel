@@ -7,7 +7,7 @@ import numpy as np
 class GeometryHelper(object):
     def __init__(self):
         self.goal_rec = None
-        self.goal_margin = 100
+        self.goal_margin = 1000
         self.ship_polygon = None
         self.boundary = None
         self.guid_line = None
