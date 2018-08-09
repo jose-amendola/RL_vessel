@@ -155,8 +155,10 @@ def evaluate_agent(ag_obj):
     viewer.plot_goal(goal, 100)
 
     starting_points = [
-        [11000, 5240, -103.5, 3, 0, 0],
-        [11000, 5300, -103.5, 3, 0, 0],
+        [11000, 5280, -103.5, 3, 0, 0],
+        [11000, 5280, -104.5, 3, 0, 0],
+        [11000, 5280, -105.5, 3, 0, 0],
+        [11000, 5300, -104, 3, 0, 0],
         [11000, 5280, -103.5, 3, 0, 0],
         [11000, 5320, -103.5, 3, 0, 0],
         [11000, 5320, -103.5, 3, 0, 0]]
@@ -180,8 +182,10 @@ def evaluate_agent(ag_obj):
         steps_inside = 0
         for step in range(evaluation_steps):
             state = env.get_state()
+            print('Value for yaw_p :', state[5])
             viewer.plot_position(state[0], state[1], state[2])
             state_r = utils.convert_to_simple_state(state, geom_helper)
+            print('Value for yaw_p :', state_r[3])
             action = agent.select_action(state_r)
             state_prime, reward = env.step(action[0], action[1])
             transition = (state, (action[0], action[1]), state_prime, reward)
@@ -219,31 +223,18 @@ def run_episodes(agent, rw_mapper):
     env = environment.Environment(rw_mapper=rw_mapper)
     env.set_up()
     starting_points = [
-        [11000, 5360, -106, 3, 0, 0],
-        [11000, 5240, -100, 3, 0, 0],
-        [11000, 5360, -104, 2.5, 0, 0],
-        [11000, 5240, -100, 2.5, 0, 0],
-        [11000, 5360, -101, 2.0, 0, 0],
-        [11000, 5240, -102, 2.0, 0, 0],
-        [11000, 5360, -105, 2.8, 0, 0],
-        [11000, 5240, -101.5, 2.7, 0, 0],
-        [11000, 5360, -104.5, 3.2, 0, 0],
-        [11000, 5240, -103, 3.2, 0, 0],
-        [11000, 5360, -103, 2.8, 0, 0],
+        [11000, 5360, -104, 3, 0, 0],
+        [11000, 5240, -102, 3, 0, 0],
+        [11000, 5360, -104.5, 2.5, 0, 0],
+        [11000, 5240, -102.5, 2.5, 0, 0],
+        [11000, 5360, -105, 2.7, 0, 0],
+        [11000, 5240, -103, 2.7, 0, 0],
+        [11000, 5360, -104, 2.8, 0, 0],
+        [11000, 5240, -101.5, 2.8, 0, 0],
+        [11000, 5360, -104.5, 2.4, 0, 0],
         [11000, 5240, -102, 2.4, 0, 0],
-        [11000, 5360, -106, 3.5, 0, 0],
-        [11000, 5240, -100, 3.5, 0, 0],
-        [11000, 5360, -104, 3.5, 0, 0],
-        [11000, 5240, -100, 3.6, 0, 0],
-        [11000, 5360, -101, 3.5, 0, 0],
-        [11000, 5240, -102, 3.5, 0, 0],
-        [11000, 5360, -105, 3.5, 0, 0],
-        [11000, 5240, -101.5, 3.5, 0, 0],
-        [11000, 5360, -104.5, 3.5, 0, 0],
-        [11000, 5240, -103, 3.5, 0, 0],
-        [11000, 5360, -103, 3.5, 0, 0],
-        [11000, 5240, -102, 3.5, 0, 0]
-    ]
+        [11000, 5360, -106, 3.2, 0, 0],
+        [11000, 5240, -103, 3.2, 0, 0]]
     ret_tuples = list()
     # env.set_single_start_pos_mode([11000, 5380.10098, -103, 3, 0, 0])
     # env.set_single_start_pos_mode([8000, 4600, -103.5, 3, 0, 0])
@@ -259,7 +250,7 @@ def run_episodes(agent, rw_mapper):
         total_steps = 0
         env.set_single_start_pos_mode(start_pos)
         env.move_to_next_start()
-        for step in range(2000):
+        for step in range(100):
             state = env.get_state()
             state_r = utils.convert_to_simple_state(state, geom_helper)
             action = None
@@ -311,5 +302,5 @@ if __name__ == '__main__':
 
     # main()
     # sample_transitions(start, end)
-    evaluate_agent('agents/agent_20180705085715Sequential_r____disc_0.8it42.h5')
+    evaluate_agent('agents/agent_20180705085241Sequential_r____disc_0.8it38.h5')
 

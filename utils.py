@@ -37,7 +37,7 @@ def merge_sample_files_into_one(dir_name):
     batch_list = list()
     for file in files:
         with open(os.path.join(dir_name, file), 'rb') as infile:
-            if file.startswith('samples'):
+            if file.startswith('trajectory'):
                 trajectory = list()
                 print('Loading file:', file)
                 try:
@@ -62,7 +62,7 @@ def convert_to_simple_state(state, g_helper):
 
 
 if __name__ == "__main__":
-    merge_sample_files_into_one('C:\\Users\\jose_amendola\\RL_vessel\\samples')
+    merge_sample_files_into_one('C:\\Users\\jose_amendola\\RL_vessel\\samples\\to_merge')
     # print(global_to_local(-2.91453, -0.6997167, -103.5))
     # print(global_to_local(-1,-1,-135))
     # print(local_to_global(1.41, 0, 225))
