@@ -6,7 +6,7 @@ class Viewer(object):
     def __init__(self):
         turtle.speed(0)
         turtle.mode('logo')
-        turtle.setworldcoordinates(5000, 2000, 14000, 7000)
+        turtle.setworldcoordinates(-20000, -7000, 20000, 7000)
         turtle.degrees()
         turtle.penup()
         self.step_count = 0

@@ -11,9 +11,8 @@ import pickle
 import random
 
 
-
 class Environment(buzz_python.session_subscriber):
-    def __init__(self, rw_mapper):
+    def __init__(self):
         super(Environment, self).__init__()
         self.simulation_id = 'sim'
         self.control_id = '555'
@@ -28,7 +27,6 @@ class Environment(buzz_python.session_subscriber):
         self.thruster = []
         self.max_angle = 0
         self.max_rot = 0
-        self.reward_mapper = rw_mapper
         self.init_state = list()
         self._final_flag = False
         self.initial_states_sequence = None
@@ -38,21 +36,7 @@ class Environment(buzz_python.session_subscriber):
 
     def get_sample_states(self):
         # TODO implement
-        x = np.linspace(5000, 13000, 16)
-        y = np.linspace(3000, 8000, 100)
-        # theta = np.linspace(-90, -120, 4)
-        # theta = np.append(theta, -103)
-        vel_decay = 4 / 13000
-        theta = -103
-        vlon = np.linspace(1.5, 3.0, 4)
-        g = np.meshgrid(x, y, theta, vlon)
-        tmp = np.vstack(map(np.ravel, g))
-        combinations = np.transpose(tmp)
-        states = list()
-        for comb in combinations:
-            if is_inbound_coordinate(self.reward_mapper.boundary, comb[0], comb[1]):
-                states.append((comb[0], comb[1], comb[2], comb[3], 0, 0))
-        return states
+        return
 
     def create_variants_to_start(self, local_coord_start):
         start_variants = list()
@@ -208,9 +192,7 @@ class Environment(buzz_python.session_subscriber):
             self.advance()
         statePrime = self.get_state()  # Get next State
         print('statePrime: ', statePrime)
-        self.reward_mapper.update_ship(statePrime[0], statePrime[1], statePrime[2], statePrime[3], statePrime[4],
-                                       statePrime[5], angle_level, rot_level)
-        rw = self.reward_mapper.get_reward()
+        rw = None
         return statePrime, rw
 
     def start_bifurcation_mode(self):
@@ -271,7 +253,6 @@ class Environment(buzz_python.session_subscriber):
         self.vessel.set_linear_velocity([vel_lon, vel_drift, 0.00])
         self.vessel.set_angular_position([0.00, 0.00, theta])
         self.vessel.set_angular_velocity([0.00, 0.00, vel_theta])
-        self.reward_mapper.initialize_ship(x, y, theta, vel_lon, vel_drift, vel_theta)
         self.simulation.sync(self.vessel)
 
     def finish(self):
