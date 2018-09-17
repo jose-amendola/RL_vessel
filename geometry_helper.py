@@ -69,6 +69,12 @@ class GeometryHelper(object):
         return self.goal_rec.contains(self.ship)
 
 
+def get_distance_from_line(self, x, y, point_a, point_b):
+    line = LineString([point_a, point_b])
+    ship_point = Point((x, y))
+    return ship_point.distance(line)
+
+
 def get_middle_y(boundary, x):
     line = LineString([(x, 0), (x, 15000)])
     intersect = boundary.intersection(line)

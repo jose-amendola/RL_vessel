@@ -9,11 +9,11 @@ from viewer import Viewer
 class ShipEnv(Env):
     def __init__(self):
         self.action_space = spaces.Box(low=np.array([-1.0, -1.0]), high=np.array([1.0, 1.0]))
-        self.observation_space = spaces.Box(low=np.array([0, -180, 0, -1.0]), high=np.array([100, 0, 4.0, 1.0]))
+        self.observation_space = spaces.Box(low=np.array([-100, -180, 0, -1.0]), high=np.array([100, 0, 4.0, 1.0]))
         self.start_pos = 15000.0
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
-        self.point_a = (0, 0)
+        self.point_a = (-20000, 0)
         self.point_b = (20000,0)
         self.line = LineString([self.point_a, self.point_b])
         self.set_point = np.array([0, -90, 2.5, 0])
@@ -26,10 +26,8 @@ class ShipEnv(Env):
 
     def step(self, action):
         info = dict()
-        state_prime, _ = self.buzz_interface.step(action[0], action[1])
+        state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=action[1])
         v_lon, v_drift, _ = global_to_local(state_prime[3], state_prime[4], state_prime[2])
-        ship_point = Point((state_prime[0], state_prime[1]))
-        dist = ship_point.distance(self.line)
         obs = self.convert_state(state_prime)
         dn = self.end(state_prime=state_prime, obs=obs)
         rew = self.calculate_reward(obs=obs)
@@ -45,16 +43,18 @@ class ShipEnv(Env):
             return 0
 
     def end(self, state_prime, obs):
-        if not self.observation_space.contains(obs) or -20000 < state_prime[0] < 20000 or -4000 < state_prime[1] < 4000:
+        if not self.observation_space.contains(obs) or -20000 < state_prime[0] > 20000 or -4000 < state_prime[1] > 4000:
             return True
         else:
             return False
 
-    #Agent handles the state space (distance_from_line, v_longitudinal, heading, heading_p)
+    #Agent handles the state space (distance_from_line,  heading, v_longitudinal,, heading_p)
     def convert_state(self, state):
         v_lon, v_drift, _ = global_to_local(state[3], state[4], state[2])
         ship_point = Point((state[0], state[1]))
         dist = ship_point.distance(self.line)
+        if state[1] < self.point_a[1]: #It only works for lines parallel to x-axis
+            dist = - dist
         obs = np.array([dist, state[2], v_lon, state[5]])
         return obs
 
@@ -67,7 +67,8 @@ class ShipEnv(Env):
         return self.convert_state(state)
 
     def render(self, mode='human'):
-        self.viewer.plot_position(self.last_pos[0], self.last_pos[1], self.last_pos[2])
+        if mode =='human':
+            self.viewer.plot_position(self.last_pos[0], self.last_pos[1], self.last_pos[2])
 
     def close(self):
         pass
@@ -79,7 +80,7 @@ if __name__ == '__main__':
         observation = env.reset()
         for t in range(10000):
             env.render()
-            print(observation)
+            print('State observed:', observation)
             action = env.action_space.sample()
             observation, reward, done, info = env.step(action)
             if done:
