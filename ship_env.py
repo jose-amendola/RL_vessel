@@ -17,7 +17,7 @@ class ShipEnv(Env):
         self.point_b = (20000,0)
         self.line = LineString([self.point_a, self.point_b])
         self.set_point = np.array([0, -90, 2.5, 0])
-        self.tolerance = np.array([20, 1.0, 0.2, 0.05])
+        self.tolerance = np.array([20, 2.0, 0.2, 0.05])
         self.last_pos = list()
         self.reset()
         self.plot = False
@@ -29,6 +29,7 @@ class ShipEnv(Env):
         state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=action[1])
         v_lon, v_drift, _ = global_to_local(state_prime[3], state_prime[4], state_prime[2])
         obs = self.convert_state(state_prime)
+        print('Observed state: ', obs)
         dn = self.end(state_prime=state_prime, obs=obs)
         rew = self.calculate_reward(obs=obs)
         self.last_pos = [state_prime[0], state_prime[1], state_prime[2]]
@@ -36,11 +37,11 @@ class ShipEnv(Env):
 
     def calculate_reward(self, obs):
         if np.any(np.abs(obs - self.set_point) > self.tolerance):
-            return -0.1
-        elif not self.observation_space.contains(obs):
-            return -1
+            return -0.1*(obs[0]**2)-0.1*((obs[2]-self.set_point[2])**2)
         else:
             return 0
+        # elif not self.observation_space.contains(obs):
+        #     return -1000
 
     def end(self, state_prime, obs):
         if not self.observation_space.contains(obs) or -20000 < state_prime[0] > 20000 or -4000 < state_prime[1] > 4000:
