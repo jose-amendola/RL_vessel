@@ -21,8 +21,7 @@ class ShipEnv(Env):
         self.last_pos = list()
         self.reset()
         self.plot = False
-        self.viewer = Viewer()
-        self.viewer.plot_guidance_line(self.point_a, self.point_b)
+        self.viewer = None
 
     def step(self, action):
         info = dict()
@@ -63,12 +62,16 @@ class ShipEnv(Env):
         init = list(map(float, self.observation_space.sample()))
         self.buzz_interface.set_single_start_pos_mode([self.start_pos, init[0], init[1], init[2], 0, init[3]])
         self.buzz_interface.move_to_next_start()
+        print('Reseting position')
         state = self.buzz_interface.get_state()
         self.last_pos = [state[0], state[1], state[2]]
         return self.convert_state(state)
 
     def render(self, mode='human'):
-        if mode =='human':
+        if mode == 'human':
+            if self.viewer is None:
+                self.viewer = Viewer()
+                self.viewer.plot_guidance_line(self.point_a, self.point_b)
             self.viewer.plot_position(self.last_pos[0], self.last_pos[1], self.last_pos[2])
 
     def close(self):
