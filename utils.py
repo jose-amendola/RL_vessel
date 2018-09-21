@@ -18,7 +18,7 @@ def global_to_local(x_global, y_global, heading_n_cw):
     heading_e_ccw = 90 - heading_n_cw
     theta = np.radians(heading_e_ccw)
     c, s = np.cos(theta), np.sin(theta)
-    m = np.matrix(((c, -s), (s, c)))
+    m = np.matrix(((c, s), (-s, c)))
     global_array = np.matrix([[x_global, y_global]]).T
     transformed = m * global_array
     return transformed.item(0), transformed.item(1), heading_e_ccw

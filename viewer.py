@@ -6,7 +6,7 @@ class Viewer(object):
     def __init__(self):
         turtle.speed(0)
         turtle.mode('logo')
-        turtle.setworldcoordinates(-20000, -7000, 20000, 7000)
+        turtle.setworldcoordinates(14000, -500, 15010, 500)
         turtle.degrees()
         turtle.penup()
         self.step_count = 0
@@ -22,9 +22,9 @@ class Viewer(object):
         #     self.step_count = 0
         # else:
         #     self.step_count += 1
-        turtle.stamp()
+        #turtle.stamp()
         turtle.setheading(converted_angle)
-        # turtle.pendown()
+        turtle.pendown()
 
     def plot_guidance_line(self, point_a, point_b):
         turtle.pendown()
@@ -59,6 +59,9 @@ class Viewer(object):
 
     def freeze_screen(self):
         tkinter.mainloop()
+    
+    def end_of_episode(self):
+        turtle.penup()
 
     # def __del__(self):
         # canvasvg.saveall("image.svg", turtle.getcanvas())
