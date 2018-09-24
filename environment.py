@@ -180,8 +180,8 @@ class Environment(buzz_python.session_subscriber):
             :param angle_level:
         """
 
-        print('Rotation level: ', rot_level)
-        print('Angle level: ', angle_level)
+        #print('Rotation level: ', rot_level)
+        #print('Angle level: ', angle_level)
         self.thruster.set_demanded_rotation(rot_level * self.max_rot)
         self.simulation.update(self.thruster)
         self.rudder.set_demanded_angle(angle_level * self.max_angle)
@@ -191,7 +191,7 @@ class Environment(buzz_python.session_subscriber):
         for cycle in range(steps):
             self.advance()
         statePrime = self.get_state()  # Get next State
-        print('statePrime: ', statePrime)
+        #print('statePrime: ', statePrime)
         rw = None
         return statePrime, rw
 

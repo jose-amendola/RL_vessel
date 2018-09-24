@@ -6,7 +6,7 @@ class Viewer(object):
     def __init__(self):
         turtle.speed(0)
         turtle.mode('logo')
-        turtle.setworldcoordinates(14000, -500, 15010, 500)
+        turtle.setworldcoordinates(13000, -1000, 15010, 1000)
         turtle.degrees()
         turtle.penup()
         self.step_count = 0
@@ -15,7 +15,7 @@ class Viewer(object):
 
     def plot_position(self, x, y , theta):
         converted_angle = 180 - theta
-        turtle.fillcolor('gray')
+        turtle.fillcolor('green')
         turtle.setpos(x, y)
         # if self.step_count == self.steps_for_stamp:
         #     turtle.stamp()
