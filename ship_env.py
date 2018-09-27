@@ -45,7 +45,8 @@ class ShipEnv(Env):
 
     def end(self, state_prime, obs):
         if not self.observation_space.contains(obs) or -20000 > state_prime[0] or state_prime[0] > 20000 or -4000 > state_prime[1] or state_prime[1] > 4000:
-            self.viewer.end_of_episode()
+            if self.viewer is not None:
+                self.viewer.end_of_episode()
             return True
         else:
             return False
