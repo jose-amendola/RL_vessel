@@ -9,7 +9,8 @@ from viewer import Viewer
 class ShipEnv(Env):
     def __init__(self):
         self.action_space = spaces.Box(low=np.array([-1.0, -1.0]), high=np.array([1.0, 1.0]))
-        self.observation_space = spaces.Box(low=np.array([-100, -150, 0, -1.0]), high=np.array([100, -30, 4.0, 1.0]))
+        self.observation_space = spaces.Box(low=np.array([-100, -180, 0, -1.0]), high=np.array([100, 0, 4.0, 1.0]))
+        self.init_space = spaces.Box(low=np.array([-30, -110, 0, -0.1]), high=np.array([30, -70, 4.0, 0.1]))
         self.start_pos = 15000.0
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
@@ -36,11 +37,11 @@ class ShipEnv(Env):
 
     def calculate_reward(self, obs):
         if not self.observation_space.contains(obs):
-            return -10000
-        elif np.any(np.abs(obs - self.set_point) > self.tolerance):
-            return -0.1*(obs[0]**2)-1*((obs[2]-self.set_point[2])**2)-0.1*((obs[1]+90)**2)
+            return -1000
         else:
-            return 0
+            return -0.001*(obs[0]**2)-1*((obs[2]-self.set_point[2])**2)-0.1*((obs[1]+90)**2)-100*(obs[3]**2) # *10 reward de theta e v?
+#        else:
+#            return 0
 
     def end(self, state_prime, obs):
         if not self.observation_space.contains(obs) or -20000 > state_prime[0] or state_prime[0] > 20000 or -4000 > state_prime[1] or state_prime[1] > 4000:
@@ -58,10 +59,13 @@ class ShipEnv(Env):
             dist = - dist
         obs = np.array([dist, state[2], v_lon, state[5]])
         return obs
+    
+    def change_init_space(self, low, high):
+        self.init_space = spaces.Box(low=np.array(low), high=np.array(high))
 
     def reset(self):
-        init = list(map(float, self.observation_space.sample()))
-        self.buzz_interface.set_single_start_pos_mode([self.start_pos, init[0], init[1], init[2], 0, init[3]])
+        init = list(map(float, self.init_space.sample()))
+        self.buzz_interface.set_single_start_pos_mode([self.start_pos, init[0], init[1], init[2], 0, 0])
         self.buzz_interface.move_to_next_start()
         print('Reseting position')
         state = self.buzz_interface.get_state()

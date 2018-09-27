@@ -41,14 +41,15 @@ class QLearning():
                         self.s[i,j,k,l,1] = -180+180*j/nt
                         self.s[i,j,k,l,2] = 4*k/nv
                         self.s[i,j,k,l,3] = -1+2*l/ntp
-        self.actions = [[-1,-0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8,1],
-                        [-1,-0.8,-0.6,-0.4,-0.2,0,0.2,0.4,0.6,0.8,1]]
-        self.discount = kwargs.get("discount", 0.95)
-        self.learning_rate = kwargs.get("learning_rate", 0.15)
+        self.actions = [[-0.6,-0.4,-0.2,0,0.2,0.4,0.6],
+                        [-0.6,-0.4,-0.2,0,0.2,0.4,0.6]]
+        self.discount = kwargs.get("discount", 0.9)
+        self.learning_rate = kwargs.get("learning_rate", 0.1)
         self.last_action = [0,0]
         self.Q = np.zeros((len(self.actions[0]), len(self.actions[1])))
         self.W = np.zeros((len(self.actions[0]), len(self.actions[1]), self.s.shape[0], self.s.shape[1], self.s.shape[2], self.s.shape[3]))
         self.phi = np.zeros((self.s.shape[0], self.s.shape[1], self.s.shape[2], self.s.shape[3]))
+        self.epsilon = 0.2
 
     def update(self, next_state, reward, step):
         phi = np.exp(-(next_state[0]-self.s[:,:,:,:,0])**2)*np.exp(-(next_state[1]-self.s[:,:,:,:,1])**2)*np.exp(-(next_state[2]-self.s[:,:,:,:,2])**2)*np.exp(-(next_state[3]-self.s[:,:,:,:,3])**2)
@@ -58,20 +59,23 @@ class QLearning():
         self.W[self.last_action[0],self.last_action[1],:,:,:,:] = self.W[self.last_action[0],self.last_action[1],:,:,:,:] + self.learning_rate*difference*self.phi
         self.phi = phi[:,:]
             
-    def act(self, state=None):
-        epsilon = 0.2
-        if state != None:
+    def act(self, state=None, train = True):
+        epsilon = self.epsilon
+        if not train:
             phi = np.exp(-(state[0]-self.s[:,:,:,:,0])**2)*np.exp(-(state[1]-self.s[:,:,:,:,1])**2)*np.exp(-(state[2]-self.s[:,:,:,:,2])**2)*np.exp(-(state[3]-self.s[:,:,:,:,3])**2)
             self.Q = np.sum(self.W*phi,axis=(2,3,4,5))
             epsilon = 1
         if np.random.choice([False, True], p=[epsilon, 1-epsilon]):
-            self.last_action = np.random.randint(0, 11, 2)
+            self.last_action = np.random.randint(0, 7, 2)
         else:
             self.last_action = np.unravel_index(np.argmax(self.Q),(len(self.actions[0]), len(self.actions[1])))
         return [self.actions[0][self.last_action[0]],self.actions[1][self.last_action[1]]]
     
     def getW(self):
         return self.W
+    
+    def setEps(self,eps):
+        self.epsilon=eps
     
 class DQLearning(): #TODO consertar e validar (talvez)
     def __init__(self, *args, **kwargs):
@@ -202,11 +206,12 @@ class Tester:
             observation[3] = -observation[3]
             negative_side = True
         for n in range(n_steps):
-            print('\rt =', n)
-            print("Enter to continue...")
-            input()
-            sys.stdout.flush()
-            action = self.agent.act(observation)
+#            print('\rt =', n)
+#            print("Enter to continue...")
+#            input()
+#            sys.stdout.flush()
+            self.ship.render()
+            action = self.agent.act(observation, False)
             if negative_side:
                 action[0] = -action[0]
             observation, reward, done, info = self.ship.step(action)
@@ -275,7 +280,7 @@ if __name__ == "__main__":
     # you can (and probably will) change these values, to make your system
     # learn longer
     n_steps = 10000
-    test.learn(500, n_steps)
+    test.learn(101, n_steps)
 
     print("End of learning, press Enter to visualize...")
     input()
