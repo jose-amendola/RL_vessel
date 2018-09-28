@@ -9,8 +9,8 @@ from viewer import Viewer
 class ShipEnv(Env):
     def __init__(self):
         self.action_space = spaces.Box(low=np.array([-1.0, -1.0]), high=np.array([1.0, 1.0]))
-        self.observation_space = spaces.Box(low=np.array([-100, -180, 0, -1.0]), high=np.array([100, 0, 4.0, 1.0]))
-        self.init_space = spaces.Box(low=np.array([-30, -110, 0, -0.1]), high=np.array([30, -70, 4.0, 0.1]))
+        self.observation_space = spaces.Box(low=np.array([-150, -180, 0, -1.0]), high=np.array([150, 0, 4.0, 1.0]))
+        self.init_space = spaces.Box(low=np.array([-30, -100, 2.0, -0.1]), high=np.array([30, -80, 3.0, 0.1]))
         self.start_pos = 15000.0
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
@@ -23,6 +23,7 @@ class ShipEnv(Env):
         self.reset()
         self.plot = False
         self.viewer = None
+        self.last_action = [0,0]
 
     def step(self, action):
         info = dict()
@@ -33,6 +34,7 @@ class ShipEnv(Env):
         dn = self.end(state_prime=state_prime, obs=obs)
         rew = self.calculate_reward(obs=obs)
         self.last_pos = [state_prime[0], state_prime[1], state_prime[2]]
+        self.last_action = action
         return obs, rew, dn, info
 
     def calculate_reward(self, obs):
@@ -71,6 +73,7 @@ class ShipEnv(Env):
         print('Reseting position')
         state = self.buzz_interface.get_state()
         self.last_pos = [state[0], state[1], state[2]]
+        self.last_action = [0,0]
         return self.convert_state(state)
 
     def render(self, mode='human'):
@@ -78,7 +81,7 @@ class ShipEnv(Env):
             if self.viewer is None:
                 self.viewer = Viewer()
                 self.viewer.plot_guidance_line(self.point_a, self.point_b)
-            self.viewer.plot_position(self.last_pos[0], self.last_pos[1], self.last_pos[2])
+            self.viewer.plot_position(self.last_pos[0], self.last_pos[1], self.last_pos[2], 30*self.last_action[0])
 
     def close(self):
         pass

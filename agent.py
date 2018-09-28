@@ -28,7 +28,7 @@ class RandomAgent():
         
 class QLearning():
     def __init__(self, *args, **kwargs):
-        nd = 20
+        nd = 30
         nt = 60
         nv = 20
         ntp = 40
@@ -69,7 +69,7 @@ class QLearning():
             self.last_action = np.random.randint(0, 7, 2)
         else:
             self.last_action = np.unravel_index(np.argmax(self.Q),(len(self.actions[0]), len(self.actions[1])))
-        return [self.actions[0][self.last_action[0]],self.actions[1][self.last_action[1]]]
+        return [-1,self.actions[1][self.last_action[1]]]
     
     def getW(self):
         return self.W
@@ -281,7 +281,6 @@ if __name__ == "__main__":
     # learn longer
     n_steps = 10000
     test.learn(101, n_steps)
-
     print("End of learning, press Enter to visualize...")
     input()
     test.visualize_trial(n_steps)
