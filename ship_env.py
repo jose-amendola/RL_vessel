@@ -2,28 +2,40 @@ from gym import Env, spaces
 import numpy as np
 from environment import Environment
 from utils import global_to_local
-from shapely.geometry import LineString, Point
-from viewer import Viewer 
+from shapely.geometry import LineString, Point, Polygon
+from viewer import Viewer
+from simulation_settings import buoys, goal, goal_factor, lower_shore, upper_shore
 
 
 class ShipEnv(Env):
     def __init__(self):
-        self.action_space = spaces.Box(low=np.array([-1.0, -1.0]), high=np.array([1.0, 1.0]))
-        self.observation_space = spaces.Box(low=np.array([-150, -180, 0, -1.0]), high=np.array([150, 0, 4.0, 1.0]))
-        self.init_space = spaces.Box(low=np.array([-30, -100, 2.0, -0.1]), high=np.array([30, -80, 3.0, 0.1]))
-        self.start_pos = 15000.0
+        self.buoys = buoys
+        self.lower_shore = lower_shore
+        self.upper_shore = upper_shore
+        self.goal = goal
+        self.goal_factor = goal_factor
+        self.upper_line = LineString(upper_shore)
+        self.lower_line = LineString(lower_shore)
+        self.goal_point = Point(goal)
+        self.boundary = Polygon(self.buoys)
+        self.action_space = spaces.Box(low=np.array([-0.5, -0.5]), high=np.array([0.5, 0.5]))
+        self.observation_space = spaces.Box(low=np.array([-1, -80, 1.5, -2.0, -1.0]),
+                                            high=np.array([1, 120, 1.0, 2.0, 1.0]))
+        self.init_space = spaces.Box(low=np.array([-10, -101, 2.4]), high=np.array([10, -105, 2.6]))
+        self.start_pos = [11000, 5380.10098]
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
         self.point_a = (13000, 0)
         self.point_b = (15010,0)
         self.line = LineString([self.point_a, self.point_b])
-        self.set_point = np.array([0, -90, 2.5, 0])
+        self.set_point = np.array([0, -103, 2.5, 0, 0])
         self.tolerance = np.array([20, 2.0, 0.2, 0.05])
         self.last_pos = list()
         self.reset()
         self.plot = False
         self.viewer = None
         self.last_action = [0,0]
+        self.ship_point = None
 
     def step(self, action):
         info = dict()
@@ -41,12 +53,12 @@ class ShipEnv(Env):
         if not self.observation_space.contains(obs):
             return -1000
         else:
-            return -0.001*(obs[0]**2)-1*((obs[2]-self.set_point[2])**2)-0.1*((obs[1]+90)**2)-100*(obs[3]**2) # *10 reward de theta e v?
+            return -1*(obs[0]**2)-1*((obs[2]-2.5)**2)-100*(obs[4]**2)
 #        else:
 #            return 0
 
     def end(self, state_prime, obs):
-        if not self.observation_space.contains(obs) or -20000 > state_prime[0] or state_prime[0] > 20000 or -4000 > state_prime[1] or state_prime[1] > 4000:
+        if not self.observation_space.contains(obs) and not self.boundary.contains(self.ship_point):
             if self.viewer is not None:
                 self.viewer.end_of_episode()
             return True
@@ -54,13 +66,20 @@ class ShipEnv(Env):
             return False
 
     #Agent handles the state space (distance_from_line, heading, v_longitudinal, heading_p)
+    #obs variables:
+    # 0:bank_balance
+    # 1:heading
+    # 2:v_lon
+    # 3:v_drift
+    # 4:heading_p
     def convert_state(self, state):
+        print('Original state:', state)
         v_lon, v_drift, _ = global_to_local(state[3], state[4], state[2])
-        ship_point = Point((state[0], state[1]))
-        dist = ship_point.distance(self.line)
-        if state[1] < self.point_a[1]: #It only works for lines parallel to x-axis
-            dist = - dist
-        obs = np.array([dist, state[2], v_lon, state[5]])
+        self.ship_point = Point((state[0], state[1]))
+        bank_balance = (self.ship_point.distance(self.upper_line) - self.ship_point.distance(self.lower_line)) / \
+                       (self.ship_point.distance(self.upper_line) + self.ship_point.distance(self.lower_line))
+        obs = np.array([bank_balance, state[2], v_lon, v_drift, state[5]])
+        print('Observation', obs)
         return obs
     
     def change_init_space(self, low, high):
@@ -68,7 +87,7 @@ class ShipEnv(Env):
 
     def reset(self):
         init = list(map(float, self.init_space.sample()))
-        self.buzz_interface.set_single_start_pos_mode([self.start_pos, init[0], init[1], init[2], 0, 0])
+        self.buzz_interface.set_single_start_pos_mode([self.start_pos[0], self.start_pos[1]+init[0], init[1], init[2], 0, 0])
         self.buzz_interface.move_to_next_start()
         print('Reseting position')
         state = self.buzz_interface.get_state()
@@ -80,11 +99,13 @@ class ShipEnv(Env):
         if mode == 'human':
             if self.viewer is None:
                 self.viewer = Viewer()
-                self.viewer.plot_guidance_line(self.point_a, self.point_b)
+                # self.viewer.plot_guidance_line(self.point_a, self.point_b)
+                self.viewer.plot_boundary(self.buoys)
+                self.viewer.plot_goal(self.goal, self.goal_factor)
             self.viewer.plot_position(self.last_pos[0], self.last_pos[1], self.last_pos[2], 30*self.last_action[0])
 
     def close(self):
-        pass
+        self.buzz_interface.finish()
 
 if __name__ == '__main__':
     mode = 'normal'

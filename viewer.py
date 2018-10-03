@@ -8,14 +8,14 @@ class Viewer(object):
         turtle.speed(0)
         turtle.mode('logo')
         #turtle.shapesize(stretch_len=24.4745, stretch_wid=2.25)
-        turtle.setworldcoordinates(14100, -500, 15100, 500)
+        turtle.setworldcoordinates(5000, 2000, 13000, 7000)
         #cv = screen.getcanvas()
         #turtle.screensize(30000, 1000, 'white')
         turtle.register_shape('vessel',((0,50),(5,25),(5,-50),(-5,-50),(-5,25)))
         turtle.register_shape('rudder',((-1,0),(1,0),(1,-10),(-1,-10)))
         self.vessel = turtle.Turtle()
         self.vessel.shape('vessel')
-        self.vessel.fillcolor('red')
+        self.vessel.fillcolor('gray')
         self.vessel.penup()
         self.rudder=turtle.Turtle()
         self.rudder.shape('rudder')
@@ -47,8 +47,7 @@ class Viewer(object):
         self.vessel.setpos(point_b[0], point_b[1])
         self.vessel.penup()
 
-
-    def plot_goal(self,point, factor):
+    def plot_goal(self, point, factor):
         turtle.speed(0)
         turtle.setpos(point[0] - factor, point[1] - factor)
         turtle.pendown()
@@ -59,7 +58,6 @@ class Viewer(object):
         turtle.setpos(point[0] + factor, point[1] - factor)
         turtle.end_fill()
         turtle.penup()
-
 
     def plot_boundary(self, points_list):
         turtle.speed(0)

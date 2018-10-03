@@ -35,7 +35,7 @@ funnel_end = (14000, 4000)
 plot = False
 goal_heading_e_ccw = channel_angle_e_ccw(N03, N05)
 
-steps = 40
+steps = 20
 step_increment = 0.5
 
 goal_vel_lon = 3
