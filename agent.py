@@ -37,7 +37,7 @@ class QLearning():
             for j in range(nt+1):
                 for k in range(nv+1):
                     for l in range(ntp+1):
-                        self.s[i,j,k,l,0] = 100*i/nd
+                        self.s[i,j,k,l,0] = 150*i/nd
                         self.s[i,j,k,l,1] = -180+180*j/nt
                         self.s[i,j,k,l,2] = 4*k/nv
                         self.s[i,j,k,l,3] = -1+2*l/ntp
@@ -49,7 +49,7 @@ class QLearning():
         self.Q = np.zeros((len(self.actions[0]), len(self.actions[1])))
         self.W = np.zeros((len(self.actions[0]), len(self.actions[1]), self.s.shape[0], self.s.shape[1], self.s.shape[2], self.s.shape[3]))
         self.phi = np.zeros((self.s.shape[0], self.s.shape[1], self.s.shape[2], self.s.shape[3]))
-        self.epsilon = 0.2
+        self.epsilon = 0.0
 
     def update(self, next_state, reward, step):
         phi = np.exp(-(next_state[0]-self.s[:,:,:,:,0])**2)*np.exp(-(next_state[1]-self.s[:,:,:,:,1])**2)*np.exp(-(next_state[2]-self.s[:,:,:,:,2])**2)*np.exp(-(next_state[3]-self.s[:,:,:,:,3])**2)
@@ -69,7 +69,7 @@ class QLearning():
             self.last_action = np.random.randint(0, 7, 2)
         else:
             self.last_action = np.unravel_index(np.argmax(self.Q),(len(self.actions[0]), len(self.actions[1])))
-        return [-1,self.actions[1][self.last_action[1]]]
+        return [self.actions[0][self.last_action[0]],self.actions[1][self.last_action[1]]]
     
     def getW(self):
         return self.W
@@ -246,7 +246,6 @@ class Tester:
                 observation[3] = -observation[3]
                 negative_side = True
             step = 1
-            print('EPISODE '+str(c_episodes))
             while step <= max_episode or max_episode <= 0:
                 #print('EPISODE '+str(c_episodes))
                 self.ship.render()
@@ -265,9 +264,9 @@ class Tester:
                     observation[3] = -observation[3]
                     negative_side = True
                 step += 1
-            formating = "end of episode after {0:3.0f} steps,\
+            formating = "end of episode {:d} after {0:3.0f} steps,\
                            cumulative reward obtained: {1:1.2f}"
-            print(formating.format(step-1, rewards[c_episodes]))
+            print(formating.format(c_episodes, step-1, rewards[c_episodes]))
             sys.stdout.flush()
         return rewards
 
@@ -280,7 +279,10 @@ if __name__ == "__main__":
     # you can (and probably will) change these values, to make your system
     # learn longer
     n_steps = 10000
-    test.learn(101, n_steps)
+    for i in range(1,6):
+        test.learn(101, n_steps)
+        agent.setEps(i*0.1)
+    
     print("End of learning, press Enter to visualize...")
     input()
     test.visualize_trial(n_steps)

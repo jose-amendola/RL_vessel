@@ -9,9 +9,13 @@ class Viewer(object):
         turtle.mode('logo')
         #turtle.shapesize(stretch_len=24.4745, stretch_wid=2.25)
         turtle.setworldcoordinates(14100, -500, 15100, 500)
+        turtle.setup()
+        turtle.screensize(30000, 1000, 'white')
         #cv = screen.getcanvas()
         #turtle.screensize(30000, 1000, 'white')
-        turtle.register_shape('vessel',((0,50),(5,25),(5,-50),(-5,-50),(-5,25)))
+        self.l_vessel = 50 # Metade do comprimento da embarcacao
+        w_vessel = 5 # Metade da largura da embarcacao
+        turtle.register_shape('vessel',((0,self.l_vessel),(w_vessel,self.l_vessel/2),(w_vessel,-self.l_vessel),(-w_vessel,-self.l_vessel),(-w_vessel,self.l_vessel/2)))
         turtle.register_shape('rudder',((-1,0),(1,0),(1,-10),(-1,-10)))
         self.vessel = turtle.Turtle()
         self.vessel.shape('vessel')
@@ -19,7 +23,7 @@ class Viewer(object):
         self.vessel.penup()
         self.rudder=turtle.Turtle()
         self.rudder.shape('rudder')
-        self.rudder.fillcolor('black')
+        self.rudder.fillcolor('green')
         self.rudder.penup()
         self.step_count = 0
         self.steps_for_stamp = 30
@@ -32,7 +36,7 @@ class Viewer(object):
         self.vessel.setpos(x, y)
         self.vessel.setheading(converted_angle)
         self.vessel.pendown()
-        self.rudder.setpos(x-50*math.cos(math.pi*converted_angle/180), y-50*math.sin(math.pi*converted_angle/180))
+        self.rudder.setpos(x-self.l_vessel*math.cos(math.pi*converted_angle/180), y-self.l_vessel*math.sin(math.pi*converted_angle/180))
         self.rudder.setheading(converted_angle+rud_angle)
         # if self.step_count == self.steps_for_stamp:
         #     turtle.stamp()

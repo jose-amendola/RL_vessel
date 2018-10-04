@@ -39,7 +39,7 @@ class ShipEnv(Env):
 
     def calculate_reward(self, obs):
         if not self.observation_space.contains(obs):
-            return -1000
+            return -1000 # -10000?
         else:
             return -0.001*(obs[0]**2)-1*((obs[2]-self.set_point[2])**2)-0.1*((obs[1]+90)**2)-100*(obs[3]**2) # *10 reward de theta e v?
 #        else:
