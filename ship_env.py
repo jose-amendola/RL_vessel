@@ -21,8 +21,8 @@ class ShipEnv(Env):
         self.action_space = spaces.Box(low=np.array([-0.5, -0.5]), high=np.array([0.5, 0.5]))
         self.observation_space = spaces.Box(low=np.array([-1, -80, 1.5, -2.0, -1.0]),
                                             high=np.array([1, 120, 1.0, 2.0, 1.0]))
-        self.init_space = spaces.Box(low=np.array([-10, -101, 2.4]), high=np.array([10, -105, 2.6]))
-        self.start_pos = [11000, 5380.10098]
+        self.init_space = spaces.Box(low=np.array([-1, -102.8, 2.4]), high=np.array([1, -103.2, 2.6]))
+        self.start_pos = [11000, 5300.10098]
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
         self.point_a = (13000, 0)
@@ -44,16 +44,19 @@ class ShipEnv(Env):
         obs = self.convert_state(state_prime)
         #print('Observed state: ', obs)
         dn = self.end(state_prime=state_prime, obs=obs)
-        rew = self.calculate_reward(obs=obs)
+        if dn:
+            rew = -1000000
+        else:
+            rew = self.calculate_reward(obs=obs)
         self.last_pos = [state_prime[0], state_prime[1], state_prime[2]]
         self.last_action = action
         return obs, rew, dn, info
 
     def calculate_reward(self, obs):
-        if not self.observation_space.contains(obs):
-            return -1000
+        if abs(obs[0]) < 0.001 and abs(obs[1]+103) < 0.5:
+            return 10000
         else:
-            return -1*(obs[0]**2)-1*((obs[2]-2.5)**2)-100*(obs[4]**2)
+            return -1*(obs[0]**2)-1*((obs[2]-2.5)**2)-100*(obs[4]**2)-10*((obs[1]+103)**2)
 #        else:
 #            return 0
 
@@ -73,13 +76,13 @@ class ShipEnv(Env):
     # 3:v_drift
     # 4:heading_p
     def convert_state(self, state):
-        print('Original state:', state)
+        # print('Original state:', state)
         v_lon, v_drift, _ = global_to_local(state[3], state[4], state[2])
         self.ship_point = Point((state[0], state[1]))
         bank_balance = (self.ship_point.distance(self.upper_line) - self.ship_point.distance(self.lower_line)) / \
                        (self.ship_point.distance(self.upper_line) + self.ship_point.distance(self.lower_line))
         obs = np.array([bank_balance, state[2], v_lon, v_drift, state[5]])
-        print('Observation', obs)
+        # print('Observation', obs)
         return obs
     
     def change_init_space(self, low, high):

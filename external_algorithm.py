@@ -10,6 +10,8 @@ from rl.agents import DDPGAgent
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
 
+import datetime
+timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 class Processor(WhiteningNormalizerProcessor):
     def process_action(self, action):
@@ -49,20 +51,22 @@ print(critic.summary())
 
 # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
 # even the metrics!
-memory = SequentialMemory(limit=10000, window_length=1)
+memory = SequentialMemory(limit=1000, window_length=1)
 random_process = OrnsteinUhlenbeckProcess(size=nb_actions, theta=.15, mu=0., sigma=.1)
 agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3, processor=Processor())
 agent.compile([Adam(lr=1e-4), Adam(lr=1e-3)], metrics=['mae'])
+agent.load_weights('ddpg_Ship_Env_weights.h5f')
 
+for i in range(10):
 # Okay, now it's time to learn something! We visualize the training here for show, but this
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
-agent.fit(env, nb_steps=10000, visualize=False, verbose=1)
+    agent.fit(env, nb_steps=50000, visualize=False, verbose=1, log_interval=50000)
 
-# After training is done, we save the final weights.
-agent.save_weights('ddpg_{}_weights.h5f'.format('Ship_Env'), overwrite=True)
+    # After training is done, we save the final weights.
+    agent.save_weights('ddpg_{}_{}_weights.h5f'.format(timestamp, 'Ship_Env'), overwrite=True)
 
 # Finally, evaluate our algorithm for 5 episodes.
 agent.test(env, nb_episodes=5, visualize=True, nb_max_episode_steps=200)
