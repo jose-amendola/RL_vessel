@@ -49,7 +49,7 @@ class QLearning():
         self.Q = np.zeros((len(self.actions[0]), len(self.actions[1])))
         self.W = np.zeros((len(self.actions[0]), len(self.actions[1]), self.s.shape[0], self.s.shape[1], self.s.shape[2], self.s.shape[3]))
         self.phi = np.zeros((self.s.shape[0], self.s.shape[1], self.s.shape[2], self.s.shape[3]))
-        self.epsilon = 0.0
+        self.epsilon = 0.2
 
     def update(self, next_state, reward, step):
         phi = np.exp(-(next_state[0]-self.s[:,:,:,:,0])**2)*np.exp(-(next_state[1]-self.s[:,:,:,:,1])**2)*np.exp(-(next_state[2]-self.s[:,:,:,:,2])**2)*np.exp(-(next_state[3]-self.s[:,:,:,:,3])**2)
@@ -248,7 +248,7 @@ class Tester:
             step = 1
             while step <= max_episode or max_episode <= 0:
                 #print('EPISODE '+str(c_episodes))
-                self.ship.render()
+                #self.ship.render()
                 action = self.agent.act()
                 if negative_side:
                     action[0] = -action[0]
@@ -264,9 +264,9 @@ class Tester:
                     observation[3] = -observation[3]
                     negative_side = True
                 step += 1
-            formating = "end of episode {:d} after {0:3.0f} steps,\
+            formating = " after {0:3.0f} steps,\
                            cumulative reward obtained: {1:1.2f}"
-            print(formating.format(c_episodes, step-1, rewards[c_episodes]))
+            print("end of episode "+str(c_episodes)+formating.format(step-1, rewards[c_episodes]))
             sys.stdout.flush()
         return rewards
 
