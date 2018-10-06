@@ -45,7 +45,7 @@ x = Concatenate()([x, action_input])
 x = Dense(20)(x)
 x = Activation('relu')(x)
 x = Dense(1)(x)
-x = Activation('linear')(x)
+x = Activation('tanh')(x)
 critic = Model(inputs=[action_input, observation_input], outputs=x)
 print(critic.summary())
 

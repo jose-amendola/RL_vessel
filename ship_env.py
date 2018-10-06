@@ -3,6 +3,7 @@ import numpy as np
 from environment import Environment
 from utils import global_to_local
 from shapely.geometry import LineString, Point, Polygon
+from shapely import affinity
 from viewer import Viewer
 from simulation_settings import buoys, goal, goal_factor, lower_shore, upper_shore
 
@@ -31,11 +32,12 @@ class ShipEnv(Env):
         self.set_point = np.array([0, -103, 2.5, 0, 0])
         self.tolerance = np.array([20, 2.0, 0.2, 0.05])
         self.last_pos = list()
+        self.ship_point = None
+        self.ship_polygon = Polygon(((-10, 0), (0, 100), (10, 0)))
         self.reset()
         self.plot = False
         self.viewer = None
         self.last_action = [0,0]
-        self.ship_point = None
 
     def step(self, action):
         info = dict()
@@ -45,7 +47,7 @@ class ShipEnv(Env):
         #print('Observed state: ', obs)
         dn = self.end(state_prime=state_prime, obs=obs)
         if dn:
-            rew = -1000000
+            rew = -10
         else:
             rew = self.calculate_reward(obs=obs)
         self.last_pos = [state_prime[0], state_prime[1], state_prime[2]]
@@ -53,10 +55,10 @@ class ShipEnv(Env):
         return obs, rew, dn, info
 
     def calculate_reward(self, obs):
-        if abs(obs[0]) < 0.001 and abs(obs[1]+103) < 0.5:
-            return 10000
+        if abs(obs[0]) < 0.01 and abs(obs[4]) < 0.0001:
+            return 10
         else:
-            return -1*(obs[0]**2)-1*((obs[2]-2.5)**2)-100*(obs[4]**2)-10*((obs[1]+103)**2)
+            return np.tanh(-1000*(obs[0]**2)-1*((obs[2]-2.5)**2)-1000*(obs[4]**2))
 #        else:
 #            return 0
 
@@ -79,6 +81,8 @@ class ShipEnv(Env):
         # print('Original state:', state)
         v_lon, v_drift, _ = global_to_local(state[3], state[4], state[2])
         self.ship_point = Point((state[0], state[1]))
+        self.ship_polygon = affinity.translate(self.ship_polygon,  state[0],  state[1])
+        self.ship_polygon = affinity.rotate(self.ship_polygon, -state[2], 'center')
         bank_balance = (self.ship_point.distance(self.upper_line) - self.ship_point.distance(self.lower_line)) / \
                        (self.ship_point.distance(self.upper_line) + self.ship_point.distance(self.lower_line))
         obs = np.array([bank_balance, state[2], v_lon, v_drift, state[5]])
@@ -119,8 +123,12 @@ if __name__ == '__main__':
             for t in range(10000):
                 env.render()
                 #print('State observed:', observation)
-                action = env.action_space.sample()
+                # action = env.action_space.sample()
+                action_rudder = np.clip((observation[0]-20*observation[4]), -1, 1)
+                action = np.array([action_rudder, 0.3])
                 observation, reward, done, info = env.step(action)
+                print('action', action)
+                print('Obs', observation)
                 if done:
                     print("Episode finished after {} timesteps".format(t + 1))
                     break
