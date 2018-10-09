@@ -19,7 +19,7 @@ class Processor(WhiteningNormalizerProcessor):
     def process_action(self, action):
         return np.clip(action, -1., 1.)
 
-logger = FileLogger('.', interval=5000)
+logger = FileLogger('C:\\Users\\jose_amendola\\RL_vessel\\agents\\log_'+timestamp, interval=5000)
 
 # Get the environment and extract the number of actions.
 env = ShipEnv()
@@ -66,7 +66,9 @@ for i in range(10):
 # Okay, now it's time to learn something! We visualize the training here for show, but this
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
-    agent.fit(env, nb_steps=50000, visualize=False, verbose=1, log_interval=50000, callbacks=logger)
+    agent.fit(env, nb_steps=50000, visualize=False, verbose=1, log_interval=50000, callbacks=[logger],
+              nb_max_start_steps=2000,
+              start_step_policy=lambda observation: np.array([0.0, 0.3]))
 
     # After training is done, we save the final weights.
     agent.save_weights('ddpg_{}_{}_weights.h5f'.format(timestamp, 'Ship_Env'), overwrite=True)

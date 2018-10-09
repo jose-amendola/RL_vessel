@@ -9,13 +9,14 @@ from rl.processors import WhiteningNormalizerProcessor
 from rl.agents import DDPGAgent
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
-
+# from rl.callbacks import
+# import tensorflow as tf
 
 class Processor(WhiteningNormalizerProcessor):
     def process_action(self, action):
         return np.clip(action, -1., 1.)
 
-
+# with tf.device('/cpu:0'):
 env = ShipEnv()
 np.random.seed(123)
 env.seed(123)
@@ -54,7 +55,7 @@ agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_acti
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3, processor=Processor())
 agent.compile([Adam(lr=1e-4), Adam(lr=1e-3)], metrics=['mae'])
-agent.load_weights('ddpg_20181005141520_Ship_Env_weights.h5f')
+agent.load_weights('ddpg_20181008125422_Ship_Env_weights.h5f')
 
 # Finally, evaluate our algorithm for 5 episodes.
 agent.test(env, nb_episodes=5, visualize=True, nb_max_episode_steps=200000)

@@ -24,9 +24,9 @@ class ShipEnv(Env):
                                  (self.goal[0] + self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] - self.goal_factor)))
         self.action_space = spaces.Box(low=np.array([-0.5, -0.5]), high=np.array([0.5, 0.5]))
-        self.observation_space = spaces.Box(low=np.array([-1, -80, 1.5, -2.0, -1.0]),
-                                            high=np.array([1, 120, 1.0, 2.0, 1.0]))
-        self.init_space = spaces.Box(low=np.array([-1, -102.8, 2.4]), high=np.array([1, -103.2, 2.6]))
+        self.observation_space = spaces.Box(low=np.array([-1, -120, 1.0, -2.0, -1.0]),
+                                            high=np.array([1, -80, 4.0, 2.0, 1.0]))
+        self.init_space = spaces.Box(low=np.array([-1, -103.3, 2.4]), high=np.array([1, -103.5, 2.6]))
         self.start_pos = [11000, 5300.10098]
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
@@ -51,8 +51,9 @@ class ShipEnv(Env):
         # print('Action: ', action)
         # print('Observed state: ', obs)
         dn = self.end(state_prime=state_prime, obs=obs)
-        if dn and not self.goal_rec.contains(self.ship_polygon):
-            rew = -10
+        if dn:
+            if not self.goal_rec.contains(self.ship_point):
+                rew = -10
         else:
             rew = self.calculate_reward(obs=obs)
         self.last_pos = [state_prime[0], state_prime[1], state_prime[2]]
@@ -66,7 +67,7 @@ class ShipEnv(Env):
             return np.tanh(-(obs[0]**2)-((obs[0]+103.4)**2)-((obs[2]-2.5)**2)-(obs[4]**2))
 
     def end(self, state_prime, obs):
-        if not self.observation_space.contains(obs) or not self.boundary.contains(self.ship_polygon):
+        if not self.observation_space.contains(obs) or not self.boundary.contains(self.ship_point):
             if self.viewer is not None:
                 self.viewer.end_of_episode()
             return True
