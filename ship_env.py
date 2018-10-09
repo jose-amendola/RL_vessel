@@ -19,6 +19,10 @@ class ShipEnv(Env):
         self.lower_line = LineString(lower_shore)
         self.goal_point = Point(goal)
         self.boundary = Polygon(self.buoys)
+        self.goal_rec = Polygon(((self.goal[0] - self.goal_factor, self.goal[1] - self.goal_factor),
+                                 (self.goal[0] - self.goal_factor, self.goal[1] + self.goal_factor),
+                                 (self.goal[0] + self.goal_factor, self.goal[1] + self.goal_factor),
+                                 (self.goal[0] + self.goal_factor, self.goal[1] - self.goal_factor)))
         self.action_space = spaces.Box(low=np.array([-0.5, -0.5]), high=np.array([0.5, 0.5]))
         self.observation_space = spaces.Box(low=np.array([-1, -80, 1.5, -2.0, -1.0]),
                                             high=np.array([1, 120, 1.0, 2.0, 1.0]))
@@ -44,9 +48,10 @@ class ShipEnv(Env):
         state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=action[1])
         v_lon, v_drift, _ = global_to_local(state_prime[3], state_prime[4], state_prime[2])
         obs = self.convert_state(state_prime)
-        #print('Observed state: ', obs)
+        # print('Action: ', action)
+        # print('Observed state: ', obs)
         dn = self.end(state_prime=state_prime, obs=obs)
-        if dn:
+        if dn and not self.goal_rec.contains(self.ship_polygon):
             rew = -10
         else:
             rew = self.calculate_reward(obs=obs)
@@ -55,15 +60,13 @@ class ShipEnv(Env):
         return obs, rew, dn, info
 
     def calculate_reward(self, obs):
-        if abs(obs[0]) < 0.01 and abs(obs[4]) < 0.0001:
+        if abs(obs[0]) < 0.02 and abs(obs[4]) < 0.0001 and abs(obs[0]+103.4) < 0.5:
             return 10
         else:
-            return np.tanh(-1000*(obs[0]**2)-1*((obs[2]-2.5)**2)-1000*(obs[4]**2))
-#        else:
-#            return 0
+            return np.tanh(-(obs[0]**2)-((obs[0]+103.4)**2)-((obs[2]-2.5)**2)-(obs[4]**2))
 
     def end(self, state_prime, obs):
-        if not self.observation_space.contains(obs) and not self.boundary.contains(self.ship_point):
+        if not self.observation_space.contains(obs) or not self.boundary.contains(self.ship_polygon):
             if self.viewer is not None:
                 self.viewer.end_of_episode()
             return True
