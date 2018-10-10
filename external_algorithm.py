@@ -60,18 +60,16 @@ agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_acti
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3, processor=Processor())
 agent.compile([Adam(lr=1e-4), Adam(lr=1e-3)], metrics=['mae'])
-agent.load_weights('ddpg_20181006160521_Ship_Env_weights.h5f')
+# agent.load_weights('ddpg_20181006160521_Ship_Env_weights.h5f')
 
 for i in range(10):
 # Okay, now it's time to learn something! We visualize the training here for show, but this
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
-    agent.fit(env, nb_steps=50000, visualize=False, verbose=1, log_interval=50000, callbacks=[logger],
-              nb_max_start_steps=2000,
-              start_step_policy=lambda observation: np.array([0.0, 0.3]))
+    agent.fit(env, nb_steps=50000, visualize=False, verbose=1, log_interval=5000, callbacks=[logger])
 
     # After training is done, we save the final weights.
     agent.save_weights('ddpg_{}_{}_weights.h5f'.format(timestamp, 'Ship_Env'), overwrite=True)
 
 # Finally, evaluate our algorithm for 5 episodes.
-agent.test(env, nb_episodes=5, visualize=True, nb_max_episode_steps=200)
+agent.test(env, nb_episodes=5, visualize=True, nb_max_episode_steps=20000)
