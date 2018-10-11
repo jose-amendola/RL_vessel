@@ -9,7 +9,8 @@ from simulation_settings import buoys, goal, goal_factor, lower_shore, upper_sho
 
 
 class ShipEnv(Env):
-    def __init__(self):
+    def __init__(self, special_mode = None):
+        self.special_mode = special_mode
         self.buoys = buoys
         self.lower_shore = lower_shore
         self.upper_shore = upper_shore
@@ -23,7 +24,10 @@ class ShipEnv(Env):
                                  (self.goal[0] - self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] - self.goal_factor)))
-        self.action_space = spaces.Box(low=np.array([-0.5, -0.5]), high=np.array([0.5, 0.5]))
+        if self.special_mode == 'fixed_rotation':
+            self.action_space = spaces.Box(low=np.array([-0.5]), high=np.array([0.5]))
+        else:
+            self.action_space = spaces.Box(low=np.array([-0.5, -0.5]), high=np.array([0.5, 0.5]))
         self.observation_space = spaces.Box(low=np.array([-1, -180, 1.0, -2.0, -1.0]),
                                             high=np.array([1, -50, 4.0, 2.0, 1.0]))
         self.init_space = spaces.Box(low=np.array([-1, -103.3, 2.4]), high=np.array([1, -103.5, 2.6]))
@@ -31,7 +35,7 @@ class ShipEnv(Env):
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
         self.point_a = (13000, 0)
-        self.point_b = (15010,0)
+        self.point_b = (15010, 0)
         self.line = LineString([self.point_a, self.point_b])
         self.set_point = np.array([0, -103, 2.5, 0, 0])
         self.tolerance = np.array([20, 2.0, 0.2, 0.05])
@@ -45,7 +49,10 @@ class ShipEnv(Env):
 
     def step(self, action):
         info = dict()
-        state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=action[1])
+        if self.special_mode == 'fixed_rotation':
+            state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=0.3)
+        else:
+            state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=action[1])
         v_lon, v_drift, _ = global_to_local(state_prime[3], state_prime[4], state_prime[2])
         obs = self.convert_state(state_prime)
         # print('Action: ', action)
