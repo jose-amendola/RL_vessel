@@ -254,6 +254,9 @@ class Environment(buzz_python.session_subscriber):
         self.vessel.set_angular_position([0.00, 0.00, theta])
         self.vessel.set_angular_velocity([0.00, 0.00, vel_theta])
         self.simulation.sync(self.vessel)
+        self.advance()
+        self.advance()
+        self.simulation.sync(self.vessel)
 
     def finish(self):
         if self.simulation:
