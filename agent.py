@@ -278,8 +278,8 @@ if __name__ == "__main__":
     # modify RandomAgent by your own agent with the parameters you want
     # you can (and probably will) change these values, to make your system
     # learn longer
-    n_steps = 10000
-    for i in range(1,6):
+    n_steps = 1000
+    for i in range(1,7):
         test.learn(101, n_steps)
         agent.setEps(i*0.1)
     

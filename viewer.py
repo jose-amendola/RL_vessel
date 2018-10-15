@@ -8,9 +8,9 @@ class Viewer(object):
         turtle.speed(0)
         turtle.mode('logo')
         #turtle.shapesize(stretch_len=24.4745, stretch_wid=2.25)
-        turtle.setworldcoordinates(14100, -500, 15100, 500)
+        turtle.setworldcoordinates(-1000, -1000, 1000, 1000)
         turtle.setup()
-        turtle.screensize(30000, 1000, 'white')
+        turtle.screensize(4000, 1000, 'white')
         #cv = screen.getcanvas()
         #turtle.screensize(30000, 1000, 'white')
         self.l_vessel = 50 # Metade do comprimento da embarcacao
@@ -36,7 +36,7 @@ class Viewer(object):
         self.vessel.setpos(x, y)
         self.vessel.setheading(converted_angle)
         self.vessel.pendown()
-        self.rudder.setpos(x-self.l_vessel*math.cos(math.pi*converted_angle/180), y-self.l_vessel*math.sin(math.pi*converted_angle/180))
+        self.rudder.setpos(x-2*self.l_vessel*math.cos(math.pi*converted_angle/180), y-2*self.l_vessel*math.sin(math.pi*converted_angle/180))
         self.rudder.setheading(converted_angle+rud_angle)
         # if self.step_count == self.steps_for_stamp:
         #     turtle.stamp()

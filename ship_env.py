@@ -11,11 +11,11 @@ class ShipEnv(Env):
         self.action_space = spaces.Box(low=np.array([-1.0, -1.0]), high=np.array([1.0, 1.0]))
         self.observation_space = spaces.Box(low=np.array([-150, -180, 0, -1.0]), high=np.array([150, 0, 4.0, 1.0]))
         self.init_space = spaces.Box(low=np.array([-30, -100, 2.0, -0.1]), high=np.array([30, -80, 3.0, 0.1]))
-        self.start_pos = 15000.0
+        self.start_pos = 2000.0
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
-        self.point_a = (13000, 0)
-        self.point_b = (15010,0)
+        self.point_a = (-10000, 0)
+        self.point_b = (2010,0)
         self.line = LineString([self.point_a, self.point_b])
         self.set_point = np.array([0, -90, 2.5, 0])
         self.tolerance = np.array([20, 2.0, 0.2, 0.05])
@@ -41,7 +41,7 @@ class ShipEnv(Env):
         if not self.observation_space.contains(obs):
             return -10000 # -10000?
         else:
-            return -1*((obs[2]-self.set_point[2])**2)-0.1*((obs[1]+90+np.arcsin(obs[0]/300))**2)#-10*(obs[3]**2)
+            return -1*((obs[2]-self.set_point[2])**2)-0.1*((obs[1]+90+180*np.arcsin(obs[0]/300)/np.pi)**2)#-10*(obs[3]**2)
             #return -0.001*(obs[0]**2)-1*((obs[2]-self.set_point[2])**2)-0.1*((obs[1]+90)**2)-100*(obs[3]**2) # *10 reward de theta e v?
 #        else:
 #            return 0
@@ -71,7 +71,7 @@ class ShipEnv(Env):
         init = list(map(float, self.init_space.sample()))
         self.buzz_interface.set_single_start_pos_mode([self.start_pos, init[0], init[1], init[2], 0, 0])
         self.buzz_interface.move_to_next_start()
-        print('Reseting position')
+        #print('Reseting position')
         state = self.buzz_interface.get_state()
         self.last_pos = [state[0], state[1], state[2]]
         self.last_action = [0,0]
