@@ -139,3 +139,12 @@ class ShipExperiment:
                     self.viewer[i].cla()
                     self.viewer[i].plot(np.arange(0, self.steps[j] + 1, 1), self.observations[j][:, i])
                     plt.pause(0.0001)
+
+    def plot_obs(self, iter=0):
+        img, ax = plt.subplots(3, sharex=True)
+        for i in range(3):
+            ax[i].set_title("Observed states")
+            ax[i].set_ylabel("Obs" + str(i))
+            ax[i].set_xlabel('Steps')
+            ax[i].plot(np.arange(0, self.steps[iter] + 1, 1), self.observations[iter][:, i])
+        plt.show()
