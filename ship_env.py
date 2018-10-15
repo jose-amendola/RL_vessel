@@ -53,12 +53,15 @@ class ShipEnv(Env):
 
     def step(self, action):
         info = dict()
-        if self.special_mode == 'fixed_rotation':
+        if self.special_mode in ['fixed_rotation', 'sog_cog_fixed_rotation']:
             state_prime, _ = self.buzz_interface.step(angle_level=0.5*action[0], rot_level=0.3) #limit to half
         else:
             state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=action[1])
-        v_lon, v_drift, _ = global_to_local(state_prime[3], state_prime[4], state_prime[2])
-        obs = self.convert_state(state_prime)
+        # v_lon, v_drift, _ = global_to_local(state_prime[3], state_prime[4], state_prime[2])
+        if self.special_mode == 'sog_cog_fixed_rotation':
+            obs = self.convert_state_sog_cog(state_prime)
+        else:
+            obs = self.convert_state(state_prime)
         # print('Action: ', action)
         # print('Observed state: ', obs)
         dn = self.end(state_prime=state_prime, obs=obs)
@@ -81,7 +84,7 @@ class ShipEnv(Env):
             if abs(obs[0]) < 0.02 and abs(obs[3]) < 0.0001 and abs(obs[1]+103.4) < 0.5:
                 return 1000
             else:
-                return np.tanh(-(obs[0]**2)-((obs[0]+103.4)**2)-((obs[2]-2.5)**2)-(obs[4]**2))
+                return np.tanh(-0.0001*(obs[0]**2)-((obs[0]+103.4)**2)-((obs[2]-2.5)**2)-(obs[4]**2))
 
     def end(self, state_prime, obs):
         if not self.observation_space.contains(obs) or not self.boundary.contains(self.ship_point):
@@ -139,8 +142,11 @@ class ShipEnv(Env):
         print('Reseting position')
         state = self.buzz_interface.get_state()
         self.last_pos = [state[0], state[1], state[2]]
-        self.last_action = [0,0]
-        return self.convert_state(state)
+        self.last_action = [0, 0]
+        if self.special_mode == 'sog_cog_fixed_rotation':
+            return self.convert_state_sog_cog(state)
+        else:
+            return self.convert_state(state)
 
     def render(self, mode='human'):
         if mode == 'human':

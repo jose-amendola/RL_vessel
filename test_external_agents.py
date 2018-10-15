@@ -9,15 +9,20 @@ from rl.processors import WhiteningNormalizerProcessor
 from rl.agents import DDPGAgent
 from rl.memory import SequentialMemory
 from rl.random import OrnsteinUhlenbeckProcess
-# from rl.callbacks import
-# import tensorflow as tf
+# from rl.callbacks import FileLogger, TrainEpisodeLogger
 
+import datetime
+timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
+from custom_agent import CustomAgent
 class Processor(WhiteningNormalizerProcessor):
     def process_action(self, action):
         return np.clip(action, -1., 1.)
 
-# with tf.device('/cpu:0'):
-env = ShipEnv()
+# logger = FileLogger('C:\\Users\\jose_amendola\\RL_vessel\\agents\\log_'+timestamp, interval=5)
+# logger = TrainEpisodeLogger()
+# Get the environment and extract the number of actions.
+env = ShipEnv(special_mode='fixed_rotation')
 np.random.seed(123)
 env.seed(123)
 assert len(env.action_space.shape) == 1
@@ -43,19 +48,22 @@ x = Concatenate()([x, action_input])
 x = Dense(20)(x)
 x = Activation('relu')(x)
 x = Dense(1)(x)
-x = Activation('linear')(x)
+x = Activation('tanh')(x)
 critic = Model(inputs=[action_input, observation_input], outputs=x)
 print(critic.summary())
 
 # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
 # even the metrics!
-memory = SequentialMemory(limit=1000, window_length=1)
+memory = SequentialMemory(limit=100, window_length=1)
 random_process = OrnsteinUhlenbeckProcess(size=nb_actions, theta=.15, mu=0., sigma=.1)
-agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
+# agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
+#                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
+#                   random_process=random_process, gamma=.99, target_model_update=1e-3, processor=Processor())
+agent = CustomAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3, processor=Processor())
 agent.compile([Adam(lr=1e-4), Adam(lr=1e-3)], metrics=['mae'])
-agent.load_weights('ddpg_20181008125422_Ship_Env_weights.h5f')
+agent.load_weights('ddpg_20181013144312_Ship_Env_()_()_weights.h5f')
 
 # Finally, evaluate our algorithm for 5 episodes.
-agent.test(env, nb_episodes=5, visualize=True, nb_max_episode_steps=200000)
+agent.test(env, nb_episodes=5, visualize=True, nb_max_episode_steps=20000)
