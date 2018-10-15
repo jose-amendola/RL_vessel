@@ -14,7 +14,7 @@ from rl.random import OrnsteinUhlenbeckProcess
 import datetime
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-
+from custom_agent import CustomAgent
 class Processor(WhiteningNormalizerProcessor):
     def process_action(self, action):
         return np.clip(action, -1., 1.)
@@ -56,19 +56,20 @@ print(critic.summary())
 # even the metrics!
 memory = SequentialMemory(limit=100, window_length=1)
 random_process = OrnsteinUhlenbeckProcess(size=nb_actions, theta=.15, mu=0., sigma=.1)
-agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
+# agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
+#                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
+#                   random_process=random_process, gamma=.99, target_model_update=1e-3, processor=Processor())
+agent = CustomAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_action_input=action_input,
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3, processor=Processor())
 agent.compile([Adam(lr=1e-4), Adam(lr=1e-3)], metrics=['mae'])
-# agent.load_weights('ddpg_20181006160521_Ship_Env_weights.h5f')
+agent.load_weights('ddpg_init_experiences_Ship_Env_()_()_weights.h5f')
 
-steps = 20
+steps = 20000
 for i in range(10):
-# Okay, now it's time to learn something! We visualize the training here for show, but this
-# slows down training quite a lot. You can always safely abort the training prematurely using
-# Ctrl + C.
-    agent.fit(env, nb_steps=steps, visualize=False, verbose=1, log_interval=5)
-
+    # agent.fit(env, nb_steps=steps, visualize=False, verbose=1, log_interval=5)
+    agent.fit(env, nb_steps=steps, visualize=False, verbose=1, log_interval=steps, nb_extern_policy_steps=100,
+              start_step_policy=lambda observation: np.array([0.0]))
     # After training is done, we save the final weights.
     agent.save_weights('ddpg_{}_{}_()_()_weights.h5f'.format(timestamp, 'Ship_Env', str(steps), str(i)), overwrite=True)
 

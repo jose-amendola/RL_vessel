@@ -24,13 +24,17 @@ class ShipEnv(Env):
                                  (self.goal[0] - self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] - self.goal_factor)))
-        if self.special_mode == 'fixed_rotation':
+        if self.special_mode in ['fixed_rotation', 'sog_cog_fixed_rotation']:
             self.action_space = spaces.Box(low=np.array([-0.5]), high=np.array([0.5]))
         else:
             self.action_space = spaces.Box(low=np.array([-0.5, -0.5]), high=np.array([0.5, 0.5]))
-        self.observation_space = spaces.Box(low=np.array([-1, -180, 1.0, -2.0, -1.0]),
-                                            high=np.array([1, -50, 4.0, 2.0, 1.0]))
-        self.init_space = spaces.Box(low=np.array([-1, -103.3, 2.4]), high=np.array([1, -103.5, 2.6]))
+        if self.special_mode == 'sog_cog_fixed_rotation': #without v_drift
+            self.observation_space = spaces.Box(low=np.array([-1, -180, 1.0, -1.0]),
+                                                high=np.array([1, -50, 4.0, 1.0]))
+        else:
+            self.observation_space = spaces.Box(low=np.array([-1, -180, 1.0, -2.0, -1.0]),
+                                                high=np.array([1, -50, 4.0, 2.0, 1.0]))
+        self.init_space = spaces.Box(low=np.array([0, -103.4, 2.5]), high=np.array([0, -103.4, 2.5]))
         self.start_pos = [11000, 5300.10098]
         self.buzz_interface = Environment()
         self.buzz_interface.set_up()
@@ -50,7 +54,7 @@ class ShipEnv(Env):
     def step(self, action):
         info = dict()
         if self.special_mode == 'fixed_rotation':
-            state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=0.3)
+            state_prime, _ = self.buzz_interface.step(angle_level=0.5*action[0], rot_level=0.3) #limit to half
         else:
             state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=action[1])
         v_lon, v_drift, _ = global_to_local(state_prime[3], state_prime[4], state_prime[2])
@@ -68,10 +72,16 @@ class ShipEnv(Env):
         return obs, rew, dn, info
 
     def calculate_reward(self, obs):
-        if abs(obs[0]) < 0.02 and abs(obs[4]) < 0.0001 and abs(obs[1]+103.4) < 0.5:
-            return 1000
+        if self.special_mode == 'sog_cog_fixed_rotation':
+            if abs(obs[0]) < 0.02 and abs(obs[3]) < 0.0001 and abs(obs[1]+103.4) < 0.2:
+                return 1000
+            else:
+                return np.tanh(-(obs[0]**2)-((obs[1]+103.4)**2)-(obs[3]**2))
         else:
-            return np.tanh(-(obs[0]**2)-((obs[0]+103.4)**2)-((obs[2]-2.5)**2)-(obs[4]**2))
+            if abs(obs[0]) < 0.02 and abs(obs[3]) < 0.0001 and abs(obs[1]+103.4) < 0.5:
+                return 1000
+            else:
+                return np.tanh(-(obs[0]**2)-((obs[0]+103.4)**2)-((obs[2]-2.5)**2)-(obs[4]**2))
 
     def end(self, state_prime, obs):
         if not self.observation_space.contains(obs) or not self.boundary.contains(self.ship_point):
@@ -82,8 +92,7 @@ class ShipEnv(Env):
         else:
             return False
 
-    #Agent handles the state space (distance_from_line, heading, v_longitudinal, heading_p)
-    #obs variables:
+
     # 0:bank_balance
     # 1:heading
     # 2:v_lon
@@ -98,6 +107,25 @@ class ShipEnv(Env):
         bank_balance = (self.ship_point.distance(self.upper_line) - self.ship_point.distance(self.lower_line)) / \
                        (self.ship_point.distance(self.upper_line) + self.ship_point.distance(self.lower_line))
         obs = np.array([bank_balance, state[2], v_lon, v_drift, state[5]])
+        # print('Observation', obs)
+        return obs
+
+        # Agent handles the state space (distance_from_line, heading, v_longitudinal, heading_p)
+        # obs variables:
+        # 0:bank_balance
+        # 1:cog
+        # 2:sog
+        # 3:heading_p
+    def convert_state_sog_cog(self, state):
+        v_lon, v_drift, _ = global_to_local(state[3], state[4], state[2])
+        self.ship_point = Point((state[0], state[1]))
+        self.ship_polygon = affinity.translate(self.ship_polygon, state[0], state[1])
+        self.ship_polygon = affinity.rotate(self.ship_polygon, -state[2], 'center')
+        bank_balance = (self.ship_point.distance(self.upper_line) - self.ship_point.distance(self.lower_line)) / \
+                       (self.ship_point.distance(self.upper_line) + self.ship_point.distance(self.lower_line))
+        sog = np.linalg.norm([state[3], state[4]])
+        cog = np.degrees(np.arctan2(state[4], state[3]))
+        obs = np.array([bank_balance, cog, sog, state[5]])
         # print('Observation', obs)
         return obs
     
