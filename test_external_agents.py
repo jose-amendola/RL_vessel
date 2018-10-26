@@ -22,7 +22,7 @@ class Processor(WhiteningNormalizerProcessor):
 # logger = FileLogger('C:\\Users\\jose_amendola\\RL_vessel\\agents\\log_'+timestamp, interval=5)
 # logger = TrainEpisodeLogger()
 # Get the environment and extract the number of actions.
-env = ShipEnv(special_mode='fixed_rotation')
+env = ShipEnv(special_mode='sog_cog_fixed_rotation')
 np.random.seed(123)
 env.seed(123)
 assert len(env.action_space.shape) == 1
@@ -63,7 +63,7 @@ agent = CustomAgent(nb_actions=nb_actions, actor=actor, critic=critic, critic_ac
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
                   random_process=random_process, gamma=.99, target_model_update=1e-3, processor=Processor())
 agent.compile([Adam(lr=1e-4), Adam(lr=1e-3)], metrics=['mae'])
-agent.load_weights('ddpg_20181013144312_Ship_Env_()_()_weights.h5f')
+agent.load_weights('ddpg_20181015130731_Ship_Env_20000_5_weights.h5f')
 
 # Finally, evaluate our algorithm for 5 episodes.
 agent.test(env, nb_episodes=5, visualize=True, nb_max_episode_steps=20000)

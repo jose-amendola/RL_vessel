@@ -62,8 +62,8 @@ class ShipEnv(Env):
             obs = self.convert_state_sog_cog(state_prime)
         else:
             obs = self.convert_state(state_prime)
-        # print('Action: ', action)
-        # print('Observed state: ', obs)
+        print('Action: ', action)
+        print('Observed state: ', obs)
         dn = self.end(state_prime=state_prime, obs=obs)
         if dn:
             if not self.goal_rec.contains(self.ship_point):
