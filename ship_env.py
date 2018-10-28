@@ -24,9 +24,9 @@ class ShipEnv(Env):
                                  (self.goal[0] - self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] - self.goal_factor)))
-        self.action_space = spaces.Box(low=np.array([-0.2]), high=np.array([0.2]))
-        self.observation_space = spaces.Box(low=np.array([-1, -180, 1.0, -1.0]),
-                                            high=np.array([1, -50, 4.0, 1.0]))
+        self.action_space = spaces.Discrete(3)
+        self.observation_space = spaces.Box(low=np.array([-1, -180,-1.0]),
+                                            high=np.array([1, -50, 1.0]))
         self.init_space = spaces.Box(low=np.array([0, -103.4, 2.5]), high=np.array([0, -103.4, 2.5]))
         self.start_pos = [11000, 5300.10098]
         self.buzz_interface = Environment()
@@ -46,7 +46,7 @@ class ShipEnv(Env):
 
     def step(self, action):
         info = dict()
-        state_prime, _ = self.buzz_interface.step(angle_level=action[0], rot_level=0.3)
+        state_prime, _ = self.buzz_interface.step(angle_level=self.convert_action(action), rot_level=0.3)
         # v_lon, v_drift, _ = global_to_local(state_prime[3], state_prime[4], state_prime[2])
         obs = self.convert_state_sog_cog(state_prime)
         print('Action: ', action)
@@ -62,7 +62,7 @@ class ShipEnv(Env):
         return obs, rew, dn, info
 
     def calculate_reward(self, obs):
-        return np.tanh(-((obs[1]+103.4)**2)-100*(obs[3]**2))
+        return np.tanh(-((obs[1]+103.4)**2)-100*(obs[2]**2))
 
     def end(self, state_prime, obs):
         if not self.observation_space.contains(obs) or not self.boundary.contains(self.ship_point):
@@ -72,6 +72,15 @@ class ShipEnv(Env):
             return True
         else:
             return False
+
+    def convert_action(self, act):
+        if act == 0:
+            return -0.2
+        elif act == 1:
+            return 0.0
+        elif act == 2:
+            return 0.2
+
 
 
     # 0:bank_balance
