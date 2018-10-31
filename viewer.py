@@ -27,7 +27,7 @@ class Viewer(object):
         # turtle.tracer(0, 0)s
 
     def plot_position(self, x, y , theta, rud_angle):
-        converted_angle = 90 - theta
+        converted_angle =90 - theta
         #turtle.fillcolor('green')
         self.vessel.setpos(x, y)
         self.vessel.setheading(converted_angle)
