@@ -42,22 +42,21 @@ class SimulatedShipEnv(Env):
         self.viewer = None
 
     def step(self, action):
-        action = action
-        side = np.sign(self.last_pos[1])
-        action = action*side
-        rot_action = 0.2
-        state_prime = self.simulator.step(angle_level=action[0], rot_level=rot_action)
+        rot_action = 0.3
+        rudder_action = self.convert_action(action)
+        print('Rudder lvl: ', rudder_action)
+        state_prime = self.simulator.step(angle_level=rudder_action, rot_level=rot_action)
         # transforma variáveis do simulador em variáveis observáveis
         obs = self.convert_state_sog_cog(state_prime)
         print('Action: ', action)
         print('Observed state: ', obs)
         dn = self.end(state_prime=state_prime, obs=obs)
         rew = self.calculate_reward(obs=obs)
-        if dn:
-            if not self.goal_rec.contains(self.ship_point):
-                rew = -1000
+        # if dn:
+        #     if not self.goal_rec.contains(self.ship_point):
+        #         rew = -1000
         self.last_pos = [state_prime[0], state_prime[1], state_prime[2]]
-        self.last_action = self.convert_action(action[0])
+        self.last_action = self.convert_action(action)
         print('Reward: ', rew)
         info = dict()
         return obs, rew, dn, info
@@ -100,10 +99,11 @@ class SimulatedShipEnv(Env):
         return obs
 
     def calculate_reward(self, obs):
-        if abs(obs[1]+166.6) < 0.3 and abs(obs[2]) < 0.01:
-            return 1
-        else:
-            return np.tanh(-((obs[1]+166.6)**2)-1000*(obs[2]**2))
+        return -np.abs(obs[0]) - np.abs(obs[1] + 166.6) - 1000 * np.abs(obs[2])
+        # if abs(obs[1]+166.6) < 0.3 and abs(obs[2]) < 0.01:
+        #     return 1
+        # else:
+        #     return np.tanh(-((obs[1]+166.6)**2)-1000*(obs[2]**2))
 
     def end(self, state_prime, obs):
         if not self.observation_space.contains(obs) or not self.boundary.contains(self.ship_point):
@@ -119,7 +119,7 @@ class SimulatedShipEnv(Env):
 
     def reset(self):
         # init = list(map(float, self.init_space.sample()))
-        theta = np.deg2rad(90-(-103.4))
+        theta = np.deg2rad(90-(-106.4))
         init = [11000, 5280, theta, 3*np.cos(theta), 3*np.sin(theta), 0]
         self.simulator.reset_start_pos(np.array(init))
         print('Reseting position')
@@ -146,7 +146,7 @@ if __name__ == '__main__':
             observation = env.reset()
             for t in range(10000):
                 env.render()
-                action = np.array([0])
+                action = 2
                 observation, reward, done, info = env.step(action)
                 if done:
                     print("Episode finished after {} timesteps".format(t + 1))
