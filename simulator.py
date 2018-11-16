@@ -73,7 +73,8 @@ class Simulator:
             self.integrator = self.scipy_runge_kutta(self.simulate_scipy, self.get_state(), t_bound=self.time_span)
 
     def step(self, angle_level, rot_level):
-        self.current_action = np.array([angle_level, rot_level])
+        #invert rudder for compatibility with dyna trained agents
+        self.current_action = np.array([-angle_level, rot_level])
         if self.rk_mode == 'ours_rk':
             for i in range(self.number_iterations):
                 self.last_global_state = self.runge_kutta(self.get_state(), self.simulate_in_global, 6, self.time_span/self.number_iterations)
