@@ -151,7 +151,7 @@ class SimulatedShipEnv(Env):
         return obs
 
     def calculate_reward(self, obs):
-            rew = -np.abs(obs[1] + 166.6)**2 - 1000*np.abs(obs[2])**2
+            rew = -np.abs(obs[1] + 166.6)**2 - 1000*np.abs(obs[2])**2 - np.abs(obs[3])**2
             return rew
         # if abs(obs[1]+166.6) < 0.3 and abs(obs[2]) < 0.01:
         #     return 1
