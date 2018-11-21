@@ -28,8 +28,8 @@ class SimulatedShipEnv(Env):
                                  (self.goal[0] + self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] - self.goal_factor)))
         self.action_space = spaces.Discrete(9)
-        self.observation_space = spaces.Box(low=np.array([-1, -180, -1.0, 0.5]),
-                                            high=np.array([1, -50, 1.0, 4.5]))
+        self.observation_space = spaces.Box(low=np.array([-1, -180, -1.0, 0.5, 0]),
+                                            high=np.array([1, -50, 1.0, 5, 20000]))
         self.init_space = spaces.Box(low=np.array([0, -np.pi/15, 1.0, 0.2,  -0.01]), high=np.array([30, np.pi/15, 2.0, 0.3, 0.01]))
         self.last_pos = np.zeros(3) # last_pos = [xg yg thg]
         self.last_action = np.zeros(1) #only one action
@@ -91,6 +91,7 @@ class SimulatedShipEnv(Env):
         # rew = self.calculate_reward(obs=obs)
         rew = -1
         if dn:
+            rew -= obs[4]**2
             if not self.goal_rec.contains(self.ship_point):
                 rew = -100000000
         self.last_pos = [state_prime[0], state_prime[1], state_prime[2]]
@@ -129,9 +130,10 @@ class SimulatedShipEnv(Env):
                        (self.ship_point.distance(self.upper_line) + self.ship_point.distance(self.lower_line))
         sog = np.linalg.norm([state[3], state[4]])
         cog = np.degrees(np.arctan2(state[4], state[3]))
+        goal_dist = self.goal_point.distance(self.ship_point)
         if cog > 0:
             cog -= 360
-        obs = np.array([bank_balance, cog, state[5], sog])
+        obs = np.array([bank_balance, cog, state[5], sog, goal_dist])
         # print('Observation', obs)
         return obs
 
@@ -146,12 +148,12 @@ class SimulatedShipEnv(Env):
         theta = side*state[2]  # radians
         vx = state[3]  # m/s
         vy = side*state[4]  # m/s
-        thetadot = side * state[5]  # graus/min
+        thetadot = side * state[5]  # graus/s
         obs = np.array([d, theta, vx, vy, thetadot])
         return obs
 
     def calculate_reward(self, obs):
-            rew = -np.abs(obs[1] + 166.6)**2 - 1000*np.abs(obs[2])**2 - np.abs(obs[3])**2
+            rew = -np.abs(obs[1] + 166.6)**2 - 1000*np.abs(obs[2])**2 - 1000*np.abs(obs[3]-3)**2
             return rew
         # if abs(obs[1]+166.6) < 0.3 and abs(obs[2]) < 0.01:
         #     return 1
@@ -172,7 +174,7 @@ class SimulatedShipEnv(Env):
 
     def reset(self):
         # init = list(map(float, self.init_space.sample()))
-        theta = np.deg2rad(90-(-106.4))
+        theta = np.deg2rad(90-(-104.4))
         init = [11000, 5280, theta, 3*np.cos(theta), 3*np.sin(theta), 0]
         self.simulator.reset_start_pos(np.array(init))
         print('Reseting position')
@@ -184,6 +186,7 @@ class SimulatedShipEnv(Env):
         if self.viewer is None:
             self.viewer = Viewer()
             self.viewer.plot_boundary(self.buoys)
+            self.viewer.plot_goal(goal, goal_factor)
             # self.viewer.plot_guidance_line(self.point_a, self.point_b)
         self.viewer.plot_position(self.last_pos[0], self.last_pos[1],  self.last_pos[2],  20*self.last_action[0])
 
