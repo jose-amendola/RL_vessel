@@ -34,13 +34,13 @@ class Viewer:
         self.steps_for_stamp = 30
 
     def plot_position(self, x, y, theta, rud_angle):
-        converted_angle = theta*180/math.pi #convertion may apply if you use radians
+        angle = 90 -theta
         # turtle.fillcolor('green')
         self.vessel.setpos(x, y)
-        self.vessel.setheading(converted_angle)
-        self.rudder.setpos(x - self.l_vessel * math.cos(math.pi * converted_angle / 180),
-                           y - self.l_vessel * math.sin(math.pi * converted_angle / 180))
-        self.rudder.setheading(converted_angle - rud_angle)
+        self.vessel.setheading(angle)
+        self.rudder.setpos(x - self.l_vessel * math.cos(math.pi * angle / 180),
+                           y - self.l_vessel * math.sin(math.pi * angle / 180))
+        self.rudder.setheading(angle + rud_angle)
         self.vessel.pendown()
 
     def plot_guidance_line(self, point_a, point_b):

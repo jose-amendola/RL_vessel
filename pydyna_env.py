@@ -23,19 +23,19 @@ class PyDynaEnv(Env):
                                  (self.goal[0] - self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] - self.goal_factor)))
-        self.action_space = spaces.Discrete(9)
-        self.observation_space = spaces.Box(low=np.array([-1, -180, -1.0, 0.5, 0]),
-                                            high=np.array([1, -50, 1.0, 4.5, 20000]))
+        self.action_space = spaces.Discrete(3)
+        self.observation_space = spaces.Box(low=np.array([-1.0, -180, -1.0, 0.5, 0.0]),
+                                            high=np.array([1.0, -50, 1.0, 4.5, 20000.0]))
         self.last_pos = np.zeros(3) # last_pos = [xg yg thg]
         self.last_action = np.zeros(2)
         self.simulator = FastTimeWrapper()
-        self.simulator.load_p3d('Aframax_Full_revTannuri_Cond1.p3d')
+        self.simulator.load_p3d('Aframax_Full_revTannuri_Cond1-intstep-2s.p3d')
         self.simulator.select_vessel('36')
         self.point_a = (13000, 0)
         self.point_b = (15010, 0)
         self.line = LineString([self.point_a, self.point_b])
         self.ship_point = None
-        self.ship_polygon = Polygon(((-10, 0), (0, 100), (10, 0)))
+        self.ship_polygon = LineString(((0, 0), (0, 100)))
         self.start_pos = list()
         self.viewer = None
         self.last_rew = 0
@@ -48,7 +48,7 @@ class PyDynaEnv(Env):
         print('Rot lvl: ', rot_action)
         self.simulator.set_norm_dem_rudder_level(rudder_action)
         self.simulator.set_norm_dem_prop_level(rot_action)
-        for _ in range(20):
+        for _ in range(5):
             self.simulator.advance()
         state_prime = self.simulator.get_vessel_pos_vel()
         print('original state:', state_prime)
@@ -63,6 +63,9 @@ class PyDynaEnv(Env):
         else:
             self.symmetry = 1
         print('Action: ', action)
+        theta = self.angle_from_dyna(state_prime[5])
+        self.ship_polygon = affinity.translate(self.ship_polygon, state_prime[0]-self.last_pos[0], state_prime[1]-self.last_pos[1])
+        self.ship_polygon = affinity.rotate(self.ship_polygon, -(theta-self.last_pos[2]), 'center')
         dn = self.end(state_prime=state_prime, obs=obs)
         # rew = self.calculate_reward(obs=obs)
         rew = self.calculate_reward(obs)
@@ -70,8 +73,8 @@ class PyDynaEnv(Env):
         if dn:
             if not self.goal_rec.contains(self.ship_point):
                 rew -= 1000
-        self.last_pos = [state_prime[0], state_prime[1], state_prime[5]]
-        self.last_action = self.convert_action(action)
+        self.last_pos = [state_prime[0], state_prime[1], theta]
+        self.last_action = [rudder_action, rot_action]
         print('Reward: ', rew)
         info = dict()
         return obs, rew, dn, info
@@ -83,8 +86,6 @@ class PyDynaEnv(Env):
     def convert_state_sog_cog(self, state):
         theta_deg = self.angle_from_dyna(state[5])
         self.ship_point = Point((state[0], state[1]))
-        self.ship_polygon = affinity.translate(self.ship_polygon, state[0], state[1])
-        self.ship_polygon = affinity.rotate(self.ship_polygon, -theta_deg, 'center')
         bank_balance = (self.ship_point.distance(self.upper_line) - self.ship_point.distance(self.lower_line)) / \
                        (self.ship_point.distance(self.upper_line) + self.ship_point.distance(self.lower_line))
         sog = np.linalg.norm([state[6], state[7]])
@@ -92,7 +93,8 @@ class PyDynaEnv(Env):
         goal_dist = self.goal_point.distance(self.ship_point)
         if cog > 0:
             cog -= 360
-        obs = np.array([bank_balance, cog, state[5], sog, goal_dist])
+        rate_of_turn = -np.rad2deg(state[11])
+        obs = np.array([bank_balance, cog, rate_of_turn, sog, goal_dist])
         # print('Observation', obs)
         return obs
 
@@ -106,23 +108,29 @@ class PyDynaEnv(Env):
 
     def convert_action(self, act):
         if act == 0:
-            return -0.2, -0.2
-        elif act == 1:
-            return 0.0, -0.2
-        elif act == 2:
-            return 0.2, -0.2
-        elif act == 3:
-            return -0.2, 0.0
-        elif act == 4:
-            return 0.0, 0.0
-        elif act == 5:
-            return 0.2, 0.0
-        elif act == 6:
             return -0.2, 0.6
-        elif act == 7:
+        elif act == 1:
             return 0.0, 0.6
-        elif act == 8:
+        elif act == 2:
             return 0.2, 0.6
+        # if act == 0:
+        #     return -0.2, -0.2
+        # elif act == 1:
+        #     return 0.0, -0.2
+        # elif act == 2:
+        #     return 0.2, -0.2
+        # elif act == 3:
+        #     return -0.2, 0.0
+        # elif act == 4:
+        #     return 0.0, 0.0
+        # elif act == 5:
+        #     return 0.2, 0.0
+        # elif act == 6:
+        #     return -0.2, 0.6
+        # elif act == 7:
+        #     return 0.0, 0.6
+        # elif act == 8:
+        #     return 0.2, 0.6
 
     def end(self, state_prime, obs):
         if not self.observation_space.contains(obs) or not self.boundary.contains(self.ship_point):
@@ -144,7 +152,10 @@ class PyDynaEnv(Env):
         self.simulator.reset_vessel_state(init)
         print('Reseting position')
         state = self.simulator.get_vessel_pos_vel()
-        self.last_pos = np.array([state[0], state[1], state[5]])
+        self.last_pos = np.array([state[0], state[1], self.angle_from_dyna(state[5])])
+        self.ship_polygon = affinity.translate(self.ship_polygon, state[0],
+                                               state[1])
+        self.ship_polygon = affinity.rotate(self.ship_polygon, -self.angle_from_dyna(state[5]), 'center')
         return self.convert_state_sog_cog(state)
 
     def render(self, mode='human'):
@@ -161,8 +172,11 @@ class PyDynaEnv(Env):
 
 if __name__ == '__main__':
     env = PyDynaEnv()
-    last_obs = env.reset()
-    for _ in range(1000):
-        env.render()
-        last_obs = env.step(7)
-        print('Obs:', last_obs)
+    for ep in range(5):
+        last_obs = env.reset()
+        for _ in range(1000):
+            env.render()
+            last_obs = env.step(0)
+            print('Obs:', last_obs)
+            if last_obs[2] is True:
+                break
