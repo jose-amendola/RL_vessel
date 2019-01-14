@@ -1,6 +1,6 @@
 import numpy as np
 from ship_env import ShipEnv
-
+from simulated_ship_env import SimulatedShipEnv
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.optimizers import Adam
@@ -23,9 +23,9 @@ nb_actions = env.action_space.n
 # Next, we build a very simple model.
 model = Sequential()
 model.add(Flatten(input_shape=(1,) + env.observation_space.shape))
-model.add(Dense(16))
+model.add(Dense(64))
 model.add(Activation('relu'))
-model.add(Dense(16))
+model.add(Dense(32))
 model.add(Activation('relu'))
 model.add(Dense(nb_actions))
 model.add(Activation('linear'))
@@ -56,7 +56,7 @@ dqn.load_weights('C:\\Users\\jose_amendola\\RL_vessel\\omae\\dqn_ship_env_weight
 #     dqn.fit(env, nb_steps=10000, visualize=False, verbose=2)
 #
 #     After training is done, we save the final weights.
-dqn.fit(env, nb_steps=100000, visualize=False, verbose=2)
+dqn.fit(env, nb_steps=100000, visualize=False, verbose=1)
 dqn.save_weights('dqn_{}_{}_weights.h5f'.format('ship_env', timestamp), overwrite=True)
 
 # Finally, evaluate our algorithm for 5 episodes.

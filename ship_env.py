@@ -37,7 +37,8 @@ class ShipEnv(Env):
         self.set_point = np.array([0, -103, 2.5, 0, 0])
         self.tolerance = np.array([20, 2.0, 0.2, 0.05])
         self.last_pos = list()
-        self.reset()
+        self.ship_point = None
+        self.ship_polygon = Polygon(((-10, 0), (0, 100), (10, 0)))
         self.plot = False
         self.viewer = None
         self.last_action = [0,0]
@@ -146,14 +147,14 @@ class ShipEnv(Env):
 
 if __name__ == '__main__':
     env = ShipEnv()
-    for i_episode in range(20):
+    for i_episode in range(1):
         observation = env.reset()
-        for t in range(10000):
-            env.render()
+        for t in range(10):
+            # env.render()
             #print('State observed:', observation)
             # action = env.action_space.sample()
-            action_rudder = np.clip((observation[0]-20*observation[4]), -1, 1)
-            action = np.array([action_rudder, 0.3])
+            action_rudder = np.random.randint(0, 2)
+            action = np.array(action_rudder)
             observation, reward, done, info = env.step(action)
             print('action', action)
             print('Obs', observation)
@@ -161,3 +162,8 @@ if __name__ == '__main__':
                 print("Episode finished after {} timesteps".format(t + 1))
                 break
 
+s = io.StringIO()
+sortby = 'cumulative'
+ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+ps.print_stats()
+print(s.getvalue())

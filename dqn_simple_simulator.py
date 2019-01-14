@@ -1,21 +1,31 @@
 import numpy as np
 # from ship_env import ShipEnv
+from pydyna_env import VarVelPyDynaEnv
 from simulated_ship_env import SimulatedShipEnv
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.optimizers import Adam
-
+from rl.callbacks import ModelIntervalCheckpoint
 from rl.agents.dqn import DQNAgent
-from rl.policy import EpsGreedyQPolicy, BoltzmannQPolicy
+from rl.policy import EpsGreedyQPolicy, BoltzmannQPolicy, LinearAnnealedPolicy
 from rl.memory import SequentialMemory
+from rl.processors import WhiteningNormalizerProcessor
+import pickle
 
 
 import datetime
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 
+processor = WhiteningNormalizerProcessor()
+with open('processor_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_20190107182538.pickle', 'rb') as f:
+    processor = pickle.load(f)
+
+
+
+scenario = 'Aframax_Full_revTannuri_Cond1-intstep-2s.p3d'
 # Get the environment and extract the number of actions.
-env = SimulatedShipEnv()
+env = VarVelPyDynaEnv(p3d_name=scenario, report=False, n_steps=5)
 np.random.seed(123)
 env.seed(123)
 nb_actions = env.action_space.n
@@ -43,23 +53,24 @@ print(model.summary())
 # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
 # even the metrics!
 memory = SequentialMemory(limit=500, window_length=1)
-policy = EpsGreedyQPolicy(eps=0.2)
+# policy = EpsGreedyQPolicy(eps=0.2)
 # policy = BoltzmannQPolicy()
-dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, nb_steps_warmup=5,
-               target_model_update=1e-2, policy=policy)
+policy = LinearAnnealedPolicy(inner_policy=EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.2, value_test=.05,
+                              nb_steps=1000000)
+dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, nb_steps_warmup=1,
+               target_model_update=1000, policy=policy, processor=processor)
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
-dqn.load_weights('dqn_ship_env_vel_goal_dist_20181121093253_weights.h5f')
-# dqn.load_weights('omae\\dqn_ship_env_20181106101409_init_105.4-ctespeed0.6-rw-col1000000000-np.abs(obs[1] + 166.6)2 - 1000np.abs(obs[2])2.h5f')
-# dqn.load_weights('C:\\Users\\jose_amendola\\RL_vessel\\omae\\dqn_ship_env_weights_straight_line_tanh(-((obs[1]+103.4)2)-100(obs[2]2))_collision1000_nospeed.h5f')
-# Okay, now it's time to learn something! We visualize the training here for show, but this
-# slows down training quite a lot. You can always safely abort the training prematurely using
-# Ctrl + C.
-# for i in range(10):
-#     dqn.fit(env, nb_steps=10000, visualize=False, verbose=2)
-#
-#     After training is done, we save the final weights.
-dqn.fit(env, nb_steps=1000000, visualize=False, verbose=1, action_repetition=1)
-dqn.save_weights('dqn_{}_{}_weights.h5f'.format('ship_env_vel_goal_dist', timestamp), overwrite=True)
 
+dqn.load_weights('C:\\Users\\jose_amendola\\RL_vessel\\dqn_ship_env_varvel_dist_20190107182538_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_weights.h5f')
+
+dqn.fit(env, nb_steps=10e6, visualize=False, verbose=1, action_repetition=1, log_interval=100000,
+        callbacks=[ModelIntervalCheckpoint(filepath='dqn_varvel_'+scenario+'_{step}_'+timestamp+'.h5f', interval=100000)])
+dqn.save_weights('dqn_{}_{}_{}_weights.h5f'.format('ship_env_varvel_dist', timestamp, scenario), overwrite=True)
+
+env.report = True
+env.report_name = file_name = scenario + '_' + timestamp
 # Finally, evaluate our algorithm for 5 episodes.
-dqn.test(env, nb_episodes=5, visualize=True)
+dqn.test(env, nb_episodes=1, visualize=True)
+
+with open('processor_'+scenario+'_'+timestamp+'.pickle', 'wb') as outfile:
+    pickle.dump(processor, outfile)

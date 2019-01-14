@@ -45,7 +45,7 @@ rudder_id = '0'
 thruster_id = '0'
 scenario = 'default'
 goal = ((N07[0]+Final[0])/2, (N07[1]+Final[1])/2)
-goal_factor = 100
+goal_factor = 200
 upper_shore = [funnel_start, N01, N03, N05, N07]
 lower_shore = [N06, N04, N02, funnel_end]
 
