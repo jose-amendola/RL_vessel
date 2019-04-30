@@ -17,9 +17,9 @@ import datetime
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 
-processor = WhiteningNormalizerProcessor()
-with open('processor_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_20190107182538.pickle', 'rb') as f:
-    processor = pickle.load(f)
+# processor = WhiteningNormalizerProcessor()
+# with open('processor_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_20190107182538.pickle', 'rb') as f:
+#     processor = pickle.load(f)
 
 
 
@@ -56,12 +56,12 @@ memory = SequentialMemory(limit=500, window_length=1)
 # policy = EpsGreedyQPolicy(eps=0.2)
 # policy = BoltzmannQPolicy()
 policy = LinearAnnealedPolicy(inner_policy=EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.2, value_test=.05,
-                              nb_steps=1000000)
+                              nb_steps=500000)
 dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, nb_steps_warmup=1,
-               target_model_update=1000, policy=policy, processor=processor)
+               target_model_update=1000, policy=policy)
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 
-dqn.load_weights('C:\\Users\\jose_amendola\\RL_vessel\\dqn_ship_env_varvel_dist_20190107182538_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_weights.h5f')
+# dqn.load_weights('C:\\Users\\jose_amendola\\RL_vessel\\dqn_ship_env_varvel_dist_20190107182538_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_weights.h5f')
 
 dqn.fit(env, nb_steps=10e6, visualize=False, verbose=1, action_repetition=1, log_interval=100000,
         callbacks=[ModelIntervalCheckpoint(filepath='dqn_varvel_'+scenario+'_{step}_'+timestamp+'.h5f', interval=100000)])
@@ -72,5 +72,5 @@ env.report_name = file_name = scenario + '_' + timestamp
 # Finally, evaluate our algorithm for 5 episodes.
 dqn.test(env, nb_episodes=1, visualize=True)
 
-with open('processor_'+scenario+'_'+timestamp+'.pickle', 'wb') as outfile:
-    pickle.dump(processor, outfile)
+# with open('processor_'+scenario+'_'+timestamp+'.pickle', 'wb') as outfile:
+#     pickle.dump(processor, outfile)

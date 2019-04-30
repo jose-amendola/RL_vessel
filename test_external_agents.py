@@ -19,15 +19,16 @@ timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 scenario = 'Aframax_Full_revTannuri_Cond1-intstep-2s.p3d'
 # Get the environment and extract the number of actions.
 file_name = scenario + '_' + timestamp
-env = VarVelPyDynaEnv(p3d_name=scenario, report=True, report_name=file_name, n_steps=5)
+# env = VarVelPyDynaEnv(p3d_name=scenario, report=True, report_name=file_name, n_steps=5)
+env = PyDynaEnv(p3d_name=scenario, report=True, report_name=file_name, n_steps=5)
 np.random.seed(123)
 env.seed(123)
 nb_actions = env.action_space.n
 
 
-loaded_processor = None
-with open('processor_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_20190107182538.pickle', 'rb') as f:
-    loaded_processor = pickle.load(f)
+# loaded_processor = None
+# with open('processor_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_20190114093136.pickle', 'rb') as f:
+#     loaded_processor = pickle.load(f)
 
 with tf.device('/cpu:0'):
     # Next, we build a very simple model.
@@ -55,7 +56,7 @@ with tf.device('/cpu:0'):
     memory = SequentialMemory(limit=500, window_length=1)
     policy = BoltzmannQPolicy()
     dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, nb_steps_warmup=5,
-                   target_model_update=1000, policy=policy, processor=loaded_processor)
+                   target_model_update=1000, policy=policy)
     dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 
     # Okay, now it's time to learn something! We visualize the training here for show, but this
@@ -65,6 +66,6 @@ with tf.device('/cpu:0'):
 
     # After training is done, we save the final weights.
     # dqn.save_weights('dqn_{}_weights.h5f'.format('ship_env'), overwrite=True)
-    dqn.load_weights('C:\\Users\\jose_amendola\\RL_vessel\\dqn_varvel_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_8000000_20190107182538.h5f')
+    dqn.load_weights('C:\\Users\\jose_amendola\\RL_vessel\\omae\\selected\\dqn_ship_env_fixed_prop_20181223150556_Aframax_Full_revTannuri_Cond1-intstep-2s.p3d_weights.h5f')
     # Finally, evaluate our algorithm for 5 episodes.
     dqn.test(env, nb_episodes=1, visualize=True)

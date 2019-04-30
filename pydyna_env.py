@@ -219,8 +219,8 @@ class VarVelPyDynaEnv(Env):
                                  (self.goal[0] + self.goal_factor, self.goal[1] + self.goal_factor),
                                  (self.goal[0] + self.goal_factor, self.goal[1] - self.goal_factor)))
         self.action_space = spaces.Discrete(10)
-        self.observation_space = spaces.Box(low=np.array([-1.0, -180, -1.0, -1.0, 1.0, 0]),
-                                            high=np.array([1.0, -150, 1.0, 1.0, 5.0, 6000]))
+        self.observation_space = spaces.Box(low=np.array([-1.0, -180, -1.0, -1.0, 1.0]),
+                                            high=np.array([1.0, -150, 1.0, 1.0, 5.0]))
         self.last_pos = np.zeros(5) # last_pos = [xg yg thg]
         self.last_action = np.zeros(2)
         self.simulator = FastTimeWrapper()
@@ -289,7 +289,7 @@ class VarVelPyDynaEnv(Env):
 
     def calculate_reward(self, obs):
         # rew = 1-np.abs(obs[1] + 166.6)
-        rew = (1 + obs[2] * (obs[1] + 166.6)) / (1 + np.abs(obs[0])) / (1 + np.abs(obs[1] + 166.6)) / (1 + np.abs(obs[4] - (2.0 + obs[5]/5000)))
+        rew = (1 + obs[2] * (obs[1] + 166.6)) / (1 + np.abs(obs[0])) / (1 + np.abs(obs[1] + 166.6)) / (1 + np.abs(obs[4] - 2.0))
         return rew
 
     def convert_state_sog_cog(self, state):
@@ -299,12 +299,12 @@ class VarVelPyDynaEnv(Env):
                        (self.ship_point.distance(self.upper_line) + self.ship_point.distance(self.lower_line))
         sog = np.linalg.norm([state[6], state[7]])
         cog = np.degrees(np.arctan2(state[7], state[6]))
-        goal_dist = self.goal_point.distance(self.ship_point)
+        # goal_dist = self.goal_point.distance(self.ship_point)
         # drift_angle = -self.angle_from_dyna(state[5])-270.0 - cog
         if cog > 0:
             cog -= 360
         rate_of_turn = -np.rad2deg(state[11])
-        obs = np.array([bank_balance, cog, rate_of_turn, self.last_action[0], sog, goal_dist])
+        obs = np.array([bank_balance, cog, rate_of_turn, self.last_action[0], sog])
         # print('Observation', obs)
         return obs
 
